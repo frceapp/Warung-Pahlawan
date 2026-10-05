@@ -678,3 +678,55 @@ Commit terkait:
 - `ffc24a4` fix: keep 404 for missing files and only rewrite page paths
 - `ccb42f6` docs: mark task 10 audit as done
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P12, 5 Oktober 2026, 22.05 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: animasi kartu pembeli (di luar daftar tugas bagian 4; terkait Tugas 8)
+Prompt:
+
+````text
+Tambahkan animasi pada kartu pembeli saat pembeli datang. Kerjakan di satu PR.
+
+Kapan animasi jalan
+- Saat pembeli pertama muncul (anak menekan "Mulai melayani") dan saat pembeli berikutnya muncul (anak menekan "Layani pembeli berikutnya").
+- Jangan ada animasi berulang tanpa aksi anak.
+
+Urutan animasi (total sekitar 700 ms)
+1. Kartu pembeli meluncur masuk dari kiri dengan sedikit membal di akhir, seperti pembeli yang berjalan ke warung.
+2. Setelah kartu berhenti, gelembung bicara muncul dengan efek pop (membesar dari 90% ke 100%).
+3. Kalimat sapaan dan fun fact langsung terbaca penuh. Jangan pakai efek mengetik huruf per huruf, karena membuat anak SD menunggu.
+4. Pada langkah "Ambil buah", chip pesanan (gambar buah dan angka) muncul satu per satu dengan jeda 80 ms.
+
+Pembeli sebelumnya
+- Saat anak menekan "Layani pembeli berikutnya", kartu lama keluar ke kanan sekitar 250 ms, lalu kartu baru masuk.
+
+Aturan
+- Pakai CSS saja (transform dan opacity). Jangan tambah library.
+- Jangan sampai ada layout shift. Ruang kartu sudah tersedia sebelum animasi mulai.
+- Hormati `prefers-reduced-motion`: tanpa gerak, cukup fade 150 ms.
+- Di 360x640 tombol aksi di bar bawah harus tetap terlihat tanpa scroll halaman, dan tombol bisa ditekan setelah animasi selesai (jangan terkunci lebih dari 700 ms).
+- Teks tetap terbaca pembaca layar. Region aria-live tidak boleh ikut berubah karena animasi.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Pakai token warna dan nama animasi yang sudah ada di CSS bila cocok.
+
+Cek sebelum PR
+- Rekam atau screenshot urutan animasi di 360x640 dan 1280x800.
+- Uji dengan reduced motion aktif.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- PR #10 belum digabung saat prompt ini masuk. AI bertanya apakah animasi ditumpuk di PR #10, memakai branch baru, atau menunggu PR #10 digabung. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Saya gabung PR #10 dulu (Recommended)". Di tengah pengerjaan pemilik proyek mengirim pesan "info PR terakhir sudah di merge", lalu branch dimulai ulang dari `main` yang sudah berisi PR #10.
+- Kartu pembeli meluncur masuk dari kiri dengan sedikit membal (400 ms), lalu balon bicara muncul dengan efek pop dari 90% ke 100% (400-580 ms). Teks sapaan dan fun fact langsung tampil penuh, tanpa efek mengetik. Di langkah Ambil buah, chip pesanan muncul satu per satu dengan jeda 80 ms (mulai 400 ms, chip ketiga selesai di 700 ms).
+- Animasi masuk jalan saat kartu pembeli muncul karena aksi anak: kartu besar di langkah Sapa (saat level dibuka dan saat pembeli berikutnya datang) dan kartu ringkas di atas area kerja setelah "Mulai melayani". Kartu tidak beranimasi ulang saat pindah ke langkah Hitung, Kembalian, atau Selesai.
+- Saat "Layani pembeli berikutnya" ditekan, kartu lama keluar ke kanan sambil memudar (250 ms), lalu pembeli berikutnya datang. Pindah pembeli menunggu animationend, dengan timer cadangan 400 ms, dan dijaga supaya satu pembeli tidak terlewat dua kali. Tombol "Lihat hasil" untuk pembeli terakhir tetap langsung.
+- Hanya CSS (transform dan opacity), tanpa library baru. Keyframes `arrive` yang sudah ada diubah arahnya (dari kiri, dengan membal); keyframes baru: `pop-in`, `leave`, `fade-in`, `fade-out`. Dengan "kurangi gerakan", kartu hanya memudar 150 ms saat datang dan pergi. Area kerja diberi `overflow-x-hidden` supaya kartu yang meluncur tidak memunculkan scroll mendatar.
+- Diuji dengan Playwright pada build produksi di 360x640 dan 1280x800, dengan dan tanpa reduced motion: frame tiap 100 ms (animasi dijeda lewat Web Animations API), frame beruntun pada kecepatan normal untuk kartu keluar, dan rekaman video yang diubah menjadi GIF (`.github/pr-assets/animasi-pembeli/`). Halaman tidak bisa di-scroll, tombol aksi di bar bawah tetap terlihat, tombol bisa langsung ditekan saat animasi berjalan, teks aria-live tidak berubah selama kartu keluar, dan tidak ada layout shift tanpa input selain saat beranda dimuat (font). Audit axe-core di semua layar tanpa pelanggaran.
+- `npm test` (95 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `38894c9` feat: animate the customer card arriving at the stall
+- `2225b5a` feat: let the served customer leave before the next one arrives
+- `137684b` chore: add customer animation recordings for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
