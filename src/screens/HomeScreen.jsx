@@ -3,6 +3,7 @@ import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
+import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
@@ -11,6 +12,13 @@ function HomeScreen({ bestStars, onPlay, onOpenSequence, focusHeading = false })
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
+
+  // Muat berkas karakter pembeli setelah beranda tampil, supaya pembeli
+  // pertama bisa langsung berjalan masuk saat level dibuka.
+  useEffect(() => {
+    const timer = setTimeout(() => loadAnimeCharacter().catch(() => {}), 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="flex min-h-dvh flex-col">
