@@ -1,17 +1,16 @@
 import { useEffect, useReducer, useRef } from 'react'
+import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import ChangeStep from '../components/ChangeStep.jsx'
-import CharacterAvatar from '../components/CharacterAvatar.jsx'
 import CountStep from '../components/CountStep.jsx'
-import FeedbackMessage from '../components/FeedbackMessage.jsx'
-import GreetStep from '../components/GreetStep.jsx'
+import CustomerSpot from '../components/CustomerSpot.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
 import ServedStep from '../components/ServedStep.jsx'
-import SpeechBubble from '../components/SpeechBubble.jsx'
 import StepTracker from '../components/StepTracker.jsx'
+import TotalChoices from '../components/TotalChoices.jsx'
 import { formatRupiah } from '../game/format.js'
 import { getLevelFruits } from '../game/order.js'
 import {
@@ -23,6 +22,9 @@ import {
   summarizeSession,
 } from '../game/session.js'
 
+// Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
+// pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
+// aksi yang selalu terlihat di bawah.
 function PlayScreen({ level, rng, onExit, onFinish }) {
   const [state, dispatch] = useReducer(sessionReducer, null, () => createSession(level, rng))
   const customer = getCurrentCustomer(state)
@@ -30,18 +32,20 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   const fruits = getLevelFruits(level)
   const stepIndex = STEPS.findIndex((step) => step.id === state.step)
   const stepName = STEPS[stepIndex]?.name
+  const score = getSessionScore(state)
 
   // Pindahkan fokus ke judul langkah setiap kali langkah berganti, supaya
   // pengguna keyboard dan pembaca layar langsung tahu langkah barunya.
   const headingRef = useRef(null)
+  const workRef = useRef(null)
   const isFirstRender = useRef(true)
   useEffect(() => {
+    workRef.current?.scrollTo?.({ top: 0 })
     if (isFirstRender.current) {
       isFirstRender.current = false
       return
     }
     headingRef.current?.focus({ preventScroll: true })
-    headingRef.current?.scrollIntoView({ block: 'nearest' })
   }, [state.index, state.step])
 
   // Laporkan hasil sekali saja ketika level selesai.
@@ -54,6 +58,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
 
   let bubble = null
   let body = null
+  let actions = null
+
   if (state.step === 'greet') {
     bubble = (
       <>
@@ -61,14 +67,18 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         <p>{customer.fact}</p>
       </>
     )
-    body = (
-      <GreetStep customerName={character.name} onStart={() => dispatch({ type: 'startServing' })} />
+    actions = (
+      <Button onClick={() => dispatch({ type: 'startServing' })} className="w-full md:w-auto md:self-start">
+        Mulai melayani
+      </Button>
     )
   } else if (state.step === 'pick') {
     bubble = (
       <>
-        <p className="mb-2">Aku mau beli ini:</p>
-        <OrderList order={customer.order} />
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span>Aku mau beli:</span>
+          <OrderList order={customer.order} />
+        </div>
       </>
     )
     body = (
@@ -77,137 +87,176 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         bag={state.bag}
         onAdd={(fruitId) => dispatch({ type: 'addFruit', fruitId })}
         onRemove={(fruitId) => dispatch({ type: 'removeFruit', fruitId })}
-        onWrap={() => dispatch({ type: 'wrapOrder' })}
       />
+    )
+    actions = (
+      <Button onClick={() => dispatch({ type: 'wrapOrder' })} className="w-full md:w-auto md:self-start">
+        Bungkus pesanan
+      </Button>
     )
   } else if (state.step === 'count') {
     bubble = <p>Terima kasih sudah dibungkus. Berapa semuanya?</p>
-    body = (
-      <CountStep
-        level={level}
-        customer={customer}
-        wrongTotals={state.wrongTotals}
-        onChoose={(amount) => dispatch({ type: 'chooseTotal', amount })}
-        onConfirm={() => dispatch({ type: 'confirmTotal' })}
-      />
-    )
+    body = <CountStep level={level} customer={customer} />
+    actions =
+      level.totalMode === 'shown' ? (
+        <Button onClick={() => dispatch({ type: 'confirmTotal' })} className="w-full md:w-auto md:self-start">
+          Terima uang pembeli
+        </Button>
+      ) : (
+        <TotalChoices
+          choices={customer.totalChoices}
+          wrongChoices={state.wrongTotals}
+          onChoose={(amount) => dispatch({ type: 'chooseTotal', amount })}
+        />
+      )
   } else if (state.step === 'change') {
     bubble = (
-      <>
-        <p className="mb-2">Ini uangku.</p>
-        <ul className="flex flex-wrap gap-2" aria-label="Uang dari pembeli">
+      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 md:gap-x-2">
+        <span>Uangku:</span>
+        <ul className="flex flex-wrap gap-0.5 md:gap-1" aria-label="Uang dari pembeli">
           {customer.payment.notes.map((value, index) => (
             <li key={`${index}-${value}`}>
-              <MoneyImage value={value} size={96} />
+              <MoneyImage value={value} size={96} className="h-4 w-[27px] md:h-12 md:w-20" />
             </li>
           ))}
         </ul>
-        <p className="mt-1 font-bold">Jumlahnya {formatRupiah(customer.payment.amount)}.</p>
-      </>
+        <span className="font-bold" data-paid={customer.payment.amount}>
+          {formatRupiah(customer.payment.amount)}
+        </span>
+        <span className="basis-full">
+          Total belanjaku{' '}
+          <span className="font-bold" data-total={customer.total}>
+            {formatRupiah(customer.total)}
+          </span>
+          .
+        </span>
+      </div>
     )
     body = (
       <ChangeStep
         level={level}
-        customer={customer}
         givenChange={state.givenChange}
         onAdd={(value) => dispatch({ type: 'addMoney', value })}
         onRemove={(index) => dispatch({ type: 'removeMoney', index })}
         onClear={() => dispatch({ type: 'clearMoney' })}
-        onGive={() => dispatch({ type: 'giveChange' })}
-        onNoChange={() => dispatch({ type: 'noChange' })}
       />
     )
+    actions = (
+      <div className="grid grid-cols-2 gap-2 md:flex md:gap-3">
+        <Button onClick={() => dispatch({ type: 'giveChange' })} className="px-1 text-[13px] md:px-5 md:text-lg">
+          Berikan kembalian
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => dispatch({ type: 'noChange' })}
+          className="px-1 text-[13px] md:px-5 md:text-lg"
+        >
+          Tidak perlu kembalian
+        </Button>
+      </div>
+    )
   } else if (state.step === 'served') {
+    const isLast = state.index + 1 >= state.customers.length
     bubble = <p>Terima kasih! Senang belanja di warungmu.</p>
-    body = (
-      <ServedStep
-        isLast={state.index + 1 >= state.customers.length}
-        onNext={() => dispatch({ type: 'nextCustomer' })}
-      />
+    body = <ServedStep isLast={isLast} />
+    actions = (
+      <Button onClick={() => dispatch({ type: 'nextCustomer' })} className="w-full md:w-auto md:self-start">
+        {isLast ? 'Lihat hasil' : 'Layani pembeli berikutnya'}
+      </Button>
     )
   } else {
     const summary = summarizeSession(state)
     bubble = <p>Terima kasih! Sampai jumpa lagi.</p>
     body = (
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-lg">
-          Warung tutup. Skormu {summary.score} dari {summary.maxScore}, dapat {summary.stars} bintang.
-        </p>
-        <Button onClick={onExit}>Kembali ke beranda</Button>
-      </div>
+      <p className="text-lg">
+        Warung tutup. Skormu {summary.score} dari {summary.maxScore}, dapat {summary.stars} bintang.
+      </p>
+    )
+    actions = (
+      <Button onClick={onExit} className="w-full md:w-auto md:self-start">
+        Kembali ke beranda
+      </Button>
     )
   }
 
+  const heading = stepName
+    ? `Langkah ${stepIndex + 1}: ${stepName}`
+    : state.step === 'served'
+      ? 'Pembeli selesai dilayani'
+      : 'Warung tutup'
+  const isGreet = state.step === 'greet'
+
   return (
-    <div className="flex min-h-dvh flex-col">
-      <Awning />
-      <header className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-2 px-4 pt-1">
-        <Button variant="quiet" onClick={onExit} className="px-3 text-base">
-          <span aria-hidden="true">←</span> Beranda
+    <div className="relative flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
+      <Awning thin />
+      <header className="mx-auto flex w-full max-w-5xl shrink-0 items-center gap-2 px-3 pt-1.5 md:px-4 md:pt-1">
+        <Button
+          variant="quiet"
+          onClick={onExit}
+          aria-label="Kembali ke beranda"
+          className="w-12 shrink-0 px-0 text-base md:w-auto md:px-3"
+        >
+          <span aria-hidden="true">←</span>
+          <span className="hidden md:inline">Beranda</span>
         </Button>
-        <p className="rounded-xl border-4 border-tinta bg-terpal px-3 py-1 font-heading text-lg text-kapur">
+        <p className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
           {level.name}
         </p>
-        <p className="flex gap-3 text-base font-bold">
+        <p className="ml-auto flex shrink-0 flex-col items-end text-sm leading-tight font-bold md:ml-0 md:flex-row md:gap-3 md:text-base">
           <span>
-            Pembeli {state.index + 1} dari {state.customers.length}
+            Pembeli {state.index + 1}
+            <span className="hidden md:inline"> dari {state.customers.length}</span>
+            <span className="md:hidden">/{state.customers.length}</span>
           </span>
-          <span data-score={getSessionScore(state)}>Skor {getSessionScore(state)}</span>
+          <span data-score={score}>Skor {score}</span>
         </p>
       </header>
 
-      <main className="flex flex-1 flex-col">
-        <div className="mx-auto w-full max-w-5xl px-4 pt-3">
+      <main className="flex min-h-0 flex-1 flex-col">
+        <div className="mx-auto w-full max-w-5xl shrink-0 px-3 pt-1.5 md:px-4 md:pt-3">
           <StepTracker currentStep={state.step} />
         </div>
 
-        <section
-          aria-label="Pembeli"
-          className="mx-auto flex w-full max-w-5xl items-start gap-4 px-4 py-4 sm:gap-6"
-        >
-          <div
-            key={state.index}
-            className="flex w-24 shrink-0 flex-col items-center gap-1 text-center motion-safe:animate-arrive sm:w-40"
+        {!isGreet && (
+          <section
+            aria-label="Pembeli"
+            className="mx-auto w-full max-w-5xl shrink-0 px-3 py-1.5 md:px-4 md:py-3"
           >
-            <CharacterAvatar
-              characterId={character.id}
-              size={160}
-              decorative
-              className="h-24 w-24 sm:h-40 sm:w-40"
-            />
-            <p className="w-full rounded-lg border-4 border-tinta bg-terpal-tua px-1 py-0.5 font-heading text-sm leading-tight text-kapur sm:text-base">
-              {character.name}
-            </p>
-            <p className="text-xs leading-tight sm:text-sm">{character.origin}</p>
-          </div>
-          <SpeechBubble key={`${state.index}-${state.step}`} className="mt-2 min-w-0 flex-1">
-            {bubble}
-          </SpeechBubble>
-        </section>
+            <CustomerSpot character={character}>{bubble}</CustomerSpot>
+          </section>
+        )}
 
         <section
+          ref={workRef}
           aria-labelledby="step-title"
-          className="flex-1 border-t-4 border-tinta bg-kayu pb-8"
+          className={`relative min-h-0 flex-1 overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
         >
-          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <div className="flex flex-col gap-4 rounded-2xl border-4 border-tinta bg-kapur p-3 sm:p-5">
+          <div className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
+            <div
+              className={`flex flex-col gap-2 rounded-2xl border-4 border-tinta p-1.5 md:gap-3 md:p-4 ${isGreet ? 'border-transparent bg-transparent' : 'bg-kapur'}`}
+            >
               <h2
                 id="step-title"
                 ref={headingRef}
                 tabIndex={-1}
-                className="font-heading text-2xl"
+                className={isGreet ? 'sr-only' : 'sr-only md:not-sr-only md:font-heading md:text-xl'}
               >
-                {stepName
-                  ? `Langkah ${stepIndex + 1}: ${stepName}`
-                  : state.step === 'served'
-                    ? 'Pembeli selesai dilayani'
-                    : 'Warung tutup'}
+                {heading}
               </h2>
-              {body}
-              <FeedbackMessage feedback={state.feedback} />
+              {isGreet ? (
+                <section aria-label="Pembeli">
+                  <CustomerSpot key={state.index} character={character} large>
+                    {bubble}
+                  </CustomerSpot>
+                </section>
+              ) : (
+                body
+              )}
             </div>
           </div>
         </section>
+
+        <ActionBar feedback={state.feedback}>{actions}</ActionBar>
       </main>
     </div>
   )

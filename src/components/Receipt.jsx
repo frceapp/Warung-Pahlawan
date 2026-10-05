@@ -10,8 +10,11 @@ function Receipt({ order, showSubtotals, showTotal }) {
   const total = lines.reduce((sum, line) => sum + line.subtotal, 0)
 
   return (
-    <div className="rounded-xl border-4 border-tinta bg-kapur px-3 py-3 sm:px-4">
-      <p className="border-b-2 border-dashed border-tinta pb-2 text-center font-heading text-xl">
+    <div
+      data-region="receipt"
+      className="rounded-xl border-4 border-tinta bg-kapur px-3 py-1 md:px-4 md:py-2"
+    >
+      <p className="border-b-2 border-dashed border-tinta pb-0.5 text-center font-heading text-sm md:pb-1 md:text-lg">
         Nota Warung
       </p>
       <ul className="divide-y-2 divide-dashed divide-tinta/30">
@@ -21,20 +24,22 @@ function Receipt({ order, showSubtotals, showTotal }) {
             data-fruit-id={line.fruitId}
             data-quantity={line.quantity}
             data-price={line.price}
-            className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 text-base sm:text-lg"
+            className="flex items-center gap-x-2 py-0.5 text-[15px] md:py-1 md:text-lg"
           >
-            <FruitImage fruitId={line.fruitId} size={40} decorative />
-            <span className="min-w-20 font-bold">{getFruit(line.fruitId).name}</span>
-            <span>
-              {line.quantity} × {formatRupiah(line.price)}
+            <FruitImage fruitId={line.fruitId} size={40} decorative className="h-6 w-6 md:h-10 md:w-10" />
+            <span className="min-w-0 flex-1">
+              <span className="font-bold">{getFruit(line.fruitId).name}</span>{' '}
+              <span className="whitespace-nowrap">
+                {line.quantity} × {formatRupiah(line.price)}
+              </span>
             </span>
             {showSubtotals && (
-              <span className="ml-auto font-bold">= {formatRupiah(line.subtotal)}</span>
+              <span className="font-bold whitespace-nowrap">= {formatRupiah(line.subtotal)}</span>
             )}
           </li>
         ))}
       </ul>
-      <p className="flex items-center justify-between border-t-4 border-tinta pt-2 font-heading text-2xl">
+      <p className="flex items-center justify-between border-t-4 border-tinta pt-0.5 font-heading text-lg md:pt-2 md:text-2xl">
         <span>Total</span>
         <span data-total={showTotal ? total : undefined}>
           {showTotal ? formatRupiah(total) : '?'}
