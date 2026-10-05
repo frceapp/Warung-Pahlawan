@@ -550,3 +550,42 @@ Commit terkait:
 - `6d45586` style: enlarge money images and give each note its own colors
 - `c6bac8b` docs: add before and after screenshots for live test fixes
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P9, 5 Oktober 2026, 21.12 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: 9 (fitur tambahan: mode "Susun Langkah")
+Prompt:
+
+````text
+Kerjakan satu fitur dari Tugas 9: mode "Susun Langkah".
+
+Anak menyusun empat langkah melayani pembeli (Sapa, Ambil buah, Hitung,
+Kembalian) dalam urutan yang benar. Kartu langkah tampil teracak. Anak
+mengetuk kartu satu per satu untuk menaruhnya di urutan, dan bisa
+mengeluarkannya lagi. Kalau benar, tampilkan penjelasan singkat bahwa ini
+namanya "urutan" (sequence) di coding. Kalau salah, beri petunjuk kartu
+mana yang belum pas, tanpa menyalahkan.
+
+Syarat:
+- Dibuka dari beranda lewat satu tombol baru.
+- Muat di 360x640 tanpa scroll halaman, tombol aksi utama selalu terlihat.
+- Bisa dipakai dengan keyboard, sentuhan, dan mouse.
+- Logika pengacakan dan pengecekan urutan berupa fungsi murni di src/game
+  dengan tes.
+- Jangan mengubah logika game yang sudah ada.
+````
+
+Hasil AI:
+- Logika murni di `src/game/sequence.js`: `shuffleCards` (mengacak empat kartu dan tidak pernah langsung dalam urutan benar), `checkSequence` (kotak yang belum pas dan kotak kosong), `sequenceReducer` (taruh, keluarkan, cek, main lagi), dan `describeSequenceResult` (kalimat umpan balik). Urutan benar diambil dari `STEPS` di `src/game/session.js` tanpa mengubahnya. Teks kartu dan petunjuk ada di `src/data/sequence.js`.
+- Tes baru `src/game/sequence.test.js` (17 tes). Seluruhnya 13 berkas tes, 95 tes lulus.
+- Layar `src/screens/SequenceScreen.jsx` (dimuat dengan `React.lazy`) dan komponen `src/components/StepCard.jsx`: kotak urutan bernomor 1 sampai 4, tumpukan kartu teracak, ketuk kartu untuk menaruh, ketuk kartu di urutan untuk mengeluarkan, tombol "Cek urutan" di bar aksi bawah. Kalau benar: penjelasan "urutan (sequence)" dan tombol "Main lagi" serta "Kembali ke beranda". Kalau salah: kartu yang belum pas ditandai teks "belum pas" dan diberi petunjuk. Umpan balik lewat `aria-live`.
+- Beranda: satu tombol baru "Main Susun Langkah" di kartu "Latihan: Susun Langkah" (`HomeScreen.jsx`, `App.jsx`).
+- Uji Playwright di build produksi: 320x568, 360x640, 390x844 (sentuhan), 768x1024, dan 1280x800 (mouse), untuk keadaan awal, salah, dan benar; serta keyboard saja di 360x640. Di semua ukuran halaman tidak bisa di-scroll dan tombol aksi utama terlihat. Di 360x640 semua kotak dan kartu terlihat tanpa geser; satu kasus (1 kartu ditaruh lalu langsung dicek) menyisakan geser 9 px berupa padding. Di 320x568 area kartu masih perlu digeser 13 sampai 73 px.
+- Logika game lama (`src/game` dan `src/data` yang sudah ada) tidak diubah. `npm test`, `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. Satu level penuh tetap bisa dimainkan dari beranda (level 1 di 360x640, skor 40 dari 40).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `ce305ab` feat: add pure logic for the step-ordering practice
+- `97749a5` feat: add Susun Langkah practice screen with a home entry
+- `f7f044a` docs: add screenshots for Susun Langkah pull request
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
