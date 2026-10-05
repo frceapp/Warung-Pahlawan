@@ -1,3 +1,4 @@
+import AnimeCharacter from '../components/character/AnimeCharacter.jsx'
 import CharacterAvatar from '../components/CharacterAvatar.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
@@ -32,6 +33,18 @@ function GalleryScreen() {
         key: character.id,
         name: character.name,
         render: (size) => <CharacterAvatar characterId={character.id} size={size} />,
+      })),
+    },
+    {
+      title: 'Karakter anime',
+      items: CHARACTERS.map((character) => ({
+        key: `anime-${character.id}`,
+        name: character.name,
+        render: (size) => (
+          <div style={{ height: size * 1.4, width: size }} data-anime={character.id}>
+            <AnimeCharacter characterId={character.id} entrance="none" />
+          </div>
+        ),
       })),
     },
   ]
