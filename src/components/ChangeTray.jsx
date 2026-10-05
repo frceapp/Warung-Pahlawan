@@ -10,7 +10,11 @@ function ChangeTray({ values, onRemove, onClear }) {
     <div className="flex flex-col gap-2">
       <p className="flex flex-wrap items-baseline gap-x-2 text-lg">
         <span>Kembalian yang kamu susun:</span>
-        <span className="font-heading text-2xl" data-change-total={total}>
+        <span
+          key={total}
+          className="inline-block font-heading text-2xl motion-safe:animate-pop"
+          data-change-total={total}
+        >
           {formatRupiah(total)}
         </span>
       </p>

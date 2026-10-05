@@ -19,7 +19,12 @@ function ShoppingBag({ fruits, bag, onRemove }) {
           <FruitImage fruitId={fruit.id} size={40} decorative />
           <span className="flex-1 text-base">
             {fruit.name}{' '}
-            <span className="font-heading text-2xl">{bag[fruit.id]}</span>
+            <span
+              key={bag[fruit.id]}
+              className="inline-block font-heading text-2xl motion-safe:animate-pop"
+            >
+              {bag[fruit.id]}
+            </span>
           </span>
           <button
             type="button"

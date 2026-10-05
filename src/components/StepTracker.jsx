@@ -21,15 +21,13 @@ function StepTracker({ currentStep }) {
               className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl border-4 border-tinta px-0.5 py-1 text-center text-[13px] leading-tight sm:flex-row sm:gap-2 sm:text-base ${
                 status === 'active'
                   ? 'bg-pisang font-bold'
-                  : status === 'done'
-                    ? 'bg-daun text-kapur'
-                    : 'bg-kapur'
+                  : 'bg-kapur'
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 font-heading text-sm ${
-                  status === 'done' ? 'border-kapur' : 'border-tinta'
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-tinta font-heading text-sm ${
+                  status === 'done' ? 'bg-daun text-kapur' : ''
                 }`}
               >
                 {status === 'done' ? (

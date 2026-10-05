@@ -14,7 +14,7 @@ function TotalChoices({ choices, wrongChoices, onChoose }) {
               disabled={isWrong}
               onClick={() => onChoose(amount)}
               data-amount={amount}
-              className="flex min-h-14 w-full flex-col items-center justify-center rounded-xl border-4 border-tinta bg-pisang px-3 py-2 font-heading text-2xl shadow-[0_4px_0_var(--color-tinta)] transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-1 active:shadow-none disabled:translate-y-0 disabled:bg-kapur disabled:shadow-none"
+              className="flex min-h-14 w-full flex-col items-center justify-center rounded-xl border-4 border-tinta bg-pisang px-3 py-2 font-heading text-2xl shadow-[0_4px_0_var(--color-tinta)] transition-transform duration-150 motion-safe:hover:-translate-y-0.5 active:translate-y-1 active:shadow-none disabled:translate-y-0 disabled:bg-kapur disabled:shadow-none"
             >
               <span className={isWrong ? 'line-through' : undefined}>{formatRupiah(amount)}</span>
               {isWrong && <span className="font-body text-sm font-bold">belum tepat</span>}

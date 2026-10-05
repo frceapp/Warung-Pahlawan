@@ -11,13 +11,13 @@ function MoneyDrawer({ values, onAdd }) {
             type="button"
             data-money={value}
             onClick={() => onAdd(value)}
-            className="group flex min-h-12 w-full flex-col items-center gap-1 rounded-xl border-4 border-tinta bg-kapur px-1 py-2 text-base font-bold shadow-[0_4px_0_var(--color-tinta)] transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-1 active:shadow-none"
+            className="group flex min-h-12 w-full flex-col items-center gap-1 rounded-xl border-4 border-tinta bg-kapur px-1 py-2 text-base font-bold shadow-[0_4px_0_var(--color-tinta)] transition-transform duration-150 motion-safe:hover:-translate-y-0.5 active:translate-y-1 active:shadow-none"
           >
             <MoneyImage
               value={value}
               size={80}
               decorative
-              className="transition-transform duration-150 group-hover:-rotate-3"
+              className="transition-transform duration-150 motion-safe:group-hover:-rotate-3"
             />
             <span>
               <span className="sr-only">Tambah </span>

@@ -8,7 +8,7 @@ function LevelCard({ level, bestStars, onPlay }) {
       type="button"
       data-level-id={level.id}
       onClick={() => onPlay(level.id)}
-      className="group flex h-full w-full flex-col gap-3 rounded-2xl border-4 border-tinta bg-kapur p-4 text-left shadow-[0_6px_0_var(--color-tinta)] transition-transform duration-150 hover:-translate-y-1 active:translate-y-1 active:shadow-none"
+      className="group flex h-full w-full flex-col gap-3 rounded-2xl border-4 border-tinta bg-kapur p-4 text-left shadow-[0_6px_0_var(--color-tinta)] transition-transform duration-150 motion-safe:hover:-translate-y-1 active:translate-y-1 active:shadow-none"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur">
