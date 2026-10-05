@@ -1,6 +1,6 @@
 // Pemuat berkas karakter anime (dimuat terpisah dari bundel awal).
 // Beranda memanggil loadAnimeCharacter() lebih awal. Setelah selesai,
-// getLoadedAnimeCharacter() mengembalikan komponennya sehingga CustomerSpot
+// getLoadedAnimeCharacter() mengembalikan komponennya sehingga CustomerStage
 // bisa langsung merendernya tanpa menunggu Suspense; React.lazy hanya
 // dipakai kalau berkasnya belum selesai dimuat.
 let loaded = null
