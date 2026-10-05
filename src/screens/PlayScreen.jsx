@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
@@ -47,6 +47,25 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     }
     headingRef.current?.focus({ preventScroll: true })
   }, [state.index, state.step])
+
+  // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
+  const contentRef = useRef(null)
+  const [canScrollDown, setCanScrollDown] = useState(false)
+  useEffect(() => {
+    const work = workRef.current
+    if (!work) return undefined
+    const update = () =>
+      setCanScrollDown(work.scrollHeight - work.clientHeight - work.scrollTop > 8)
+    update()
+    work.addEventListener('scroll', update, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update)
+    observer?.observe(work)
+    if (contentRef.current) observer?.observe(contentRef.current)
+    return () => {
+      work.removeEventListener('scroll', update)
+      observer?.disconnect()
+    }
+  }, [])
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -231,7 +250,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           aria-labelledby="step-title"
           className={`relative min-h-0 flex-1 overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
         >
-          <div className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
+          <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
             <div
               className={`flex flex-col gap-2 rounded-2xl border-4 border-tinta p-1.5 md:gap-3 md:p-4 ${isGreet ? 'border-transparent bg-transparent' : 'bg-kapur'}`}
             >
@@ -253,6 +272,15 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
                 body
               )}
             </div>
+          </div>
+          <div
+            aria-hidden="true"
+            data-scroll-hint
+            className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
+              Geser ke bawah ↓
+            </span>
           </div>
         </section>
 
