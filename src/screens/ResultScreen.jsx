@@ -44,7 +44,7 @@ function ResultScreen({ summary, isNewBest, onPlayAgain, onHome }) {
             )}
             <p className="max-w-md text-lg">{PRAISE[summary.stars]}</p>
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex w-full max-w-xs flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center">
             <Button onClick={onPlayAgain}>Main lagi</Button>
             <Button variant="secondary" onClick={onHome}>
               Kembali ke beranda
