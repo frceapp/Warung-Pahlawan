@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react'
 import Awning from '../components/Awning.jsx'
+import Button from '../components/Button.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
-function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
+function HomeScreen({ bestStars, onPlay, onOpenSequence, focusHeading = false }) {
   const headingRef = useRef(null)
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus()
@@ -41,6 +42,23 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section
+          aria-labelledby="sequence-title"
+          className="flex flex-col gap-3 rounded-2xl border-4 border-tinta bg-kapur p-4 sm:flex-row sm:items-center"
+        >
+          <div className="flex-1">
+            <h2 id="sequence-title" className="font-heading text-2xl">
+              Latihan: Susun Langkah
+            </h2>
+            <p className="text-base">
+              Susun empat langkah melayani pembeli dengan urutan yang benar.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={onOpenSequence} data-open-sequence>
+            Main Susun Langkah
+          </Button>
         </section>
 
         <section aria-labelledby="howto-title">
