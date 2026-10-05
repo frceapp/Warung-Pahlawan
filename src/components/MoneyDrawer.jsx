@@ -17,9 +17,9 @@ function MoneyDrawer({ values, onAdd }) {
               value={value}
               size={80}
               decorative
-              className="h-[19px] w-8 shrink-0 transition-transform duration-150 motion-safe:group-hover:-rotate-3 md:h-[38px] md:w-16"
+              className="h-[34px] w-14 shrink-0 transition-transform duration-150 motion-safe:group-hover:-rotate-3 md:h-12 md:w-20"
             />
-            <span>
+            <span className="sr-only md:not-sr-only">
               <span className="sr-only">Tambah </span>
               {formatRupiah(value)}
             </span>

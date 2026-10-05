@@ -162,7 +162,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         <ul className="flex flex-wrap gap-0.5 md:gap-1" aria-label="Uang dari pembeli">
           {customer.payment.notes.map((value, index) => (
             <li key={`${index}-${value}`}>
-              <MoneyImage value={value} size={96} className="h-4 w-[27px] md:h-12 md:w-20" />
+              <MoneyImage value={value} size={96} className="h-[29px] w-12 md:h-12 md:w-20" />
             </li>
           ))}
         </ul>
