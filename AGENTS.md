@@ -102,28 +102,30 @@ Tokoh digambar sebagai ilustrasi kartun sederhana buatan sendiri, bukan foto dan
 
 Satu prompt mengerjakan satu tugas. Jangan melompat ke tugas berikutnya tanpa diminta.
 
-| No. | Tugas | Selesai jika |
-| --- | --- | --- |
-| 1 | Kerangka proyek: React, Vite, Tailwind, token desain, beranda sementara | `npm run dev` dan `npm run build` lulus; beranda terbaca di 360 px dan 1280 px |
-| 2 | Deploy pertama ke Vercel | Tautan Vercel bisa dibuka dari HP |
-| 3 | Data (tokoh, buah, level, uang) dan logika game sebagai fungsi murni, dengan tes | `npm test` lulus, termasuk tes bahwa kembalian selalu bisa disusun dari laci |
-| 4 | Ilustrasi SVG: buah, uang, avatar tokoh | Semua gambar tampil rapi pada ukuran 40 px dan 160 px |
-| 5 | Layar main, langkah 1 dan 2 (sapa, ambil buah) | Satu pembeli bisa dilayani sampai pesanan dibungkus, dengan mouse, sentuhan, dan keyboard |
-| 6 | Layar main, langkah 3 dan 4 (hitung, kembalian), skor | Satu level bisa dimainkan sampai habis |
-| 7 | Beranda lengkap dan layar hasil | Alur beranda, main, hasil, lalu kembali ke beranda berjalan |
-| 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati |
-| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur |
-| 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah |
-| 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi |
+| No. | Tugas | Selesai jika | Status |
+| --- | --- | --- | --- |
+| 1 | Kerangka proyek: React, Vite, Tailwind, token desain, beranda sementara | `npm run dev` dan `npm run build` lulus; beranda terbaca di 360 px dan 1280 px | sudah (PR #1) |
+| 2 | Deploy pertama ke Vercel | Tautan Vercel bisa dibuka dari HP | sudah (PR #2; https://wp.itslim.dev) |
+| 3 | Data (tokoh, buah, level, uang) dan logika game sebagai fungsi murni, dengan tes | `npm test` lulus, termasuk tes bahwa kembalian selalu bisa disusun dari laci | sudah (PR #3) |
+| 4 | Ilustrasi SVG: buah, uang, avatar tokoh | Semua gambar tampil rapi pada ukuran 40 px dan 160 px | sudah (PR #3; uang diperbarui di PR #7) |
+| 5 | Layar main, langkah 1 dan 2 (sapa, ambil buah) | Satu pembeli bisa dilayani sampai pesanan dibungkus, dengan mouse, sentuhan, dan keyboard | sudah (PR #4) |
+| 6 | Layar main, langkah 3 dan 4 (hitung, kembalian), skor | Satu level bisa dimainkan sampai habis | sudah (PR #4) |
+| 7 | Beranda lengkap dan layar hasil | Alur beranda, main, hasil, lalu kembali ke beranda berjalan | sudah (PR #4) |
+| 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati | sudah (PR #4; tata letak HP diperbaiki di PR #5 dan PR #7) |
+| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: Susun Langkah (PR #8) |
+| 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | belum (skor Lighthouse belum dicatat) |
+| 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sebagian: README, uji di hosting, dan cek gerbang sudah (PR #9); butir 3 bagian 9 belum terpenuhi (jurnal baru 3 dari 5 prompt, catatan pemilik belum diisi) |
 
 ## 5. Fitur tambahan yang direncanakan
 
 Dikerjakan setelah tugas 1 sampai 8 selesai, sesuai waktu yang tersisa.
 
-- Buku Tokoh: koleksi tokoh yang sudah pernah dilayani
-- Mode "Susun Langkah": anak menyusun sendiri urutan langkah sebelum bermain
-- Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact
-- Halaman untuk guru dan orang tua
+| Fitur | Status |
+| --- | --- |
+| Buku Tokoh: koleksi tokoh yang sudah pernah dilayani | rencana |
+| Mode "Susun Langkah": anak menyusun sendiri urutan langkah sebelum bermain | sudah (PR #8), dibuka dari beranda sebagai latihan terpisah |
+| Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact | rencana |
+| Halaman untuk guru dan orang tua | rencana |
 
 ## 6. Stack
 
