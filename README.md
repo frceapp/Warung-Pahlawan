@@ -4,7 +4,7 @@ Game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah 
 
 Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innovating Education Through Technology", subtema Web Education for Kids.
 
-Situs: (isi setelah deploy)
+Situs: https://wp.itslim.dev
 
 ## Status pengembangan
 
@@ -15,7 +15,7 @@ Rencana dan urutan pengerjaan ada di [AGENTS.md](AGENTS.md), bagian 4.
 ## Dokumen
 
 - [AGENTS.md](AGENTS.md): docs acuan untuk AI Agent, berisi tujuan, alur game, aturan kerja, dan desain.
-- [docs/jurnal-prompt.md](docs/jurnal-prompt.md): lima prompt terkurasi untuk juri (belum dibuat).
+- [docs/jurnal-prompt.md](docs/jurnal-prompt.md): lima prompt terkurasi untuk juri.
 - [docs/prompt-log.md](docs/prompt-log.md): log prompt mentah dari awal sampai akhir.
 
 ## Menjalankan di komputer sendiri
