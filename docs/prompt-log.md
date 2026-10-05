@@ -790,3 +790,55 @@ Commit terkait:
 - `edcc4ea` docs: allow subtle idle motion for customer characters in AGENTS.md
 - `9a07041` chore: add anime character recordings for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P14, 5 Oktober 2026, 23.38 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: perbaikan animasi pembeli dan ukuran karakter (di luar daftar tugas bagian 4; terkait Tugas 8)
+Prompt:
+
+````text
+Perbaiki animasi yang glitch dan ukuran karakter pembeli yang mengecil saat melayani. Kerjakan di satu PR.
+
+Langkah 1: diagnosis dulu
+- Cari penyebab glitch di animasi sekarang (misalnya animasi CSS yang restart karena `key` berubah, transform yang saling menimpa, kartu langsung hilang tanpa animasi keluar, layout shift). Tulis penyebabnya di deskripsi PR.
+
+Langkah 2: pindah ke Motion
+- Pasang `motion` (versi terbaru yang stabil) dan impor dari `motion/react`.
+- Pakai `LazyMotion` dengan `domAnimation` dan komponen `m`, supaya bundle awal kecil.
+- Bungkus aplikasi dengan `MotionConfig reducedMotion="user"`.
+- Pakai `AnimatePresence` (mode "wait") untuk pergantian pembeli: kartu lama keluar dulu, baru kartu baru masuk.
+- Pindahkan animasi karakter (masuk, idle, bicara, reaksi benar dan salah, keluar) ke Motion. Hanya animasikan transform dan opacity.
+- Hapus keyframe CSS lama yang sudah tidak dipakai.
+
+Langkah 3: ukuran karakter
+- Sekarang karakter terlalu kecil di langkah Ambil buah, Hitung, dan Kembalian. Anak harus tetap bisa mengenali tokoh.
+- Di 360x640, tinggi karakter minimal 120 px di langkah Sapa dan minimal 96 px di langkah lainnya. Jangan menyusut mendadak saat berpindah langkah: transisikan skala dan posisinya dengan halus.
+- Boleh ubah tata letak, misalnya karakter di samping gelembung pesanan, asalkan aksi utama setiap langkah tetap terlihat tanpa scroll halaman di 360x640.
+
+Aturan
+- Jangan ubah isi `src/game` dan `src/data`.
+- Laporkan perubahan ukuran bundle (sebelum dan sesudah).
+- Cek dengan screenshot atau rekaman di 360x640 dan 1280x800, termasuk dengan reduced motion aktif.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Diagnosis dengan skrip Playwright yang mencatat posisi, ukuran, dan opacity karakter serta kartu pembeli di setiap frame (build `main`). Penyebab glitch: langkah Sapa dan langkah lain memakai dua komponen pembeli yang berbeda, sehingga saat "Mulai melayani" kartu besar langsung hilang tanpa animasi keluar, karakter mengecil dari 128 ke 64 px (360x640) atau 176 ke 88 px (1280x800) dalam satu frame, kartu ringkas baru meluncur lagi dari luar layar (di 1280x800 dari -839 px), dan area kerja meloncat 84 px (360x640) atau 120 px (1280x800). Saat pembeli berganti, karakter sudah pergi lebih dulu sehingga yang bergeser keluar hanya kartu kosong, lalu ukuran karakter meloncat lagi.
+- Memasang `motion` 14.0.0 (impor dari `motion/react` dan `motion/react-m`). Aplikasi dibungkus `MotionConfig reducedMotion="user"` dan `LazyMotion` dengan `domAnimation` yang dimuat terpisah; komponen memakai `m`.
+- Komponen baru `CustomerStage` menggantikan `CustomerSpot`: satu panggung per pembeli untuk keempat langkah, jadi karakter tidak dipasang ulang saat langkah berganti. Ukuran dan posisinya dihaluskan dengan FLIP (transform saja) dari langkah Sapa ke langkah lain. Pergantian pembeli memakai `AnimatePresence` mode "wait": balon memudar, karakter lama berjalan keluar ke kanan, baru pembeli baru berjalan masuk. Area kerja muncul dan memudar dengan animasi, dan bar aksi dijaga tetap di bawah selama pergantian.
+- Animasi karakter (masuk, menoleh, melambai, diam, kedip, bicara, reaksi benar dan salah, melambai setelah dilayani, keluar) dipindahkan dari keyframe CSS ke varian Motion, hanya transform dan opacity. `animeCharacter.css` dan keyframe CSS pembeli di `index.css` yang tidak dipakai lagi dihapus. Gerak diam berhenti saat tab tidak aktif.
+- Ukuran karakter di 360x640: 144 px di langkah Sapa dan 112 px di langkah lain (sebelumnya 128 dan 64 px). viewBox karakter dipotong sedikit supaya gambar mengisi kotaknya. Di 1280x800: 208 dan 144 px. Di langkah selain Sapa karakter berada di samping balon pesanan, dengan papan nama kecil di bawahnya.
+- Ukuran bundle (build `main` dibanding sesudah): JS awal 270,12 kB (gzip 84,28 kB) menjadi 315,50 kB (gzip 99,88 kB). Dimuat terpisah setelah halaman tampil: fitur Motion 15,08 kB dan potongan bersama 22,84 kB; berkas karakter 13,34 kB JS + 7,28 kB CSS menjadi 18,24 kB JS. CSS awal 39,89 kB menjadi 38,80 kB.
+- Diuji dengan Playwright pada build produksi di 360x640 dan 1280x800, dengan dan tanpa reduced motion, untuk R.A. Kartini dan Pangeran Diponegoro: tidak ada scroll halaman, tombol utama selalu terlihat, karakter tidak menutupi balon, chip pesanan, atau bar aksi, dan isi area kerja tetap muat seperti sebelumnya. Frame rate di Chromium headless 60 fps, juga dengan CPU diperlambat 4x; HP sungguhan (tidak dapat diverifikasi). Audit axe-core di semua layar tanpa pelanggaran.
+- `npm test` (95 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `23f7fba` feat: add Motion with lazily loaded features and user reduced motion
+- `d04c802` feat: move anime character animations from CSS to Motion
+- `18998b6` fix: keep one customer stage per customer and animate customer changes
+- `df6d91f` fix: keep the action bar at the bottom while customers change
+- `35f78ae` refactor: remove unused customer CSS keyframes
+- `0452300` docs: note Motion in the stack sections of AGENTS.md and README
+- `d6fb389` chore: add Motion animation recordings for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
