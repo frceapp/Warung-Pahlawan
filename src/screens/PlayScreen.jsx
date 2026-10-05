@@ -32,6 +32,11 @@ const STEP_HINTS = {
   },
 }
 
+// Kartu pembeli lama keluar 250 ms (atau memudar 150 ms) sebelum pembeli
+// berikutnya datang. Timer ini cadangan kalau animationend tidak terpicu,
+// misalnya saat tab tersembunyi.
+const LEAVE_FALLBACK_MS = 400
+
 // Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
 // pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
 // aksi yang selalu terlihat di bawah.
@@ -93,6 +98,24 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       observer?.disconnect()
     }
   }, [])
+
+  // Pembeli berikutnya: kartu lama pergi dulu, baru giliran pembeli baru.
+  // `advancedFor` menjaga supaya satu pembeli hanya dilewati sekali, walau
+  // animationend dan timer cadangan sama-sama terpicu.
+  const [leavingIndex, setLeavingIndex] = useState(null)
+  const isLeaving = leavingIndex === state.index
+  const advancedFor = useRef(-1)
+  function advanceFrom(index) {
+    if (advancedFor.current === index) return
+    advancedFor.current = index
+    dispatch({ type: 'nextCustomer' })
+  }
+  // advanceFrom hanya memakai dispatch dan ref, keduanya stabil.
+  useEffect(() => {
+    if (leavingIndex === null) return undefined
+    const timer = setTimeout(() => advanceFrom(leavingIndex), LEAVE_FALLBACK_MS)
+    return () => clearTimeout(timer)
+  }, [leavingIndex])
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -206,7 +229,10 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     bubble = <p>Terima kasih! Senang belanja di warungmu.</p>
     body = <ServedStep isLast={isLast} />
     actions = (
-      <Button onClick={() => dispatch({ type: 'nextCustomer' })} className="w-full md:w-auto md:self-start">
+      <Button
+        onClick={() => (isLast ? advanceFrom(state.index) : setLeavingIndex(state.index))}
+        className="w-full md:w-auto md:self-start"
+      >
         {isLast ? 'Lihat hasil' : 'Layani pembeli berikutnya'}
       </Button>
     )
@@ -268,14 +294,16 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
             aria-label="Pembeli"
             className="mx-auto w-full max-w-5xl shrink-0 px-3 py-1.5 md:px-4 md:py-3"
           >
-            <CustomerSpot character={character}>{bubble}</CustomerSpot>
+            <CustomerSpot character={character} leaving={isLeaving} onLeft={() => advanceFrom(state.index)}>
+              {bubble}
+            </CustomerSpot>
           </section>
         )}
 
         <section
           ref={workRef}
           aria-labelledby="step-title"
-          className={`relative min-h-0 flex-1 overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
+          className={`relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
         >
           <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
             <div
