@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
@@ -21,6 +21,16 @@ import {
   STEPS,
   summarizeSession,
 } from '../game/session.js'
+
+// Petunjuk yang tampil di bar aksi saat sebuah langkah dimulai, selama belum
+// ada umpan balik dari aksi anak di langkah itu.
+const STEP_HINTS = {
+  change: {
+    id: 'hint-change',
+    tone: 'info',
+    text: 'Kembalian = uang pembeli dikurangi total belanja. Uangnya pas? Pilih "Tidak perlu kembalian".',
+  },
+}
 
 // Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
 // pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
@@ -47,6 +57,42 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     }
     headingRef.current?.focus({ preventScroll: true })
   }, [state.index, state.step])
+
+  // Umpan balik di bar aksi hanya untuk langkah yang sedang aktif. Pesan yang
+  // terbawa dari langkah sebelumnya disembunyikan dan diganti petunjuk langkah
+  // ini (kalau ada). Pengecualian: pesan "pembeli selesai dilayani" memang
+  // milik langkah selesai.
+  const stepKey = `${state.index}-${state.step}`
+  const [stepEntry, setStepEntry] = useState({ key: stepKey, feedbackId: state.feedback?.id ?? 0 })
+  let entryFeedbackId = stepEntry.feedbackId
+  if (stepEntry.key !== stepKey) {
+    entryFeedbackId = state.feedback?.id ?? 0
+    setStepEntry({ key: stepKey, feedbackId: entryFeedbackId })
+  }
+  const ownFeedback =
+    state.feedback && (state.step === 'served' || state.feedback.id > entryFeedbackId)
+      ? state.feedback
+      : null
+  const visibleFeedback = ownFeedback ?? STEP_HINTS[state.step] ?? null
+
+  // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
+  const contentRef = useRef(null)
+  const [canScrollDown, setCanScrollDown] = useState(false)
+  useEffect(() => {
+    const work = workRef.current
+    if (!work) return undefined
+    const update = () =>
+      setCanScrollDown(work.scrollHeight - work.clientHeight - work.scrollTop > 8)
+    update()
+    work.addEventListener('scroll', update, { passive: true })
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update)
+    observer?.observe(work)
+    if (contentRef.current) observer?.observe(contentRef.current)
+    return () => {
+      work.removeEventListener('scroll', update)
+      observer?.disconnect()
+    }
+  }, [])
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -116,7 +162,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         <ul className="flex flex-wrap gap-0.5 md:gap-1" aria-label="Uang dari pembeli">
           {customer.payment.notes.map((value, index) => (
             <li key={`${index}-${value}`}>
-              <MoneyImage value={value} size={96} className="h-4 w-[27px] md:h-12 md:w-20" />
+              <MoneyImage value={value} size={96} className="h-[29px] w-12 md:h-12 md:w-20" />
             </li>
           ))}
         </ul>
@@ -231,7 +277,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           aria-labelledby="step-title"
           className={`relative min-h-0 flex-1 overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
         >
-          <div className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
+          <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
             <div
               className={`flex flex-col gap-2 rounded-2xl border-4 border-tinta p-1.5 md:gap-3 md:p-4 ${isGreet ? 'border-transparent bg-transparent' : 'bg-kapur'}`}
             >
@@ -254,9 +300,18 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
               )}
             </div>
           </div>
+          <div
+            aria-hidden="true"
+            data-scroll-hint
+            className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
+              Geser ke bawah ↓
+            </span>
+          </div>
         </section>
 
-        <ActionBar feedback={state.feedback}>{actions}</ActionBar>
+        <ActionBar feedback={visibleFeedback}>{actions}</ActionBar>
       </main>
     </div>
   )
