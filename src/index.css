@@ -28,6 +28,10 @@
      kartu hanya memudar 150 ms (fade-in dan fade-out). */
   --animate-arrive: arrive 400ms ease-out both;
   --animate-bubble-in: pop-in 180ms ease-out 400ms both;
+  /* Langkah Sapa: pembeli berjalan masuk dulu (1,2 s, lihat
+     components/character/animeCharacter.css), baru papan nama dan balon. */
+  --animate-bubble-after-walk: pop-in 180ms ease-out 1200ms both;
+  --animate-label-after-walk: fade-in 200ms ease-out 1100ms both;
   --animate-chip-in: pop-in 140ms ease-out both;
   --animate-leave: leave 250ms ease-in both;
   --animate-fade-in: fade-in 150ms ease-out both;

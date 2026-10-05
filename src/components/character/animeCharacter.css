@@ -1,0 +1,593 @@
+/* Gerak karakter pembeli anime (AnimeCharacter.jsx).
+   Hanya transform dan opacity yang dianimasikan. Titik putar memakai
+   koordinat viewBox 0 0 100 140 dan cocok dengan JOINTS di characterParts.
+
+   Urutan saat datang berjalan (entrance 'walk'):
+     0-1,2 s    berjalan dari kiri, langkah melambat di akhir
+     1,05-1,27 s menoleh dari tampak samping ke depan
+     1,3-2,1 s  melambai satu kali
+     mulai 2,1 s diam: napas pelan dan rambut bergoyang (berulang, pelan)
+   Saat pergi (phase 'exit'): melambai 0-0,8 s, menoleh ke samping, lalu
+   berjalan keluar ke kanan 1-2,2 s sambil memudar. */
+
+.ch svg g,
+.ch svg path {
+  transform-box: view-box;
+}
+
+/* Posisi bagian rangka saat tampak samping (menghadap kanan). */
+.ch-face {
+  --side: translateX(7px);
+}
+.ch-leg-b-pos {
+  --side: translateX(4px);
+}
+.ch-leg-f-pos {
+  --side: translateX(-4px);
+}
+.ch-arm-b-pos {
+  --side: translateX(16px);
+}
+.ch-arm-f-pos {
+  --side: translateX(-17px);
+}
+
+.ch-leg-b {
+  transform-origin: 44px 100px;
+}
+.ch-leg-f {
+  transform-origin: 56px 100px;
+}
+.ch-arm-b {
+  transform-origin: 32px 77px;
+}
+.ch-arm-f {
+  transform-origin: 68px 77px;
+}
+.ch-head,
+.ch-head-b {
+  transform-origin: 50px 70px;
+}
+.ch-hair-back,
+.ch-hair-front {
+  transform-origin: 50px 24px;
+}
+.ch-cloth {
+  transform-origin: 50px 101px;
+}
+.ch-eyes-closed,
+.ch-mouth-sad {
+  opacity: 0;
+}
+.ch-brow-l {
+  transform-origin: 39px 37px;
+  transition: transform 150ms ease-out;
+}
+.ch-brow-r {
+  transform-origin: 61px 37px;
+  transition: transform 150ms ease-out;
+}
+.ch-mouth-open {
+  transform-origin: 50px 58px;
+  opacity: 0;
+}
+.ch-mouth-grin {
+  opacity: 0;
+}
+
+/* --- Datang berjalan ----------------------------------------------------- */
+
+.ch[data-entrance='walk'][data-phase='in'] {
+  animation: ch-walk-in 1.2s cubic-bezier(0.3, 0.55, 0.45, 1) both;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-walkbob {
+  animation: ch-walk-bob 1.2s linear;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-leg-b {
+  animation: ch-walk-leg-b 1.2s linear;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-leg-f {
+  animation: ch-walk-leg-f 1.2s linear;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-arm-b {
+  animation: ch-walk-arm-b 1.2s linear;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-arm-f {
+  animation:
+    ch-walk-arm-f 1.2s linear,
+    ch-wave 0.8s ease-in-out 1.3s;
+}
+.ch[data-entrance='walk'][data-phase='in'] :is(.ch-face, .ch-leg-b-pos, .ch-leg-f-pos, .ch-arm-b-pos, .ch-arm-f-pos) {
+  animation: ch-turn-front 220ms ease-out 1.05s both;
+}
+.ch[data-entrance='walk'][data-phase='in'] :is(.ch-hair-back, .ch-hair-front) {
+  animation:
+    ch-hair-walk 1.2s ease-in-out 60ms,
+    ch-hair-idle 3.6s ease-in-out 2.1s infinite;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-cloth {
+  animation: ch-cloth-walk 1.2s ease-in-out 80ms;
+}
+.ch[data-entrance='walk'][data-phase='in'] .ch-up {
+  animation: ch-breathe 3.2s ease-in-out 2.1s infinite;
+}
+
+/* --- Selangkah bersama kartu (kartu ringkas) ----------------------------- */
+
+.ch[data-entrance='step'][data-phase='in'] .ch-walkbob {
+  animation: ch-step-bob 0.4s linear;
+}
+.ch[data-entrance='step'][data-phase='in'] .ch-leg-b {
+  animation: ch-step-leg 0.4s linear;
+}
+.ch[data-entrance='step'][data-phase='in'] .ch-leg-f {
+  animation: ch-step-leg 0.4s linear reverse;
+}
+.ch[data-entrance='step'][data-phase='in'] .ch-arm-b {
+  animation: ch-step-arm 0.4s linear;
+}
+.ch[data-entrance='step'][data-phase='in'] .ch-arm-f {
+  animation: ch-step-arm 0.4s linear reverse;
+}
+.ch[data-entrance='step'][data-phase='in'] :is(.ch-hair-back, .ch-hair-front) {
+  animation: ch-hair-idle 3.6s ease-in-out 0.6s infinite;
+}
+.ch[data-entrance='step'][data-phase='in'] .ch-up {
+  animation: ch-breathe 3.2s ease-in-out 0.6s infinite;
+}
+
+/* --- Langsung diam ------------------------------------------------------- */
+
+.ch[data-entrance='none'][data-phase='in'] :is(.ch-hair-back, .ch-hair-front) {
+  animation: ch-hair-idle 3.6s ease-in-out infinite;
+}
+.ch[data-entrance='none'][data-phase='in'] .ch-up {
+  animation: ch-breathe 3.2s ease-in-out infinite;
+}
+
+/* --- Pergi: melambai, menoleh, berjalan keluar ke kanan ------------------ */
+
+.ch[data-phase='exit'] {
+  animation: ch-walk-out 1.2s cubic-bezier(0.45, 0, 0.7, 0.6) 1s both;
+}
+.ch[data-phase='exit'] .ch-walkbob {
+  animation: ch-step-bob 0.4s linear 1s 3;
+}
+.ch[data-phase='exit'] .ch-leg-b {
+  animation: ch-step-leg 0.4s linear 1s 3;
+}
+.ch[data-phase='exit'] .ch-leg-f {
+  animation: ch-step-leg 0.4s linear 1s 3 reverse;
+}
+.ch[data-phase='exit'] .ch-arm-b {
+  animation: ch-step-arm 0.4s linear 1s 3;
+}
+.ch[data-phase='exit'] .ch-arm-f {
+  animation:
+    ch-wave 0.8s ease-in-out,
+    ch-step-arm 0.4s linear 1s 3 reverse;
+}
+.ch[data-phase='exit'] :is(.ch-face, .ch-leg-b-pos, .ch-leg-f-pos, .ch-arm-b-pos, .ch-arm-f-pos) {
+  animation: ch-turn-side 200ms ease-out 0.8s both;
+}
+.ch[data-phase='exit'] :is(.ch-hair-back, .ch-hair-front) {
+  animation: ch-hair-walk 1.2s ease-in-out 1.06s;
+}
+.ch[data-phase='exit'] .ch-cloth {
+  animation: ch-cloth-walk 1.2s ease-in-out 1.08s;
+}
+
+/* --- Kedip, bicara, reaksi ----------------------------------------------- */
+
+.ch[data-blink] .ch-eyes {
+  opacity: 0;
+}
+.ch[data-blink] .ch-eyes-closed {
+  opacity: 1;
+}
+
+.ch[data-talking] .ch-mouth-smile {
+  opacity: 0;
+}
+.ch[data-talking] .ch-mouth-open {
+  opacity: 1;
+  animation: ch-talk 220ms ease-in-out infinite alternate;
+}
+
+.ch[data-react='happy'] .ch-jump {
+  animation: ch-jump 520ms ease-out;
+}
+.ch[data-react='happy'] .ch-mouth-smile,
+.ch[data-react='happy'] .ch-mouth-open {
+  opacity: 0;
+}
+.ch[data-react='happy'] .ch-mouth-grin {
+  opacity: 1;
+}
+.ch[data-react='sad'] :is(.ch-head, .ch-head-b) {
+  animation: ch-shake 640ms ease-in-out;
+}
+.ch[data-react='sad'] .ch-brow-l {
+  transform: translateY(2.5px) rotate(-20deg);
+}
+.ch[data-react='sad'] .ch-brow-r {
+  transform: translateY(2.5px) rotate(20deg);
+}
+.ch[data-react='sad'] .ch-mouth-smile,
+.ch[data-react='sad'] .ch-mouth-open {
+  opacity: 0;
+}
+.ch[data-react='sad'] .ch-mouth-sad {
+  opacity: 1;
+}
+
+/* Tab tidak aktif: semua gerak berhenti. */
+.ch[data-paused],
+.ch[data-paused] * {
+  animation-play-state: paused !important;
+}
+
+/* Kurangi gerakan: tanpa berjalan, tanpa gerak diam, mulut tetap. Karakter
+   hanya memudar 150 ms saat datang dan pergi. */
+@media (prefers-reduced-motion: reduce) {
+  .ch[data-phase='in'] {
+    animation: ch-fade-in 150ms ease-out both !important;
+  }
+  .ch[data-phase='exit'] {
+    animation: ch-fade-out 150ms ease-in both !important;
+  }
+  .ch * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* --- Keyframes ------------------------------------------------------------ */
+
+@keyframes ch-walk-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-240px);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ch-walk-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(420px);
+  }
+}
+
+/* Tiga langkah dalam 1,2 s; langkah terakhir lebih lambat dan kecil. */
+@keyframes ch-walk-leg-b {
+  0%,
+  30%,
+  61.7%,
+  100% {
+    transform: none;
+  }
+  7.5% {
+    transform: rotate(-26deg);
+  }
+  22.5% {
+    transform: rotate(26deg);
+  }
+  38% {
+    transform: rotate(-24deg);
+  }
+  53.7% {
+    transform: rotate(24deg);
+  }
+  71% {
+    transform: rotate(-16deg);
+  }
+  90.5% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes ch-walk-leg-f {
+  0%,
+  30%,
+  61.7%,
+  100% {
+    transform: none;
+  }
+  7.5% {
+    transform: rotate(26deg);
+  }
+  22.5% {
+    transform: rotate(-26deg);
+  }
+  38% {
+    transform: rotate(24deg);
+  }
+  53.7% {
+    transform: rotate(-24deg);
+  }
+  71% {
+    transform: rotate(16deg);
+  }
+  90.5% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes ch-walk-arm-b {
+  0%,
+  30%,
+  61.7%,
+  100% {
+    transform: none;
+  }
+  7.5% {
+    transform: rotate(21deg);
+  }
+  22.5% {
+    transform: rotate(-21deg);
+  }
+  38% {
+    transform: rotate(19deg);
+  }
+  53.7% {
+    transform: rotate(-19deg);
+  }
+  71% {
+    transform: rotate(13deg);
+  }
+  90.5% {
+    transform: rotate(-8deg);
+  }
+}
+
+@keyframes ch-walk-arm-f {
+  0%,
+  30%,
+  61.7%,
+  100% {
+    transform: none;
+  }
+  7.5% {
+    transform: rotate(-21deg);
+  }
+  22.5% {
+    transform: rotate(21deg);
+  }
+  38% {
+    transform: rotate(-19deg);
+  }
+  53.7% {
+    transform: rotate(19deg);
+  }
+  71% {
+    transform: rotate(-13deg);
+  }
+  90.5% {
+    transform: rotate(8deg);
+  }
+}
+
+/* Badan naik saat kaki berpapasan, turun saat kaki terbuka. */
+@keyframes ch-walk-bob {
+  0%,
+  100% {
+    transform: none;
+  }
+  7.5%,
+  22.5%,
+  38%,
+  53.7%,
+  71%,
+  90.5% {
+    transform: translateY(1px);
+  }
+  15%,
+  45.8%,
+  80.8% {
+    transform: translateY(-1.6px);
+  }
+}
+
+@keyframes ch-step-leg {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: rotate(-26deg);
+  }
+  75% {
+    transform: rotate(26deg);
+  }
+}
+
+@keyframes ch-step-arm {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: rotate(21deg);
+  }
+  75% {
+    transform: rotate(-21deg);
+  }
+}
+
+@keyframes ch-step-bob {
+  0%,
+  100% {
+    transform: none;
+  }
+  25%,
+  75% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-1.6px);
+  }
+}
+
+/* Rambut dan kain mengikuti langkah dengan jeda tipis. */
+@keyframes ch-hair-walk {
+  0%,
+  100% {
+    transform: none;
+  }
+  15%,
+  45%,
+  80% {
+    transform: rotate(3deg);
+  }
+  30%,
+  62% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes ch-cloth-walk {
+  0%,
+  100% {
+    transform: none;
+  }
+  15%,
+  45%,
+  80% {
+    transform: rotate(-2.5deg);
+  }
+  30%,
+  62% {
+    transform: rotate(2.5deg);
+  }
+}
+
+@keyframes ch-turn-front {
+  from {
+    transform: var(--side);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ch-turn-side {
+  from {
+    transform: none;
+  }
+  to {
+    transform: var(--side);
+  }
+}
+
+@keyframes ch-wave {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: rotate(-150deg);
+  }
+  45% {
+    transform: rotate(-126deg);
+  }
+  65% {
+    transform: rotate(-152deg);
+  }
+  80% {
+    transform: rotate(-140deg);
+  }
+}
+
+@keyframes ch-breathe {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes ch-hair-idle {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+@keyframes ch-talk {
+  from {
+    transform: scaleY(0.3);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ch-jump {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-14px);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes ch-shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: rotate(-7deg);
+  }
+  40% {
+    transform: rotate(6deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes ch-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ch-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

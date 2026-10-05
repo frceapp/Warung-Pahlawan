@@ -730,3 +730,63 @@ Commit terkait:
 - `2225b5a` feat: let the served customer leave before the next one arrives
 - `137684b` chore: add customer animation recordings for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P13, 5 Oktober 2026, 22.45 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: karakter pembeli anime (di luar daftar tugas bagian 4; terkait Tugas 4 dan 8)
+Prompt:
+
+````text
+Upgrade animasi pembeli jadi karakter 2D bergaya anime yang berjalan masuk. Kerjakan di satu PR.
+
+Pendekatan
+- Satu rangka karakter SVG yang dipakai bersama untuk 8 tokoh. Bagiannya terpisah: kepala, rambut (depan dan belakang), badan, lengan kiri dan kanan, kaki kiri dan kanan.
+- Tiap tokoh hanya beda data: warna kulit, model rambut, baju, dan satu aksesori khas (misalnya kebaya Kartini, peci Soekarno, blangkon Diponegoro, ikat kepala Pattimura). Simpan datanya di satu berkas, jangan 8 SVG terpisah.
+- Gaya anime: kepala besar, mata besar dengan highlight, proporsi chibi, garis tepi tebal warna tinta, sesuai gaya sticker di AGENTS.md.
+- Animasikan dengan CSS transform pada tiap bagian (rotate dan translate dengan transform-origin di sendi). Jangan tambah library animasi atau sprite sheet.
+
+Animasi
+1. Berjalan masuk: karakter tampak samping, berjalan dari kiri ke posisi di depan warung. Kaki dan lengan berayun bergantian, badan naik turun sedikit tiap langkah, rambut dan baju mengikuti dengan jeda tipis. Sekitar 1,2 detik.
+2. Berhenti: langkah melambat, badan menghadap depan, lalu melambai satu kali.
+3. Diam (idle): napas pelan (badan naik turun 2 px), kedip mata tiap 3 sampai 5 detik dengan jeda acak, rambut bergoyang halus.
+4. Bicara: mulut membuka dan menutup selama gelembung bicara tampil, berhenti setelah selesai.
+5. Reaksi terhadap aksi anak: melompat kecil dan senyum saat jawaban benar, menggeleng pelan dan alis turun saat salah. Setelah kembalian benar, karakter melambai lalu berjalan keluar ke kanan.
+
+Aturan
+- Animasi idle boleh berulang, tetapi pelan dan kecil, dan berhenti saat tab tidak aktif.
+- `prefers-reduced-motion`: tanpa berjalan. Karakter langsung muncul dengan fade 150 ms, tanpa idle bergerak, dan mulut tetap statis.
+- Hanya animasikan transform dan opacity. Jaga 60 fps di HP biasa.
+- Karakter tidak menutupi gelembung bicara, chip pesanan, atau bar aksi. Di 360x640 tidak boleh ada scroll halaman dan tombol utama tetap terlihat.
+- Tombol aksi bisa ditekan maksimal 1,2 detik setelah pembeli muncul. Anak boleh melewati animasi jalan dengan menekan tombol.
+- Beri `aria-hidden="true"` pada ilustrasi karakter dan pertahankan teks nama dan fun fact untuk pembaca layar.
+- Muat berkas karakter secara lazy bila ukurannya lebih dari 20 kB, supaya bundle awal tidak membesar.
+- Jangan ubah isi `src/game` dan `src/data`.
+
+Cek sebelum PR
+- Rekam atau screenshot urutan jalan, idle, bicara, dan keluar untuk 2 tokoh yang berbeda jauh (misalnya Kartini dan Pangeran Diponegoro) di 360x640 dan 1280x800.
+- Uji dengan reduced motion aktif.
+- Laporkan perubahan ukuran bundle.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Prompt menyebut "blangkon Diponegoro", sedangkan AGENTS.md bagian 3 menulis ciri Pangeran Diponegoro "sorban dan jubah putih" (blangkon untuk Jenderal Sudirman). AI bertanya dulu. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Ikuti AGENTS.md (Recommended)". Diponegoro memakai sorban dan jubah putih, Sudirman blangkon dan mantel.
+- Satu rangka karakter SVG bergaya anime chibi untuk 8 tokoh (`src/components/character/AnimeCharacter.jsx`): rambut belakang, kaki kiri dan kanan, lengan kiri dan kanan, badan, kain bawah, kepala dengan wajah, rambut depan, dan penutup kepala. Perbedaan tiap tokoh hanya data di satu berkas (`characterLooks.js`): warna kulit, model rambut, baju, dan aksesori. Potongan bentuknya ada di `characterParts.jsx`. Data tokoh tidak ditaruh di `src/data` karena prompt melarang mengubah isi folder itu.
+- Gerak hanya lewat CSS transform dan opacity (`animeCharacter.css`), dengan transform-origin di sendi. Berjalan masuk dari kiri sekitar 1,2 detik (kaki dan lengan berayun bergantian, badan naik turun, rambut dan kain mengikuti dengan jeda tipis, langkah melambat), lalu menoleh ke depan dan melambai sekali. Diam: napas 2 px, rambut bergoyang halus, kedip tiap 3 sampai 5 detik dengan jeda acak. Bicara: mulut bergerak selama kalimat baru tampil lalu berhenti. Reaksi: melompat dan senyum saat benar, menggeleng, alis turun, dan cemberut saat salah. Setelah kembalian benar, karakter melambai lalu berjalan keluar ke kanan.
+- Tampak samping saat berjalan dibuat dengan menggeser bagian wajah, lengan, dan kaki di rangka yang sama, bukan gambar profil terpisah.
+- Animasi berulang berhenti saat tab tidak aktif. Dengan "kurangi gerakan", karakter hanya memudar 150 ms saat datang dan pergi, tanpa gerak diam, kedip, bicara, atau reaksi. Karakter diberi `aria-hidden="true"`; nama tokoh dan fun fact tetap berupa teks.
+- Berkas karakter (13,34 kB JS dan 7,28 kB CSS, lebih dari 20 kB) dimuat terpisah dan dimuat lebih awal dari beranda saat browser senggang. Percobaan pertama dengan React.lazy membuat karakter muncul sekitar 400 ms terlambat; diperbaiki dengan merender komponen yang sudah dimuat secara langsung.
+- AGENTS.md bagian 8 (Desain) diberi pengecualian untuk gerak diam karakter pembeli, karena prompt mengizinkan animasi idle yang berulang.
+- Ukuran bundle awal (build `main` sebelum perubahan, dibanding sesudah): JS 275,75 kB (gzip 84,86 kB) menjadi 261,86 kB ditambah potongan bersama 8,26 kB yang dimuat bersamaan (gzip 81,16 + 3,12 kB). Avatar lama kini hanya dipakai layar hasil sehingga pindah ke potongan layar hasil (2,78 kB menjadi 10,18 kB). CSS awal 39,63 kB menjadi 39,89 kB.
+- Diuji dengan Playwright di build produksi pada 360x640 dan 1280x800, dengan dan tanpa reduced motion, memakai urutan pembeli tetap (seed) untuk Kartini dan Pangeran Diponegoro. Tidak ada scroll halaman, tombol utama selalu terlihat dan bisa ditekan saat karakter masih berjalan, dan karakter tidak menutupi balon bicara, chip pesanan, atau bar aksi. Frame rate di Chromium headless 60 fps, juga dengan CPU diperlambat 4x; HP sungguhan (tidak dapat diverifikasi). Audit axe-core di semua layar tanpa pelanggaran.
+- `npm test` (95 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `cca408e` feat: add a shared anime character rig with looks for the eight heroes
+- `c1b2baa` feat: let anime customers walk in, talk, react, and walk out
+- `9ff35ee` chore: show anime characters in the dev gallery
+- `2b85962` fix: show the preloaded customer right away instead of after a Suspense delay
+- `edcc4ea` docs: allow subtle idle motion for customer characters in AGENTS.md
+- `9a07041` chore: add anime character recordings for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

@@ -3,6 +3,7 @@ import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
+import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
@@ -11,6 +12,18 @@ function HomeScreen({ bestStars, onPlay, onOpenSequence, focusHeading = false })
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
+
+  // Muat berkas karakter pembeli saat browser senggang setelah beranda
+  // tampil, supaya pembeli pertama bisa langsung berjalan masuk.
+  useEffect(() => {
+    const load = () => loadAnimeCharacter().catch(() => {})
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(load, { timeout: 1500 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const timer = setTimeout(load, 300)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="flex min-h-dvh flex-col">

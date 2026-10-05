@@ -11,6 +11,7 @@ import PickStep from '../components/PickStep.jsx'
 import ServedStep from '../components/ServedStep.jsx'
 import StepTracker from '../components/StepTracker.jsx'
 import TotalChoices from '../components/TotalChoices.jsx'
+import { getFruit } from '../data/fruits.js'
 import { formatRupiah } from '../game/format.js'
 import { getLevelFruits } from '../game/order.js'
 import {
@@ -30,6 +31,12 @@ const STEP_HINTS = {
     tone: 'info',
     text: 'Kembalian = uang pembeli dikurangi total belanja. Uangnya pas? Pilih "Tidak perlu kembalian".',
   },
+}
+
+// Lama pembeli "berbicara" (mulut bergerak): sekitar 55 ms per huruf dari
+// kalimat di balon bicara, paling sebentar 0,8 detik dan paling lama 4 detik.
+function speechMs(text) {
+  return Math.min(4000, Math.max(800, text.length * 55))
 }
 
 // Kartu pembeli lama keluar 250 ms (atau memudar 150 ms) sebelum pembeli
@@ -126,10 +133,12 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   }, [state, onFinish])
 
   let bubble = null
+  let speech = ''
   let body = null
   let actions = null
 
   if (state.step === 'greet') {
+    speech = `Halo! Aku ${character.name}. ${customer.fact}`
     bubble = (
       <>
         <p className="font-bold">Halo! Aku {character.name}.</p>
@@ -142,6 +151,9 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       </Button>
     )
   } else if (state.step === 'pick') {
+    speech = `Aku mau beli: ${customer.order
+      .map(({ fruitId, quantity }) => `${quantity} ${getFruit(fruitId).name}`)
+      .join(', ')}`
     bubble = (
       <>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -164,7 +176,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       </Button>
     )
   } else if (state.step === 'count') {
-    bubble = <p>Terima kasih sudah dibungkus. Berapa semuanya?</p>
+    speech = 'Terima kasih sudah dibungkus. Berapa semuanya?'
+    bubble = <p>{speech}</p>
     body = <CountStep level={level} customer={customer} />
     actions =
       level.totalMode === 'shown' ? (
@@ -179,6 +192,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         />
       )
   } else if (state.step === 'change') {
+    speech = `Uangku ${formatRupiah(customer.payment.amount)}. Total belanjaku ${formatRupiah(customer.total)}.`
     bubble = (
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 md:gap-x-2">
         <span>Uangku:</span>
@@ -226,7 +240,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     )
   } else if (state.step === 'served') {
     const isLast = state.index + 1 >= state.customers.length
-    bubble = <p>Terima kasih! Senang belanja di warungmu.</p>
+    speech = 'Terima kasih! Senang belanja di warungmu.'
+    bubble = <p>{speech}</p>
     body = <ServedStep isLast={isLast} />
     actions = (
       <Button
@@ -238,7 +253,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     )
   } else {
     const summary = summarizeSession(state)
-    bubble = <p>Terima kasih! Sampai jumpa lagi.</p>
+    speech = 'Terima kasih! Sampai jumpa lagi.'
+    bubble = <p>{speech}</p>
     body = (
       <p className="text-lg">
         Warung tutup. Skormu {summary.score} dari {summary.maxScore}, dapat {summary.stars} bintang.
@@ -257,6 +273,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       ? 'Pembeli selesai dilayani'
       : 'Warung tutup'
   const isGreet = state.step === 'greet'
+  // Pembeli bicara setiap kalimatnya berganti dan bereaksi pada umpan balik.
+  const voice = { talkKey: stepKey, talkMs: speechMs(speech), reaction: state.feedback ?? undefined }
 
   return (
     <div className="relative flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
@@ -294,7 +312,13 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
             aria-label="Pembeli"
             className="mx-auto w-full max-w-5xl shrink-0 px-3 py-1.5 md:px-4 md:py-3"
           >
-            <CustomerSpot character={character} leaving={isLeaving} onLeft={() => advanceFrom(state.index)}>
+            <CustomerSpot
+              character={character}
+              leaving={isLeaving}
+              onLeft={() => advanceFrom(state.index)}
+              walkingOut={state.step === 'served'}
+              {...voice}
+            >
               {bubble}
             </CustomerSpot>
           </section>
@@ -319,7 +343,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
               </h2>
               {isGreet ? (
                 <section aria-label="Pembeli">
-                  <CustomerSpot key={state.index} character={character} large>
+                  <CustomerSpot key={state.index} character={character} large {...voice}>
                     {bubble}
                   </CustomerSpot>
                 </section>
