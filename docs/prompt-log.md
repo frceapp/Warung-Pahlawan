@@ -470,3 +470,83 @@ Yang saya ubah atau tolak:
 
 Commit terkait:
 - Commit dan PR untuk prompt ini; hash ada di riwayat PR (hash commit tidak bisa ditulis di dalam commit itu sendiri).
+
+### P8, 5 Oktober 2026, 16.14 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: perbaikan hasil uji situs live (di luar daftar tugas bagian 4)
+Prompt:
+
+````text
+PR sebelumnya sudah saya gabungkan. Mulai dari main terbaru. Ikuti
+aturan di AGENTS.md bagian 8, termasuk menambah entri prompt ini di
+docs/prompt-log.md.
+
+Hasil pengujian situs live https://wp.itslim.dev (browser, 360x640,
+320x568, dan 1280x800; ketiga level sudah bisa ditamatkan). Ada empat
+masalah:
+
+1. Layar 320x568, level 3, kantong berisi 8 buah (1 rambutan, 4
+   semangka, 3 mangga): tile kantong hanya selebar sekitar 83 px,
+   sehingga tombol "−" menutupi jumlah buah, dan kantong terpotong di
+   bawah bar tombol. Di 360x640 kasus yang sama muat dengan baik.
+2. Layar 360x640, level 3, anak mengambil semua 6 jenis buah (11 buah
+   di kantong): kantong menjadi dua baris dan baris bawahnya terpotong.
+   Area itu bisa digulir di dalam layar (tinggi isi 402 px, tinggi area
+   365 px), tapi tidak ada petunjuk bahwa bisa digulir.
+3. Di langkah Kembalian masih muncul pesan hijau "Benar! Total
+   belanjanya RpX. Sekarang terima uang dari pembeli." dari langkah
+   sebelumnya. Seharusnya berupa petunjuk untuk langkah Kembalian.
+4. Gambar uang di laci dan di "Uangku" terlalu kecil (sekitar 34 px),
+   dan lembar Rp20.000 berwarna cokelat yang nyaris sama dengan warna
+   meja kayu, sehingga sulit dibedakan.
+
+Perbaiki keempatnya:
+- No. 1: pastikan tiap item kantong tetap menampilkan ikon, jumlah, dan
+  tombol keluarkan dengan target sentuh minimal 48 px tanpa saling
+  menutupi di lebar 320 px. Boleh mengubah tata letak item (misalnya
+  jumlah di atas ikon, atau tombol keluarkan di bawah) asal tetap
+  kompak.
+- No. 2: beri tanda yang jelas bahwa kantong bisa digulir (misalnya
+  bayangan atau gradasi di tepi bawah area, atau potongan baris yang
+  sengaja terlihat), dan pastikan area terakhir bisa dicapai. Bar
+  tombol utama tetap terlihat tanpa scroll halaman.
+- No. 3: ganti dengan petunjuk langkah Kembalian yang berguna, ditulis
+  dalam bahasa anak, lalu pastikan umpan balik tiap langkah hanya
+  berisi hal untuk langkah itu.
+- No. 4: perbesar gambar uang secara wajar, beri tiap pecahan warna
+  yang jelas berbeda satu sama lain dan dari warna meja, dan tetap
+  tampilkan angka. Desain tetap buatan sendiri dan tidak meniru uang
+  rupiah asli.
+
+Jangan mengubah logika di src/game dan src/data, dan jangan menambah
+fitur. Pertahankan hasil perbaikan HP sebelumnya: di 360x640 tombol
+aksi utama tiap langkah tetap terlihat tanpa scroll halaman.
+
+Cek dengan screenshot sebelum dan sesudah di 320x568, 360x640, 390x844,
+dan 1280x800, untuk level 3 dengan kantong 8 buah dan kantong 11 buah
+(6 jenis), serta langkah Kembalian di level 2 dan 3. Laporkan apa
+adanya kalau ada yang belum beres.
+
+Setelah npm test, npm run build, dan npm run lint lulus, buat PR ke main
+(jangan digabung), dengan tangkapan layar sebelum dan sesudah di
+deskripsi PR. Tulis laporan seperti biasa dan sebutkan hal yang perlu
+saya putuskan. Jangan lanjut ke tugas lain.
+````
+
+Hasil AI:
+- Keempat masalah direproduksi dulu dengan Playwright di build `main` (sebelum perbaikan): tile kantong 83 px di 320x568 dengan jumlah dan tombol "−" bertumpuk; kantong 11 buah di 360x640 perlu digeser 37 px tanpa tanda; langkah Kembalian menampilkan "Benar! Total belanjanya ..." dari langkah Hitung; gambar uang 32x19 px di laci dan 27x16 px di "Uangku", dan Rp20.000 berwarna kayu.
+- No. 1: tiap item kantong menjadi satu tombol keluarkan (minimal 48 px tinggi) berisi ikon dan jumlah, dengan tanda "−" kecil di pojok. Di 320x568 tile 79 px dan tidak ada lagi yang saling menutupi (`ShoppingBag.jsx`).
+- No. 2: area kerja menampilkan bayangan di tepi bawah dan label "Geser ke bawah ↓" selama isinya masih bisa digeser; baris yang terpotong tetap terlihat sebagian, dan item terakhir bisa dicapai (`PlayScreen.jsx`).
+- No. 3: umpan balik yang terbawa dari langkah sebelumnya disembunyikan; langkah Kembalian dimulai dengan petunjuk "Kembalian = uang pembeli dikurangi total belanja. Uangnya pas? Pilih "Tidak perlu kembalian"." Pesan "selesai dilayani" tetap tampil karena milik langkah itu (`PlayScreen.jsx`, `ChangeTray.jsx`).
+- No. 4: gambar uang dibuat lebih besar (laci 56x34 px dan "Uangku" 48x29 px di HP; 80x48 px di desktop) dan tiap pecahan diberi warna dasar dan pita sendiri dari token desain; tidak ada yang berwarna kayu. Angka tetap tampil di gambar. Di HP, label teks di bawah uang laci hanya untuk pembaca layar (`MoneyImage.jsx`, `MoneyDrawer.jsx`).
+- Pengecekan: skrip Playwright untuk 4 ukuran (320x568, 360x640, 390x844, 1280x800) dengan kantong 8 dan 11 buah serta langkah Kembalian level 2 dan 3; matriks 3 level x 6 ukuran x 5 langkah; satu level penuh dimainkan di 360x640 dan 320x568 (skor 54 dari 60) tanpa halaman pernah bisa di-scroll. Di 320x568 area kerja masih perlu digeser pada langkah Ambil buah dan Kembalian, dengan tanda geser; di 360x640 langkah Kembalian kadang perlu digeser sampai 53 px pada pembayaran uang pas beberapa lembar.
+- `npm test` (78 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `e6f254f` fix: keep bag count and remove mark apart on narrow screens
+- `f0fcde3` fix: show a scroll hint when the play work area overflows
+- `17240bc` fix: show only current-step feedback and a change-step hint
+- `6d45586` style: enlarge money images and give each note its own colors
+- `c6bac8b` docs: add before and after screenshots for live test fixes
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
