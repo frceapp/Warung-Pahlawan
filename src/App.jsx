@@ -15,6 +15,9 @@ const GalleryScreen = import.meta.env.DEV
 
 const storage = getBrowserStorage()
 
+// Penanda entri riwayat browser untuk layar selain beranda.
+const IN_APP_STATE = 'warungPahlawanScreen'
+
 function App() {
   const [screen, setScreen] = useState({ name: 'home', isFirst: true })
   const [bestStars, setBestStars] = useState(() => loadBestStars(storage))
@@ -23,12 +26,35 @@ function App() {
     window.scrollTo(0, 0)
   }, [screen])
 
+  // Tombol kembali di browser atau HP membawa ke beranda, bukan keluar dari
+  // situs. Semua layar selain beranda memakai satu entri riwayat yang sama.
+  useEffect(() => {
+    const backToHome = () => setScreen({ name: 'home' })
+    window.addEventListener('popstate', backToHome)
+    return () => window.removeEventListener('popstate', backToHome)
+  }, [])
+
+  function leaveHome(next) {
+    if (screen.name === 'home') {
+      try {
+        window.history.pushState({ [IN_APP_STATE]: true }, '')
+      } catch {
+        // Riwayat tidak tersedia; layar tetap berpindah.
+      }
+    }
+    setScreen(next)
+  }
+
   function startLevel(levelId) {
-    setScreen({ name: 'play', levelId, playId: Date.now() })
+    leaveHome({ name: 'play', levelId, playId: Date.now() })
   }
 
   function goHome() {
-    setScreen({ name: 'home' })
+    if (window.history.state?.[IN_APP_STATE]) {
+      window.history.back() // memicu popstate, lalu kembali ke beranda
+    } else {
+      setScreen({ name: 'home' })
+    }
   }
 
   function finishLevel(summary) {
@@ -85,7 +111,7 @@ function App() {
     <HomeScreen
       bestStars={bestStars}
       onPlay={startLevel}
-      onOpenSequence={() => setScreen({ name: 'sequence' })}
+      onOpenSequence={() => leaveHome({ name: 'sequence' })}
       focusHeading={!screen.isFirst}
     />
   )

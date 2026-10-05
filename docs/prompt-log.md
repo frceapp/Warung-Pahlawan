@@ -589,3 +589,39 @@ Commit terkait:
 - `97749a5` feat: add Susun Langkah practice screen with a home entry
 - `f7f044a` docs: add screenshots for Susun Langkah pull request
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P10, 5 Oktober 2026, 21.26 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: 11 (finishing)
+Prompt:
+
+````text
+Kerjakan Tugas 11: finishing. Jangan menambah fitur.
+
+1. Perbarui README.md: deskripsi, fitur yang benar-benar ada, cara
+   menjalankan, tautan situs, dan tautan ke AGENTS.md serta docs/.
+2. Perbarui bagian "Sudah ada" dan "Rencana" di AGENTS.md sesuai kondisi
+   proyek sekarang.
+3. Periksa gerbang kelayakan di bagian 9 satu per satu dan laporkan
+   statusnya. Untuk butir yang tidak bisa kamu cek (repo public, isi
+   jurnal), katakan.
+4. Mainkan tiga level di https://wp.itslim.dev pada 360x640 dan 1280x800,
+   lalu laporkan semua masalah. Perbaiki hanya yang kecil dan aman, dan
+   daftarkan sisanya di PR.
+````
+
+Hasil AI:
+- AGENTS.md tidak punya bagian bernama "Sudah ada" dan "Rencana", jadi AI bertanya dulu. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Kolom status di bagian 4-5 (Recommended)". Tabel bagian 4 diberi kolom Status dan daftar bagian 5 dijadikan tabel dengan status.
+- `README.md` ditulis ulang: deskripsi, fitur yang ada (tiga level, empat langkah, delapan tokoh, skor dan bintang, layar hasil, Susun Langkah, aksesibilitas), cara menjalankan, stack, status, keterbatasan yang diketahui, dan tautan ke AGENTS.md serta docs/.
+- Uji situs live https://wp.itslim.dev: bundle yang live sama dengan build `main`. Chromium di lingkungan AI tidak bisa memverifikasi sertifikat lewat proxy, jadi halaman dibuka di alamat asli dengan permintaan jaringan diambil oleh sisi Node Playwright (TLS tetap diverifikasi dengan CA bundle proxy). Ketiga level ditamatkan di 360x640 (skor 36/40, 44/50, 56/60) dan 1280x800 (38/40, 46/50, 54/60) dengan kesalahan disengaja; Susun Langkah diuji di kedua ukuran dan dengan keyboard. Tidak ada error di console dan halaman tidak pernah bisa di-scroll.
+- Masalah yang ditemukan dan diperbaiki: tombol kembali browser atau HP di tengah permainan keluar dari situs (sekarang kembali ke beranda; `App.jsx`), dan tombol di layar hasil tidak sama lebar di HP (`ResultScreen.jsx`). Masalah lain didaftarkan di PR tanpa diperbaiki.
+- Gerbang kelayakan bagian 9: butir 1, 2 (API GitHub tanpa token menyatakan repo public), 4, dan 6 terpenuhi; butir 5 dinilai sesuai berdasarkan isi game; butir 3 belum terpenuhi (jurnal baru 3 dari 5 prompt dan bagian pemilik masih kosong). Apakah juri bisa membuka situs dari perangkat mereka (tidak dapat diverifikasi).
+- `npm test` (95 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `2bea129` fix: return to home on browser back instead of leaving the site
+- `09d03c6` style: stack result buttons at full width on phones
+- `c2c83de` docs: rewrite README for the playable game
+- `c440ad8` docs: add task status to AGENTS.md sections 4 and 5
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
