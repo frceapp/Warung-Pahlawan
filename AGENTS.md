@@ -214,6 +214,7 @@ Dunia visualnya warung buah di pasar: terpal bergaris biru dan jingga, papan nam
 - Jangan pakai: gradien ungu, kartu abu-abu berbayang lembut, label huruf kapital semua, emoji sebagai ilustrasi utama.
 - Teks putih di atas `jingga` tidak cukup kontras. Di atas `jingga` dan `pisang` pakai `tinta`.
 - Animasi hanya untuk menjawab aksi anak (buah masuk kantong, pembeli datang, jawaban salah). Hormati `prefers-reduced-motion`.
+- Pengecualian: karakter pembeli boleh punya gerak diam yang berulang (napas pelan, kedip, rambut bergoyang halus). Gerak ini kecil dan pelan, berhenti saat tab tidak aktif, dan tidak ada saat `prefers-reduced-motion` aktif.
 
 ### Aksesibilitas
 
