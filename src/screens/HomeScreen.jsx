@@ -1,4 +1,6 @@
-function HomeScreen() {
+import Button from '../components/Button.jsx'
+
+function HomeScreen({ onPlay }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <div
@@ -15,6 +17,8 @@ function HomeScreen() {
           Jadi penjaga warung buah, layani para pahlawan Indonesia, dan belajar
           berpikir runtut seperti programmer.
         </p>
+
+        <Button onClick={() => onPlay(1)}>Mulai main</Button>
       </main>
 
       <div

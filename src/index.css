@@ -15,6 +15,20 @@
 
   --font-heading: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
   --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+
+  /* Animasi hanya untuk menjawab aksi anak. Dipakai lewat motion-safe:. */
+  --animate-arrive: arrive 450ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+
+  @keyframes arrive {
+    from {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 @layer base {
@@ -27,6 +41,29 @@
   :focus-visible {
     outline: 4px solid var(--color-tinta);
     outline-offset: 3px;
+  }
+}
+
+/* Pinggiran terpal bergelombang dengan garis tepi tinta. */
+@utility awning-scallops {
+  background:
+    radial-gradient(circle at 24px 0, var(--color-terpal) 19px, transparent 20px) 0 0 / 96px 28px
+      repeat-x,
+    radial-gradient(circle at 72px 0, var(--color-jingga) 19px, transparent 20px) 0 0 / 96px 28px
+      repeat-x,
+    radial-gradient(circle at 24px 0, var(--color-tinta) 23px, transparent 24px) 0 0 / 96px 28px
+      repeat-x,
+    radial-gradient(circle at 72px 0, var(--color-tinta) 23px, transparent 24px) 0 0 / 96px 28px
+      repeat-x;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
