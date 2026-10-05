@@ -625,3 +625,56 @@ Commit terkait:
 - `c2c83de` docs: rewrite README for the playable game
 - `c440ad8` docs: add task status to AGENTS.md sections 4 and 5
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P11, 5 Oktober 2026, 21.36 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: 10 (audit aksesibilitas, performa, SEO)
+Prompt:
+
+````text
+Kerjakan Tugas 10: audit aksesibilitas, performa, dan SEO.
+
+1. Ukur dulu sebelum mengubah apa pun. Jalankan Lighthouse (mobile) pada
+   https://wp.itslim.dev dan catat skor Performance, Accessibility, Best
+   Practices, SEO, serta ukuran bundel. Kalau Lighthouse tidak bisa jalan
+   di lingkunganmu, pakai alat setara dan katakan.
+2. Periksa aksesibilitas: urutan fokus keyboard, indikator fokus, kontras
+   teks (WCAG AA), label tombol dan gambar, aria-live di semua langkah.
+3. Perbaiki temuan yang sudah saya ketahui:
+   - robots.txt dan sitemap.xml belum ada (404).
+   - og:image belum ada. Buat gambar 1200x630 dari ilustrasi buatan sendiri,
+     PNG atau WebP di bawah 150 kB, plus og:image:alt dan twitter:card.
+     Ini satu-satunya gambar raster yang diizinkan.
+   - Halaman yang tidak ada menampilkan teks polos "NOT_FOUND" dari
+     Vercel. Arahkan ke game lewat rewrite di vercel.json.
+   - Berkas /assets/* tidak punya cache panjang. Atur lewat vercel.json:
+     public, max-age=31536000, immutable. index.html tidak berubah.
+   - Bundel JS utama sekitar 272 kB. Coba pisahkan layar non-inti dengan
+     React.lazy, ukur hasilnya, dan batalkan kalau untungnya kecil.
+4. Ukur ulang dengan alat yang sama dan tulis tabel sebelum dan sesudah di
+   deskripsi PR. Kalau ada skor yang tidak naik, katakan sebabnya.
+
+Jangan mengubah logika game dan jangan menambah fitur.
+````
+
+Hasil AI:
+- Sebelum mulai, AI bertanya apakah PR #9 sudah digabung. Jawaban pemilik proyek: "sudah saya gabung".
+- Pengukuran sebelum (Lighthouse 13.5.0, mobile, median 3 kali, situs live https://wp.itslim.dev): Performance 93, Accessibility 100, Best Practices 100, SEO 100. Bundel JS utama 275,08 kB (gzip 84,58 kB); total transfer halaman awal 143,9 kB dalam 7 permintaan. Supaya Chromium bisa membuka situs live lewat proxy, CA proxy ditambahkan ke penyimpanan sertifikat NSS; verifikasi TLS tetap aktif.
+- Audit aksesibilitas dengan axe-core 4.13.0 dan skrip Playwright di semua layar dan langkah (360x640 dan 1280x800): satu-satunya pelanggaran adalah layar main tanpa judul h1 (`page-has-heading-one`). Nama level di header layar main dijadikan h1. Urutan fokus Tab, indikator fokus, label tombol dan SVG, kontras (aturan axe), dan aria-live di layar main serta Susun Langkah tidak bermasalah.
+- Ditambahkan `public/robots.txt`, `public/sitemap.xml`, dan `public/og-image.png` (1200x630, 91 kB) beserta tag og:image, og:image:alt, dan twitter:card di `index.html`. Gambar disusun dari ilustrasi SVG game sendiri lewat layar khusus pengembangan `src/screens/OgImageScreen.jsx` (/?og), yang tidak ikut build produksi.
+- Ditambahkan `vercel.json`: rewrite path halaman (tanpa titik) ke `index.html` supaya halaman yang tidak ada membuka game, dan header `Cache-Control: public, max-age=31536000, immutable` untuk `/assets/*`. Rewrite pertama yang menangkap semua path ternyata juga membalas berkas yang tidak ada (misalnya `/llms.txt`) dengan HTML, jadi aturannya dipersempit; berkas yang tidak ada tetap 404.
+- Percobaan React.lazy untuk layar main: bundel utama turun dari 84,58 kB menjadi 74,14 kB gzip, tetapi skor dan metrik Lighthouse lokal tidak berubah di luar variasi antar-run, dan anak harus menunggu potongan kode tambahan saat membuka level. Sesuai prompt, percobaan dibatalkan dan tidak di-commit.
+- Pengukuran sesudah memakai Lighthouse yang sama pada build lokal (server statis dengan gzip, median 5 kali), karena situs live baru berubah setelah PR digabung dan deployment preview Vercel dilindungi login. Build lokal sebelum: Performance 98, Accessibility 100, Best Practices 100, SEO 100. Sesudah: 99, 100, 100, 100. Skor yang tidak naik sudah 100, atau perubahannya tidak menyentuh kode yang dimuat halaman awal. Header cache, rewrite, dan berkas baru di Vercel belum dicek (tidak dapat diverifikasi sebelum PR digabung).
+- `npm test` (95 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `5de242a` fix: give the play screen a top-level heading
+- `01eec0c` feat: add robots.txt and sitemap.xml
+- `a0b6b39` feat: add dev-only composition for the link preview image
+- `5617bf3` feat: add og:image and Twitter card meta tags
+- `980a91d` fix: serve the game instead of Vercel NOT_FOUND for unknown paths
+- `f8d9cda` perf: cache hashed assets for a year
+- `ffc24a4` fix: keep 404 for missing files and only rewrite page paths
+- `ccb42f6` docs: mark task 10 audit as done
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
