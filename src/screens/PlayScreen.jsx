@@ -245,9 +245,9 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           <span aria-hidden="true">←</span>
           <span className="hidden md:inline">Beranda</span>
         </Button>
-        <p className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
+        <h1 className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
           {level.name}
-        </p>
+        </h1>
         <p className="ml-auto flex shrink-0 flex-col items-end text-sm leading-tight font-bold md:ml-0 md:flex-row md:gap-3 md:text-base">
           <span>
             Pembeli {state.index + 1}

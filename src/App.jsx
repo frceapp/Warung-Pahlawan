@@ -13,6 +13,11 @@ const GalleryScreen = import.meta.env.DEV
   ? lazy(() => import('./screens/GalleryScreen.jsx'))
   : null
 
+// Komposisi gambar pratinjau tautan (/?og), juga hanya untuk pengembangan.
+const OgImageScreen = import.meta.env.DEV
+  ? lazy(() => import('./screens/OgImageScreen.jsx'))
+  : null
+
 const storage = getBrowserStorage()
 
 // Penanda entri riwayat browser untuk layar selain beranda.
@@ -70,6 +75,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <GalleryScreen />
+      </Suspense>
+    )
+  }
+
+  if (OgImageScreen && new URLSearchParams(window.location.search).has('og')) {
+    return (
+      <Suspense fallback={null}>
+        <OgImageScreen />
       </Suspense>
     )
   }

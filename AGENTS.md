@@ -113,7 +113,7 @@ Satu prompt mengerjakan satu tugas. Jangan melompat ke tugas berikutnya tanpa di
 | 7 | Beranda lengkap dan layar hasil | Alur beranda, main, hasil, lalu kembali ke beranda berjalan | sudah (PR #4) |
 | 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati | sudah (PR #4; tata letak HP diperbaiki di PR #5 dan PR #7) |
 | 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: Susun Langkah (PR #8) |
-| 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | belum (skor Lighthouse belum dicatat) |
+| 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | sudah (PR #10): skor sebelum dicatat dari situs live, skor sesudah dari build lokal; ukur ulang di situs live setelah PR #10 digabung |
 | 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sebagian: README, uji di hosting, dan cek gerbang sudah (PR #9); butir 3 bagian 9 belum terpenuhi (jurnal baru 3 dari 5 prompt, catatan pemilik belum diisi) |
 
 ## 5. Fitur tambahan yang direncanakan
