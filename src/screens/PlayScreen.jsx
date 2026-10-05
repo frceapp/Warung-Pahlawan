@@ -22,6 +22,16 @@ import {
   summarizeSession,
 } from '../game/session.js'
 
+// Petunjuk yang tampil di bar aksi saat sebuah langkah dimulai, selama belum
+// ada umpan balik dari aksi anak di langkah itu.
+const STEP_HINTS = {
+  change: {
+    id: 'hint-change',
+    tone: 'info',
+    text: 'Kembalian = uang pembeli dikurangi total belanja. Uangnya pas? Pilih "Tidak perlu kembalian".',
+  },
+}
+
 // Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
 // pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
 // aksi yang selalu terlihat di bawah.
@@ -47,6 +57,23 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     }
     headingRef.current?.focus({ preventScroll: true })
   }, [state.index, state.step])
+
+  // Umpan balik di bar aksi hanya untuk langkah yang sedang aktif. Pesan yang
+  // terbawa dari langkah sebelumnya disembunyikan dan diganti petunjuk langkah
+  // ini (kalau ada). Pengecualian: pesan "pembeli selesai dilayani" memang
+  // milik langkah selesai.
+  const stepKey = `${state.index}-${state.step}`
+  const [stepEntry, setStepEntry] = useState({ key: stepKey, feedbackId: state.feedback?.id ?? 0 })
+  let entryFeedbackId = stepEntry.feedbackId
+  if (stepEntry.key !== stepKey) {
+    entryFeedbackId = state.feedback?.id ?? 0
+    setStepEntry({ key: stepKey, feedbackId: entryFeedbackId })
+  }
+  const ownFeedback =
+    state.feedback && (state.step === 'served' || state.feedback.id > entryFeedbackId)
+      ? state.feedback
+      : null
+  const visibleFeedback = ownFeedback ?? STEP_HINTS[state.step] ?? null
 
   // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
   const contentRef = useRef(null)
@@ -284,7 +311,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           </div>
         </section>
 
-        <ActionBar feedback={state.feedback}>{actions}</ActionBar>
+        <ActionBar feedback={visibleFeedback}>{actions}</ActionBar>
       </main>
     </div>
   )

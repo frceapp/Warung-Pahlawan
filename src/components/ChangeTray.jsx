@@ -57,10 +57,7 @@ function ChangeTray({ values, onRemove, onClear }) {
           ))}
         </ul>
       ) : (
-        <p className="text-sm md:text-base">
-          Belum ada uang. Ketuk uang di laci. Kembalian = uang pembeli − total belanja. Jika
-          uangnya pas, tidak perlu kembalian.
-        </p>
+        <p className="text-sm md:text-base">Belum ada uang. Ketuk uang di laci.</p>
       )}
     </div>
   )
