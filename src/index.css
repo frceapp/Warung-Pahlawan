@@ -1,0 +1,39 @@
+@import 'tailwindcss';
+
+/* Token desain: lihat AGENTS.md bagian "Desain". */
+@theme {
+  --color-terpal: #1d5bbf;
+  --color-terpal-tua: #143f8a;
+  --color-jingga: #f47b20;
+  --color-pisang: #ffd23f;
+  --color-kapur: #fffdf5;
+  --color-langit: #dcebff;
+  --color-tinta: #17233f;
+  --color-daun: #1f8a4c;
+  --color-cabai: #d93636;
+  --color-kayu: #b9793f;
+
+  --font-heading: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-tinta);
+    background-color: var(--color-langit);
+  }
+
+  :focus-visible {
+    outline: 4px solid var(--color-tinta);
+    outline-offset: 3px;
+  }
+}
+
+@utility awning-stripes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-terpal) 0 48px,
+    var(--color-jingga) 48px 96px
+  );
+}
