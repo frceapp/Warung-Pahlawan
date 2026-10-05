@@ -162,8 +162,13 @@ src/
 
 - Semua kode dan desain dibuat dari nol di repository ini. Jangan menyalin dari proyek lama, fork, atau template, termasuk milik pemilik proyek sendiri. Perintah pembuat proyek resmi seperti `npm create vite` boleh dipakai.
 - Jangan pernah menjalankan `git push --force`, `rebase` pada commit yang sudah di-push, `commit --amend` setelah push, atau mengubah tanggal commit.
-- Jangan mengubah isi `docs/prompt-log.md`. Berkas itu dicatat oleh pemilik proyek.
-- Di akhir tiap tugas, tuliskan ringkasan hasil: berkas yang dibuat atau diubah, perintah yang dijalankan beserta hasilnya, dan usulan pesan commit. Ringkasan ini disalin pemilik proyek ke log.
+- Berkas di `docs/` tidak boleh diubah, kecuali dua hal berikut:
+  - `docs/prompt-log.md`: AI Agent hanya boleh MENAMBAH entri baru di bagian paling bawah. Entri lama tidak boleh diubah, dihapus, atau dirapikan.
+  - `docs/jurnal-prompt.md`: AI Agent boleh mengisinya, hanya dengan fakta yang ada di repo. Bagian "Keputusan saya", "Dugaan saya", dan "Yang saya pelajari" adalah milik pemilik proyek dan tidak diisi AI Agent.
+  - Berkas lain di `docs/`, termasuk `sumber-fakta.md`, tetap tidak boleh diubah.
+- Di setiap PR, tambahkan entri untuk prompt yang sedang dikerjakan di bagian paling bawah `docs/prompt-log.md`, memakai format yang ada di berkas itu. Prompt disalin persis apa adanya, termasuk salah ketik, tanpa dirapikan atau diringkas. "Hasil AI" ditulis dari pekerjaan di PR itu. Bagian yang tidak bisa diverifikasi ditulis "(tidak dapat diverifikasi)"; jangan menebak.
+- Jangan memalsukan dokumentasi prompt: jangan menulis prompt yang tidak pernah dikirim pemilik proyek, jangan mengubah urutan, dan jangan menambahkan kalimat ke dalam teks prompt.
+- Di akhir tiap tugas, tuliskan ringkasan hasil: berkas yang dibuat atau diubah, perintah yang dijalankan beserta hasilnya, dan usulan pesan commit. Ringkasan ini menjadi dasar "Hasil AI" di log prompt.
 - Setiap pekerjaan yang sudah berhasil (build dan tes lulus) diajukan
 lewat pull request ke main. Agent tidak menggabungkan PR dan tidak
 mem-push langsung ke main; pemilik proyek yang menggabungkan.
