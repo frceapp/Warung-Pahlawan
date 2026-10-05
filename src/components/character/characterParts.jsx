@@ -10,12 +10,23 @@ export function paint(color) {
 
 const has = (look, accessory) => look.accessories.includes(accessory)
 
-// Titik sendi, dipakai juga sebagai transform-origin di animeCharacter.css.
+// viewBox karakter: sedikit dipotong di atas dan bawah supaya gambar mengisi
+// kotaknya (bagian yang lewat batas tetap tampil, overflow visible).
+export const VIEW_BOX = { x: 0, y: 4, width: 100, height: 132 }
+
+// Titik sendi dan titik putar bagian rangka, dalam koordinat gambar. Dipakai
+// AnimeCharacter sebagai transform-origin animasi Motion.
 export const JOINTS = {
   hipBack: [44, 100],
   hipFront: [56, 100],
   shoulderBack: [32, 77],
   shoulderFront: [68, 77],
+  neck: [50, 70],
+  hairTop: [50, 24],
+  waist: [50, 101],
+  browBack: [39, 37],
+  browFront: [61, 37],
+  mouth: [50, 58],
 }
 
 // --- Kepala ---------------------------------------------------------------

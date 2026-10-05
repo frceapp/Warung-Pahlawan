@@ -42,7 +42,7 @@ function GalleryScreen() {
         name: character.name,
         render: (size) => (
           <div style={{ height: size * 1.4, width: size }} data-anime={character.id}>
-            <AnimeCharacter characterId={character.id} entrance="none" />
+            <AnimeCharacter characterId={character.id} entrance={false} className="h-full w-full" />
           </div>
         ),
       })),

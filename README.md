@@ -40,6 +40,7 @@ npm run preview  # coba hasil build di komputer sendiri
 - React dan Vite, JavaScript tanpa TypeScript
 - Tailwind CSS 4 lewat plugin Vite resminya; token warna dan font ada di `src/index.css`
 - Font Lilita One dan Atkinson Hyperlegible, dimuat lokal lewat Fontsource
+- Motion untuk animasi pembeli dan karakter (dimuat ringan lewat `LazyMotion`)
 - Vitest untuk tes logika game; oxlint untuk pemeriksaan kode
 - Hosting di Vercel, deploy otomatis dari branch `main`
 

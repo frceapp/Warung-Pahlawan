@@ -133,6 +133,7 @@ Dikerjakan setelah tugas 1 sampai 8 selesai, sesuai waktu yang tersisa.
 - Tailwind CSS 4 lewat plugin Vite resminya; token desain didefinisikan di `src/index.css`
 - Font dimuat lokal (misalnya lewat Fontsource), tanpa permintaan ke CDN font
 - Tes logika: Vitest
+- Animasi pembeli dan karakter: Motion (`motion/react`), lewat `LazyMotion` dengan `domAnimation` dan komponen `m` supaya bundel awal kecil; `MotionConfig reducedMotion="user"` membungkus aplikasi
 - Hosting: Vercel, deploy otomatis dari branch `main`
 - Node.js versi LTS terbaru
 

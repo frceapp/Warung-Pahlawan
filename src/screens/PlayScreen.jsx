@@ -1,10 +1,12 @@
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import ChangeStep from '../components/ChangeStep.jsx'
 import CountStep from '../components/CountStep.jsx'
-import CustomerSpot from '../components/CustomerSpot.jsx'
+import CustomerStage from '../components/CustomerStage.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
@@ -39,11 +41,6 @@ function speechMs(text) {
   return Math.min(4000, Math.max(800, text.length * 55))
 }
 
-// Kartu pembeli lama keluar 250 ms (atau memudar 150 ms) sebelum pembeli
-// berikutnya datang. Timer ini cadangan kalau animationend tidak terpicu,
-// misalnya saat tab tersembunyi.
-const LEAVE_FALLBACK_MS = 400
-
 // Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
 // pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
 // aksi yang selalu terlihat di bawah.
@@ -55,10 +52,12 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   const stepIndex = STEPS.findIndex((step) => step.id === state.step)
   const stepName = STEPS[stepIndex]?.name
   const score = getSessionScore(state)
+  const isGreet = state.step === 'greet'
 
   // Pindahkan fokus ke judul langkah setiap kali langkah berganti, supaya
   // pengguna keyboard dan pembaca layar langsung tahu langkah barunya.
   const headingRef = useRef(null)
+  const greetHeadingRef = useRef(null)
   const workRef = useRef(null)
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -67,7 +66,9 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       isFirstRender.current = false
       return
     }
-    headingRef.current?.focus({ preventScroll: true })
+    // Langkah Sapa punya judul sendiri; area kerja lama mungkin masih memudar.
+    const title = state.step === 'greet' ? greetHeadingRef.current : headingRef.current
+    title?.focus({ preventScroll: true })
   }, [state.index, state.step])
 
   // Umpan balik di bar aksi hanya untuk langkah yang sedang aktif. Pesan yang
@@ -104,25 +105,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       work.removeEventListener('scroll', update)
       observer?.disconnect()
     }
-  }, [])
-
-  // Pembeli berikutnya: kartu lama pergi dulu, baru giliran pembeli baru.
-  // `advancedFor` menjaga supaya satu pembeli hanya dilewati sekali, walau
-  // animationend dan timer cadangan sama-sama terpicu.
-  const [leavingIndex, setLeavingIndex] = useState(null)
-  const isLeaving = leavingIndex === state.index
-  const advancedFor = useRef(-1)
-  function advanceFrom(index) {
-    if (advancedFor.current === index) return
-    advancedFor.current = index
-    dispatch({ type: 'nextCustomer' })
-  }
-  // advanceFrom hanya memakai dispatch dan ref, keduanya stabil.
-  useEffect(() => {
-    if (leavingIndex === null) return undefined
-    const timer = setTimeout(() => advanceFrom(leavingIndex), LEAVE_FALLBACK_MS)
-    return () => clearTimeout(timer)
-  }, [leavingIndex])
+    // Area kerja baru ada setelah langkah Sapa, jadi dipasang ulang saat itu.
+  }, [isGreet])
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -244,10 +228,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     bubble = <p>{speech}</p>
     body = <ServedStep isLast={isLast} />
     actions = (
-      <Button
-        onClick={() => (isLast ? advanceFrom(state.index) : setLeavingIndex(state.index))}
-        className="w-full md:w-auto md:self-start"
-      >
+      <Button onClick={() => dispatch({ type: 'nextCustomer' })} className="w-full md:w-auto md:self-start">
         {isLast ? 'Lihat hasil' : 'Layani pembeli berikutnya'}
       </Button>
     )
@@ -272,9 +253,6 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     : state.step === 'served'
       ? 'Pembeli selesai dilayani'
       : 'Warung tutup'
-  const isGreet = state.step === 'greet'
-  // Pembeli bicara setiap kalimatnya berganti dan bereaksi pada umpan balik.
-  const voice = { talkKey: stepKey, talkMs: speechMs(speech), reaction: state.feedback ?? undefined }
 
   return (
     <div className="relative flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
@@ -307,61 +285,75 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           <StepTracker currentStep={state.step} />
         </div>
 
-        {!isGreet && (
-          <section
-            aria-label="Pembeli"
-            className="mx-auto w-full max-w-5xl shrink-0 px-3 py-1.5 md:px-4 md:py-3"
-          >
-            <CustomerSpot
-              character={character}
-              leaving={isLeaving}
-              onLeft={() => advanceFrom(state.index)}
-              walkingOut={state.step === 'served'}
-              {...voice}
-            >
-              {bubble}
-            </CustomerSpot>
-          </section>
+        {isGreet && (
+          <h2 ref={greetHeadingRef} tabIndex={-1} className="sr-only">
+            {heading}
+          </h2>
         )}
 
-        <section
-          ref={workRef}
-          aria-labelledby="step-title"
-          className={`relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta ${isGreet ? 'mt-2 bg-langit md:mt-3' : 'bg-kayu'}`}
-        >
-          <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
-            <div
-              className={`flex flex-col gap-2 rounded-2xl border-4 border-tinta p-1.5 md:gap-3 md:p-4 ${isGreet ? 'border-transparent bg-transparent' : 'bg-kapur'}`}
-            >
-              <h2
-                id="step-title"
-                ref={headingRef}
-                tabIndex={-1}
-                className={isGreet ? 'sr-only' : 'sr-only md:not-sr-only md:font-heading md:text-xl'}
-              >
-                {heading}
-              </h2>
-              {isGreet ? (
-                <section aria-label="Pembeli">
-                  <CustomerSpot key={state.index} character={character} large {...voice}>
-                    {bubble}
-                  </CustomerSpot>
-                </section>
-              ) : (
-                body
-              )}
-            </div>
-          </div>
-          <div
-            aria-hidden="true"
-            data-scroll-hint
-            className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+        {/* Satu panggung per pembeli. Saat pembeli berganti, panggung lama
+            pergi dulu (karakter berjalan keluar), baru panggung baru masuk. */}
+        <AnimatePresence mode="wait">
+          <CustomerStage
+            key={state.index}
+            character={character}
+            large={isGreet}
+            stepKey={stepKey}
+            talkMs={speechMs(speech)}
+            reaction={state.feedback ?? undefined}
+            farewell={state.step === 'served'}
           >
-            <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
-              Geser ke bawah ↓
-            </span>
-          </div>
-        </section>
+            {bubble}
+          </CustomerStage>
+        </AnimatePresence>
+
+        {/* Area kerja muncul setelah langkah Sapa dan memudar saat pembeli
+            berganti (bersamaan dengan pembeli lama yang berjalan keluar). */}
+        <AnimatePresence initial={false}>
+          {!isGreet && (
+            <m.section
+              key={`work-${state.index}`}
+              ref={workRef}
+              aria-labelledby="step-title"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta bg-kayu"
+            >
+              <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
+                <div className="flex flex-col gap-2 rounded-2xl border-4 border-tinta bg-kapur p-1.5 md:gap-3 md:p-4">
+                  <h2
+                    id="step-title"
+                    ref={headingRef}
+                    tabIndex={-1}
+                    className="sr-only md:not-sr-only md:font-heading md:text-xl"
+                  >
+                    {heading}
+                  </h2>
+                  <m.div
+                    key={stepKey}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col gap-2 md:gap-3"
+                  >
+                    {body}
+                  </m.div>
+                </div>
+              </div>
+              <div
+                aria-hidden="true"
+                data-scroll-hint
+                className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+              >
+                <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
+                  Geser ke bawah ↓
+                </span>
+              </div>
+            </m.section>
+          )}
+        </AnimatePresence>
 
         <ActionBar feedback={visibleFeedback}>{actions}</ActionBar>
       </main>
