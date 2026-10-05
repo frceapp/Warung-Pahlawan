@@ -1,9 +1,12 @@
 // Terpal warung bergaris biru dan jingga dengan pinggiran bergelombang.
-function Awning({ className = '' }) {
+// `thin`: di HP hanya garis tipis supaya layar main muat satu layar.
+function Awning({ thin = false, className = '' }) {
   return (
-    <div className={className} aria-hidden="true">
-      <div className="awning-stripes h-12 border-b-4 border-tinta sm:h-16" />
-      <div className="awning-scallops h-7" />
+    <div className={`shrink-0 ${className}`} aria-hidden="true">
+      <div
+        className={`awning-stripes border-b-4 border-tinta ${thin ? 'h-3 md:h-8' : 'h-12 sm:h-16'}`}
+      />
+      <div className={`awning-scallops h-7 ${thin ? 'hidden md:block' : ''}`} />
     </div>
   )
 }

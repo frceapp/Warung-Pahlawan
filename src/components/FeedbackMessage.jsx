@@ -21,12 +21,12 @@ function FeedbackMessage({ feedback }) {
         <p
           key={feedback.id}
           data-tone={feedback.tone}
-          className={`flex items-start gap-2 rounded-xl border-4 bg-kapur px-3 py-2 text-base leading-snug ${tone.box} ${tone.motion}`}
+          className={`flex items-start gap-2 rounded-xl border-4 bg-kapur px-2 py-1.5 text-sm leading-snug md:px-3 md:py-2 md:text-base ${tone.box} ${tone.motion}`}
         >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
-            className={`h-7 w-7 shrink-0 rounded-full border-2 border-tinta stroke-kapur ${tone.icon}`}
+            className={`h-6 w-6 shrink-0 rounded-full border-2 border-tinta stroke-kapur md:h-7 md:w-7 ${tone.icon}`}
             fill="none"
             strokeWidth="3"
             strokeLinecap="round"

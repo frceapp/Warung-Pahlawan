@@ -1,43 +1,22 @@
-import Button from './Button.jsx'
 import Receipt from './Receipt.jsx'
-import TotalChoices from './TotalChoices.jsx'
 
-// Langkah 3: hitung total belanja dari nota.
-function CountStep({ level, customer, wrongTotals, onChoose, onConfirm }) {
-  const isShown = level.totalMode === 'shown'
+// Langkah 3: hitung total belanja dari nota. Pilihan total (atau tombol
+// lanjut di level 1) ada di bar aksi.
+function CountStep({ level, customer }) {
+  const prompt = {
+    shown: 'Nota sudah menghitung totalnya. Lihat harga tiap buah.',
+    guided: 'Jumlahkan hasil kali tiap baris, lalu pilih totalnya.',
+    unguided: 'Kalikan harga dengan jumlah, jumlahkan, lalu pilih totalnya.',
+  }[level.totalMode]
 
   return (
-    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">
+    <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start md:gap-4">
       <Receipt
         order={customer.order}
         showSubtotals={level.totalMode !== 'unguided'}
-        showTotal={isShown}
+        showTotal={level.totalMode === 'shown'}
       />
-      <div className="flex flex-col gap-3">
-        {isShown ? (
-          <>
-            <p className="text-lg">
-              Nota sudah menghitung totalnya. Lihat harga tiap buah, lalu lanjut terima uang.
-            </p>
-            <Button onClick={onConfirm} className="self-start">
-              Terima uang pembeli
-            </Button>
-          </>
-        ) : (
-          <>
-            <p className="text-lg">
-              {level.totalMode === 'guided'
-                ? 'Jumlahkan hasil kali tiap baris. Berapa totalnya?'
-                : 'Kalikan harga dengan jumlah tiap buah, lalu jumlahkan. Berapa totalnya?'}
-            </p>
-            <TotalChoices
-              choices={customer.totalChoices}
-              wrongChoices={wrongTotals}
-              onChoose={onChoose}
-            />
-          </>
-        )}
-      </div>
+      <p className="text-sm md:text-lg">{prompt}</p>
     </div>
   )
 }
