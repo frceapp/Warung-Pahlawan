@@ -1,17 +1,29 @@
 import { useEffect, useReducer, useRef } from 'react'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
+import ChangeStep from '../components/ChangeStep.jsx'
 import CharacterAvatar from '../components/CharacterAvatar.jsx'
+import CountStep from '../components/CountStep.jsx'
 import FeedbackMessage from '../components/FeedbackMessage.jsx'
 import GreetStep from '../components/GreetStep.jsx'
+import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
+import ServedStep from '../components/ServedStep.jsx'
 import SpeechBubble from '../components/SpeechBubble.jsx'
 import StepTracker from '../components/StepTracker.jsx'
+import { formatRupiah } from '../game/format.js'
 import { getLevelFruits } from '../game/order.js'
-import { createSession, getCurrentCustomer, sessionReducer, STEPS } from '../game/session.js'
+import {
+  createSession,
+  getCurrentCustomer,
+  getSessionScore,
+  sessionReducer,
+  STEPS,
+  summarizeSession,
+} from '../game/session.js'
 
-function PlayScreen({ level, rng, onExit }) {
+function PlayScreen({ level, rng, onExit, onFinish }) {
   const [state, dispatch] = useReducer(sessionReducer, null, () => createSession(level, rng))
   const customer = getCurrentCustomer(state)
   const { character } = customer
@@ -31,6 +43,14 @@ function PlayScreen({ level, rng, onExit }) {
     headingRef.current?.focus({ preventScroll: true })
     headingRef.current?.scrollIntoView({ block: 'nearest' })
   }, [state.index, state.step])
+
+  // Laporkan hasil sekali saja ketika level selesai.
+  const hasReported = useRef(false)
+  useEffect(() => {
+    if (state.step !== 'finished' || !onFinish || hasReported.current) return
+    hasReported.current = true
+    onFinish(summarizeSession(state))
+  }, [state, onFinish])
 
   let bubble = null
   let body = null
@@ -60,9 +80,62 @@ function PlayScreen({ level, rng, onExit }) {
         onWrap={() => dispatch({ type: 'wrapOrder' })}
       />
     )
+  } else if (state.step === 'count') {
+    bubble = <p>Terima kasih sudah dibungkus. Berapa semuanya?</p>
+    body = (
+      <CountStep
+        level={level}
+        customer={customer}
+        wrongTotals={state.wrongTotals}
+        onChoose={(amount) => dispatch({ type: 'chooseTotal', amount })}
+        onConfirm={() => dispatch({ type: 'confirmTotal' })}
+      />
+    )
+  } else if (state.step === 'change') {
+    bubble = (
+      <>
+        <p className="mb-2">Ini uangku.</p>
+        <ul className="flex flex-wrap gap-2" aria-label="Uang dari pembeli">
+          {customer.payment.notes.map((value, index) => (
+            <li key={`${index}-${value}`}>
+              <MoneyImage value={value} size={96} />
+            </li>
+          ))}
+        </ul>
+        <p className="mt-1 font-bold">Jumlahnya {formatRupiah(customer.payment.amount)}.</p>
+      </>
+    )
+    body = (
+      <ChangeStep
+        level={level}
+        customer={customer}
+        givenChange={state.givenChange}
+        onAdd={(value) => dispatch({ type: 'addMoney', value })}
+        onRemove={(index) => dispatch({ type: 'removeMoney', index })}
+        onClear={() => dispatch({ type: 'clearMoney' })}
+        onGive={() => dispatch({ type: 'giveChange' })}
+        onNoChange={() => dispatch({ type: 'noChange' })}
+      />
+    )
+  } else if (state.step === 'served') {
+    bubble = <p>Terima kasih! Senang belanja di warungmu.</p>
+    body = (
+      <ServedStep
+        isLast={state.index + 1 >= state.customers.length}
+        onNext={() => dispatch({ type: 'nextCustomer' })}
+      />
+    )
   } else {
-    bubble = <p>Terima kasih, pesananku sudah dibungkus.</p>
-    body = <p className="text-lg">Langkah hitung dan kembalian sedang disiapkan.</p>
+    const summary = summarizeSession(state)
+    bubble = <p>Terima kasih! Sampai jumpa lagi.</p>
+    body = (
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-lg">
+          Warung tutup. Skormu {summary.score} dari {summary.maxScore}, dapat {summary.stars} bintang.
+        </p>
+        <Button onClick={onExit}>Kembali ke beranda</Button>
+      </div>
+    )
   }
 
   return (
@@ -75,8 +148,11 @@ function PlayScreen({ level, rng, onExit }) {
         <p className="rounded-xl border-4 border-tinta bg-terpal px-3 py-1 font-heading text-lg text-kapur">
           {level.name}
         </p>
-        <p className="text-base font-bold">
-          Pembeli {state.index + 1} dari {state.customers.length}
+        <p className="flex gap-3 text-base font-bold">
+          <span>
+            Pembeli {state.index + 1} dari {state.customers.length}
+          </span>
+          <span data-score={getSessionScore(state)}>Skor {getSessionScore(state)}</span>
         </p>
       </header>
 
@@ -121,7 +197,11 @@ function PlayScreen({ level, rng, onExit }) {
                 tabIndex={-1}
                 className="font-heading text-2xl"
               >
-                {stepName ? `Langkah ${stepIndex + 1}: ${stepName}` : 'Pesanan dibungkus'}
+                {stepName
+                  ? `Langkah ${stepIndex + 1}: ${stepName}`
+                  : state.step === 'served'
+                    ? 'Pembeli selesai dilayani'
+                    : 'Warung tutup'}
               </h2>
               {body}
               <FeedbackMessage feedback={state.feedback} />

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { describeBagProblem } from './feedback.js'
+import { describeBagProblem, describeChange, describeWrongTotal } from './feedback.js'
+import { checkChange, createPayment } from './payment.js'
 
 describe('describeBagProblem', () => {
   it('menyebut buah yang kurang', () => {
@@ -28,6 +29,36 @@ describe('describeBagProblem', () => {
       }),
     ).toBe(
       'Masih kurang 1 jeruk. Ada 3 rambutan yang lebih. Tambah yang kurang dan keluarkan yang lebih, lalu bungkus lagi.',
+    )
+  })
+})
+
+
+describe('describeChange', () => {
+  const payment = createPayment(7000, false)
+  const exact = createPayment(7000, true)
+
+  it('benar', () => {
+    expect(describeChange(checkChange([2000, 1000], payment), payment)).toBe(
+      'Kembaliannya Rp3.000, pas sekali.',
+    )
+    expect(describeChange(checkChange([], exact), exact)).toBe(
+      'Uangnya pas, jadi tidak perlu kembalian.',
+    )
+  })
+
+  it('menjelaskan yang salah dan apa yang harus dilakukan', () => {
+    expect(describeChange(checkChange([1000], payment), payment)).toMatch(/masih kurang. Tambah/)
+    expect(describeChange(checkChange([5000], payment), payment)).toMatch(/kelebihan. Kembalikan/)
+    expect(describeChange(checkChange([], payment), payment)).toMatch(/perlu kembalian/)
+    expect(describeChange(checkChange([1000], exact), exact)).toMatch(/Tidak perlu kembalian/)
+  })
+})
+
+describe('describeWrongTotal', () => {
+  it('menyebut angka yang dipilih dan cara menghitung', () => {
+    expect(describeWrongTotal(5000)).toBe(
+      'Rp5.000 belum tepat. Hitung lagi: harga satu buah kali jumlahnya, lalu jumlahkan semua baris.',
     )
   })
 })
