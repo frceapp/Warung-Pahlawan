@@ -164,6 +164,9 @@ src/
 - Jangan pernah menjalankan `git push --force`, `rebase` pada commit yang sudah di-push, `commit --amend` setelah push, atau mengubah tanggal commit.
 - Jangan mengubah isi `docs/prompt-log.md`. Berkas itu dicatat oleh pemilik proyek.
 - Di akhir tiap tugas, tuliskan ringkasan hasil: berkas yang dibuat atau diubah, perintah yang dijalankan beserta hasilnya, dan usulan pesan commit. Ringkasan ini disalin pemilik proyek ke log.
+- Setiap pekerjaan yang sudah berhasil (build dan tes lulus) diajukan
+lewat pull request ke main. Agent tidak menggabungkan PR dan tidak
+mem-push langsung ke main; pemilik proyek yang menggabungkan.
 
 ### Kode
 
