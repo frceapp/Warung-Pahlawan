@@ -52,7 +52,7 @@ npm run preview  # coba hasil build di komputer sendiri
 
 ## Status pengembangan
 
-Tugas 1 sampai 8 selesai, Tugas 9 baru satu fitur (Susun Langkah), dan Tugas 10 (audit Lighthouse) belum dikerjakan. Status lengkap tiap tugas ada di [AGENTS.md](AGENTS.md), bagian 4 dan 5.
+Tugas 1 sampai 8 selesai, Tugas 9 baru satu fitur (Susun Langkah), dan Tugas 10 (audit aksesibilitas, performa, dan SEO) sudah dikerjakan di PR #10. Status lengkap tiap tugas ada di [AGENTS.md](AGENTS.md), bagian 4 dan 5.
 
 Keterbatasan yang diketahui: di layar sangat kecil (320×568), beberapa langkah perlu digeser di dalam area kerja; tanda "Geser ke bawah" baru ada di layar main, belum di mode Susun Langkah.
 
