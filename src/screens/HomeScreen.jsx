@@ -13,10 +13,15 @@ function HomeScreen({ bestStars, onPlay, onOpenSequence, focusHeading = false })
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
 
-  // Muat berkas karakter pembeli setelah beranda tampil, supaya pembeli
-  // pertama bisa langsung berjalan masuk saat level dibuka.
+  // Muat berkas karakter pembeli saat browser senggang setelah beranda
+  // tampil, supaya pembeli pertama bisa langsung berjalan masuk.
   useEffect(() => {
-    const timer = setTimeout(() => loadAnimeCharacter().catch(() => {}), 1000)
+    const load = () => loadAnimeCharacter().catch(() => {})
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(load, { timeout: 1500 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const timer = setTimeout(load, 300)
     return () => clearTimeout(timer)
   }, [])
 

@@ -247,7 +247,7 @@
 @keyframes ch-walk-in {
   0% {
     opacity: 0;
-    transform: translateX(-320px);
+    transform: translateX(-240px);
   }
   10% {
     opacity: 1;

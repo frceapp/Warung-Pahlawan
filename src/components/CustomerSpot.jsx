@@ -1,11 +1,12 @@
-import { lazy, Suspense } from 'react'
-import { loadAnimeCharacter } from './character/loadAnimeCharacter.js'
+import { createElement, lazy, Suspense, useState } from 'react'
+import { getLoadedAnimeCharacter, loadAnimeCharacter } from './character/loadAnimeCharacter.js'
 import SpeechBubble from './SpeechBubble.jsx'
 
 // Karakter anime (sekitar 20 kB JS dan CSS) dimuat terpisah supaya bundel
-// awal tidak membesar. Selama berkasnya dimuat, ruangnya sudah tersedia
-// (tanpa layout shift).
-const AnimeCharacter = lazy(loadAnimeCharacter)
+// awal tidak membesar. Biasanya berkasnya sudah dimuat dari beranda dan
+// langsung dipakai; kalau belum, React.lazy menunggu dengan ruang yang sudah
+// tersedia (tanpa layout shift).
+const LazyAnimeCharacter = lazy(loadAnimeCharacter)
 
 // Gerak kartu ringkas: datang dari kiri saat muncul, pergi ke kanan saat
 // `leaving`. Dengan "kurangi gerakan", kartu hanya memudar. Tanda ! diperlukan
@@ -20,12 +21,25 @@ const BUBBLE_AFTER_WALK = 'motion-safe:animate-bubble-after-walk'
 const TALK_AFTER_WALK_MS = 1300
 const TALK_AFTER_CARD_MS = 400
 
+// Komponen karakter yang sudah dimuat selalu sama (disimpan sekali di
+// loadAnimeCharacter.js), jadi aman dirender lewat createElement.
+function PreloadedCharacter(props) {
+  return createElement(getLoadedAnimeCharacter(), props)
+}
+
 function Figure({ className, ...props }) {
+  // Dipilih sekali saat muncul, supaya render ulang tidak menukar cabang dan
+  // membuat karakter mulai berjalan lagi dari awal.
+  const [isPreloaded] = useState(() => getLoadedAnimeCharacter() !== null)
   return (
     <div className={`relative shrink-0 ${className}`} aria-hidden="true">
-      <Suspense fallback={null}>
-        <AnimeCharacter className="h-full w-full" {...props} />
-      </Suspense>
+      {isPreloaded ? (
+        <PreloadedCharacter className="h-full w-full" {...props} />
+      ) : (
+        <Suspense fallback={null}>
+          <LazyAnimeCharacter className="h-full w-full" {...props} />
+        </Suspense>
+      )}
     </div>
   )
 }
