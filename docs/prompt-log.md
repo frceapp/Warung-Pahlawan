@@ -891,3 +891,41 @@ Commit terkait:
 - `c92a523` docs: note sound effects in AGENTS.md and README
 - `e954dc9` chore: add sound toggle screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P16, 6 Oktober 2026, 07.41 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: penghapusan mode Susun Langkah (di luar daftar tugas bagian 4; terkait Tugas 9)
+Prompt:
+
+````text
+Hapus mode latihan "Susun Langkah" sepenuhnya. Kerjakan di satu PR.
+
+- Hapus komponen, rute, tautan atau tombol menu di beranda, data, gaya, aset, dan tes yang khusus untuk mode ini.
+- Hapus key localStorage miliknya bila ada. Key skor terbaik game utama (`warung-pahlawan:best-stars`) tetap.
+- Cari sisa referensi ("Susun Langkah", "latihan") di src, README, dan metadata, lalu bersihkan. Jangan sentuh `prompt-log.md` karena log tidak boleh diubah.
+- Rapikan beranda supaya tampilannya tetap seimbang tanpa tombol itu.
+- Pastikan tidak ada tautan mati dan alamat lama tidak menghasilkan halaman kosong. Alihkan ke beranda.
+- Jangan ubah isi `src/game` dan `src/data` selain bagian yang khusus untuk mode ini.
+- Laporkan perubahan ukuran bundle.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Prompt meminta "Jangan sentuh `prompt-log.md`", sedangkan AGENTS.md bagian 8 mewajibkan entri baru untuk setiap PR. AI bertanya dulu. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Tambah entri P16 saja (Recommended)". Entri lama, termasuk yang menyebut Susun Langkah, tidak diubah.
+- Dihapus: `src/screens/SequenceScreen.jsx`, `src/components/StepCard.jsx`, `src/data/sequence.js`, `src/game/sequence.js`, dan `src/game/sequence.test.js` (17 tes). Hanya berkas khusus mode ini yang dihapus di `src/game` dan `src/data`; berkas lain di kedua folder tidak diubah.
+- `src/App.jsx`: layar `sequence` dan impor lazy `SequenceScreen` dihapus. `src/screens/HomeScreen.jsx`: kartu "Latihan: Susun Langkah" dan tombol "Main Susun Langkah" dihapus. Beranda kini berisi judul, pilihan warung, cara main, dan tabel konsep coding, dengan jarak antarbagian tetap 40 px dan tanpa scroll mendatar di 360x640, 768x1024, dan 1280x800.
+- Tidak ada gaya CSS, keyframe, atau key localStorage yang khusus untuk mode ini; key `warung-pahlawan:best-stars` dan `warungPahlawanSuara` tetap. Mode ini juga tidak pernah punya alamat sendiri (layar berpindah lewat state React). Alamat lain selain `/` sudah menampilkan beranda lewat rewrite di `vercel.json`; sekarang `src/main.jsx` juga merapikan alamatnya ke `/` dengan `history.replaceState`. Diuji: `/susun-langkah`, `/sequence`, `/?mode=sequence`, dan `/#susun-langkah` menampilkan beranda tanpa error, dan beranda tidak punya tautan.
+- Folder `.github/pr-assets/susun-langkah/` (11 tangkapan layar PR #8) dihapus. Deskripsi PR #8 menautkan gambarnya ke commit `f7f044a`, jadi gambarnya tetap tampil di PR itu. Tangkapan layar beranda sebelum dan sesudah ditambahkan di `.github/pr-assets/hapus-susun-langkah/`.
+- README (daftar fitur, struktur, status, keterbatasan) dan AGENTS.md (status Tugas 9 di bagian 4 dan baris Susun Langkah di bagian 5) diperbarui. Sisa kata "sequence" di `src/data/guide.js` adalah konsep coding "Urutan (sequence)" di beranda, bukan bagian mode ini. `index.html`, `public/`, dan `docs/` lain tidak memuat referensi ke mode ini.
+- Ukuran bundle (build `main` dibanding sesudah): JS awal 319,68 kB (gzip 101,19 kB; `index` 318,72 kB ditambah `jsx-runtime` 0,96 kB yang dimuat di awal) menjadi 318,72 kB (gzip 100,84 kB; `jsx-runtime` kini menyatu di `index`). Chunk lazy `SequenceScreen` 6,96 kB (gzip 2,70 kB) hilang. CSS 38,82 kB menjadi 38,29 kB. Folder `dist` 646.900 menjadi 638.235 byte.
+- Audit axe-core di beranda, kelima langkah layar main, dan layar hasil (360x640 dan 1280x800) tanpa pelanggaran; satu level dimainkan sampai layar hasil.
+- `npm test` (13 berkas, 92 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `5690519` feat: remove the Susun Langkah practice mode
+- `c7b8446` fix: send unknown paths to the home address
+- `3b53836` docs: drop Susun Langkah from README and AGENTS.md
+- `b479ed7` chore: remove Susun Langkah PR screenshots
+- `b6932ab` chore: add home screen screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
