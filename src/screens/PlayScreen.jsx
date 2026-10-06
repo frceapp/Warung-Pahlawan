@@ -102,13 +102,18 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   useFeedbackSound(state.feedback)
 
   // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
+  // Selama isinya bisa digeser, area kerja juga bisa difokus supaya bisa
+  // digeser dengan keyboard.
   const contentRef = useRef(null)
   const [canScrollDown, setCanScrollDown] = useState(false)
+  const [isScrollable, setIsScrollable] = useState(false)
   useEffect(() => {
     const work = workRef.current
     if (!work) return undefined
-    const update = () =>
+    const update = () => {
       setCanScrollDown(work.scrollHeight - work.clientHeight - work.scrollTop > 8)
+      setIsScrollable(work.scrollHeight - work.clientHeight > 1)
+    }
     update()
     work.addEventListener('scroll', update, { passive: true })
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update)
@@ -270,7 +275,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     speech = 'Terima kasih! Sampai jumpa lagi.'
     bubble = <p>{speech}</p>
     body = (
-      <p className="text-lg">
+      <p className="w-fit rounded-xl border-4 border-tinta bg-kapur px-3 py-1.5 text-lg">
         Warung tutup. Skormu {summary.score} dari {summary.maxScore}, dapat {summary.stars} bintang.
       </p>
     )
@@ -290,7 +295,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   return (
     <div className="relative isolate flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
       <Suspense fallback={null}>
-        <WarungScene levelId={level.id} greeting={isGreet} />
+        <WarungScene levelId={level.id} />
       </Suspense>
       <Awning thin />
       <header className="mx-auto flex w-full max-w-5xl shrink-0 items-center gap-2 px-3 pt-1.5 md:px-4 md:pt-1">
@@ -318,7 +323,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">
-        <div className="mx-auto w-full max-w-5xl shrink-0 px-3 pt-1.5 md:px-4 md:pt-3">
+        <div className="mx-auto w-full max-w-5xl shrink-0 px-3 pt-1.5 md:px-4 md:pt-2">
           <StepTracker currentStep={state.step} />
         </div>
 
@@ -328,76 +333,88 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           </h2>
         )}
 
-        {/* Satu panggung per pembeli. Saat pembeli berganti, panggung lama
-            pergi dulu (karakter berjalan keluar), baru panggung baru masuk. */}
-        <AnimatePresence mode="wait">
-          <CustomerStage
-            key={state.index}
-            character={character}
-            large={isGreet}
-            stepKey={stepKey}
-            talkMs={speechMs(speech)}
-            reaction={state.feedback ?? undefined}
-            farewell={state.step === 'served'}
+        {/* Kamera dekat: panggung pembeli tepat di atas meja kasir. Pembeli
+            setengah badan berdiri di belakang meja (pinggang di tepi atas
+            meja). Di HP panggung tinggi di langkah Sapa dan memendek halus di
+            langkah lain; meja kasir mengisi sisanya dan menjadi tempat kerja. */}
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            data-stage
+            className={`relative shrink-0 transition-[height] duration-500 ease-out ${
+              isGreet ? 'h-[calc(100%-100px)] md:h-[calc(100%-130px)]' : 'h-[161px] md:h-[335px]'
+            }`}
           >
-            {bubble}
-          </CustomerStage>
-        </AnimatePresence>
-
-        {/* Area kerja (meja kasir) muncul setelah langkah Sapa dan memudar saat
-            pembeli berganti (bersamaan dengan pembeli lama yang berjalan
-            keluar). Mesin kasir dan barang lain berdiri di atas meja. */}
-        <AnimatePresence initial={false}>
-          {!isGreet && (
-            <m.section
-              key={`work-${state.index}`}
-              aria-labelledby="step-title"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, transition: { duration: 0.2 } }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="relative z-0 flex min-h-0 flex-1 flex-col"
-            >
-              <CashCounter screen={registerScreen} drawerOpen={drawerOpen} />
-              <div
-                ref={workRef}
-                data-work-area
-                className="scene-counter relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta"
+            {/* Satu panggung per pembeli. Saat pembeli berganti, panggung lama
+                pergi dulu (karakter berjalan keluar), baru panggung baru masuk. */}
+            <AnimatePresence mode="wait">
+              <CustomerStage
+                key={state.index}
+                character={character}
+                large={isGreet}
+                stepKey={stepKey}
+                talkMs={speechMs(speech)}
+                reaction={state.feedback ?? undefined}
+                farewell={state.step === 'served'}
               >
-                <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
-                  <div className="flex flex-col gap-2 rounded-2xl border-4 border-tinta bg-kapur p-1.5 md:gap-3 md:p-4">
-                    <h2
-                      id="step-title"
-                      ref={headingRef}
-                      tabIndex={-1}
-                      className="sr-only md:not-sr-only md:font-heading md:text-xl"
-                    >
-                      {heading}
-                    </h2>
-                    <m.div
-                      key={stepKey}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col gap-2 md:gap-3"
-                    >
-                      {body}
-                    </m.div>
-                  </div>
-                </div>
-                <div
-                  aria-hidden="true"
-                  data-scroll-hint
-                  className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+                {bubble}
+              </CustomerStage>
+            </AnimatePresence>
+          </div>
+
+          {/* Meja kasir selebar layar. Keranjang, kantong, laci, nampan, dan
+              mesin kasir ada di atas meja. Isinya muncul setelah langkah Sapa
+              dan memudar saat pembeli berganti. */}
+          <div
+            data-counter
+            className="scene-counter relative z-10 flex min-h-0 flex-1 flex-col border-t-4 border-tinta"
+          >
+            <AnimatePresence initial={false}>
+              {!isGreet && (
+                <m.section
+                  key={`work-${state.index}`}
+                  aria-labelledby="step-title"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="relative flex min-h-0 flex-1 flex-col"
                 >
-                  <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
-                    Geser ke bawah ↓
-                  </span>
-                </div>
-              </div>
-            </m.section>
-          )}
-        </AnimatePresence>
+                  <CashCounter screen={registerScreen} drawerOpen={drawerOpen} />
+                  <div
+                    ref={workRef}
+                    data-work-area
+                    tabIndex={isScrollable ? 0 : undefined}
+                    className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+                  >
+                    <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 pt-2.5 pb-1 md:px-4 md:pt-3 md:pb-1">
+                      <h2 id="step-title" ref={headingRef} tabIndex={-1} className="sr-only">
+                        {heading}
+                      </h2>
+                      <m.div
+                        key={stepKey}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col gap-2 md:gap-3"
+                      >
+                        {body}
+                      </m.div>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      data-scroll-hint
+                      className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
+                        Geser ke bawah ↓
+                      </span>
+                    </div>
+                  </div>
+                </m.section>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
 
         <ActionBar feedback={visibleFeedback}>{actions}</ActionBar>
       </main>

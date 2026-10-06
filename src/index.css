@@ -108,8 +108,8 @@
 }
 
 /* Latar warung di layar main (components/scene/WarungScene.jsx). Warna
-   dinding dan lantai dicampur dengan langit supaya lebih redup daripada
-   objek yang bisa diklik. */
+   dinding dicampur dengan langit supaya lebih redup daripada objek yang
+   bisa diklik. */
 @utility scene-wall-planks {
   background-color: color-mix(in srgb, var(--color-kayu) 26%, var(--color-langit));
   background-image: repeating-linear-gradient(
@@ -134,45 +134,44 @@
   );
 }
 
-@utility scene-wainscot {
-  background-color: color-mix(in srgb, var(--color-daun) 18%, var(--color-langit));
-}
-
-@utility scene-floor-planks {
-  background-color: color-mix(in srgb, var(--color-kayu) 42%, var(--color-langit));
-  background-image: repeating-linear-gradient(
-    180deg,
-    transparent 0 26px,
-    color-mix(in srgb, var(--color-tinta) 12%, transparent) 26px 28px
-  );
-}
-
-@utility scene-floor-tiles {
-  background-color: color-mix(in srgb, var(--color-kapur) 55%, var(--color-langit));
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--color-tinta) 10%, transparent) 2px, transparent 2px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-tinta) 10%, transparent) 2px, transparent 2px);
-  background-size: 56px 56px;
-}
-
-/* Lantai semen los pasar. */
-@utility scene-floor-concrete {
-  background-color: color-mix(in srgb, var(--color-kayu) 16%, var(--color-langit));
-  background-image: linear-gradient(
-    color-mix(in srgb, var(--color-tinta) 9%, transparent) 2px,
-    transparent 2px
-  );
-  background-size: 100% 64px;
-}
-
-/* Meja kasir kayu: papan tegak tipis. Dipakai di latar dan area kerja. */
+/* Meja kasir kayu: permukaan atas yang lebih terang, lalu papan tegak tipis.
+   Menjadi tempat kerja di layar main. */
 @utility scene-counter {
   background-color: var(--color-kayu);
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--color-kapur) 28%, var(--color-kayu)) 0 8px,
+      color-mix(in srgb, var(--color-tinta) 30%, var(--color-kayu)) 8px 10px,
+      transparent 10px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 58px,
+      color-mix(in srgb, var(--color-tinta) 10%, transparent) 58px 61px
+    );
+}
+
+/* Barang di atas meja kasir. Warnanya lebih redup daripada buah, uang, dan
+   tombol di dalamnya (yang berwarna kapur). */
+@utility counter-basket {
+  background-color: color-mix(in srgb, var(--color-pisang) 40%, var(--color-kayu));
   background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0 58px,
-    color-mix(in srgb, var(--color-tinta) 10%, transparent) 58px 61px
+    45deg,
+    transparent 0 10px,
+    color-mix(in srgb, var(--color-tinta) 8%, transparent) 10px 12px
   );
+}
+
+@utility counter-bag {
+  background-color: color-mix(in srgb, var(--color-kayu) 30%, var(--color-kapur));
+}
+
+@utility counter-drawer {
+  background-color: color-mix(in srgb, var(--color-terpal) 18%, var(--color-langit));
+}
+
+@utility counter-tray {
+  background-color: color-mix(in srgb, var(--color-langit) 55%, var(--color-kapur));
 }
 
 /* Posisi hiasan latar dari data dekorasi (lihat decor/levelN.js): nilai

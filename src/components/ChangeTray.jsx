@@ -4,7 +4,8 @@ import MoneyImage from './MoneyImage.jsx'
 
 // Kembalian yang sedang disusun anak, beserta jumlahnya. Uang yang sama
 // dikelompokkan ("Rp500 ×5") supaya tetap muat di layar HP; tombolnya
-// mengembalikan satu lembar ke laci.
+// mengembalikan satu lembar ke laci. Nampan dibuat pendek supaya muat di
+// atas meja kasir.
 function ChangeTray({ values, onRemove, onClear }) {
   const total = sumMoney(values)
   const groups = [...new Set(values)]
@@ -15,9 +16,7 @@ function ChangeTray({ values, onRemove, onClear }) {
     <div className="flex flex-col gap-1 md:gap-2">
       <div className="flex flex-wrap items-center gap-x-2">
         <p className="flex flex-wrap items-baseline gap-x-2 text-sm md:text-lg">
-          <span>
-            Kembalianmu<span className="hidden md:inline"> yang sudah disusun</span>:
-          </span>
+          <span>Kembalianmu:</span>
           <span
             key={total}
             className="inline-block font-heading text-xl motion-safe:animate-pop md:text-2xl"
@@ -27,10 +26,11 @@ function ChangeTray({ values, onRemove, onClear }) {
           </span>
         </p>
         {values.length > 0 && (
+          // Area sentuh tetap 48 px, tetapi tidak menambah tinggi baris.
           <button
             type="button"
             onClick={onClear}
-            className="ml-auto min-h-12 rounded-lg px-2 text-sm font-bold underline underline-offset-4 hover:bg-kapur md:text-base"
+            className="-my-2.5 ml-auto min-h-12 rounded-lg px-2 text-sm font-bold underline underline-offset-4 hover:bg-kapur md:text-base"
           >
             Kosongkan
           </button>

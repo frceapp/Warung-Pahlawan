@@ -1,7 +1,8 @@
 import FruitImage from './FruitImage.jsx'
 
-// Isi kantong belanja. Tiap buah tampil sebagai satu tombol: ketuk untuk
-// mengeluarkan satu buah. Tanda "−" di pojok menunjukkan aksinya, jadi ikon
+// Isi kantong belanja. Tiap buah tampil sebagai satu tombol (gambar dan
+// jumlah; namanya dibacakan lewat aria-label): ketuk untuk mengeluarkan satu
+// buah. Tanda "−" di pojok menunjukkan aksinya, jadi ikon
 // dan jumlah tidak pernah tertutup, bahkan di layar 320 px.
 function ShoppingBag({ fruits, bag, onRemove }) {
   const items = fruits.filter((fruit) => (bag[fruit.id] ?? 0) > 0)
@@ -11,7 +12,7 @@ function ShoppingBag({ fruits, bag, onRemove }) {
   }
 
   return (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-2.5 pt-1.5 pr-1.5 md:grid-cols-2 md:gap-3">
+    <ul className="grid grid-cols-3 gap-x-2 gap-y-2.5 pt-1.5 pr-1.5 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
       {items.map((fruit) => (
         <li key={fruit.id} data-fruit-id={fruit.id}>
           <button
@@ -26,7 +27,6 @@ function ShoppingBag({ fruits, bag, onRemove }) {
               decorative
               className="h-7 w-7 shrink-0 md:h-10 md:w-10"
             />
-            <span className="hidden text-base md:inline">{fruit.name}</span>
             <span
               key={bag[fruit.id]}
               data-bag-count

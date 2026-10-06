@@ -10,9 +10,7 @@ function StepTracker({ currentStep }) {
 
   return (
     <nav aria-label="Urutan langkah">
-      <p className="sr-only md:not-sr-only md:mb-1 md:w-fit md:rounded-md md:bg-kapur/90 md:px-1.5 md:text-sm md:font-bold">
-        Urutan langkah
-      </p>
+      <p className="sr-only">Urutan langkah</p>
       <ol className="grid grid-cols-4 gap-1 md:gap-3">
         {STEPS.map((step, index) => {
           const status =

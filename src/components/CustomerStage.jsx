@@ -1,6 +1,6 @@
 import { usePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { createElement, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createElement, lazy, Suspense, useEffect, useState } from 'react'
 import { playCustomerBell } from '../lib/sfx.js'
 import { getLoadedAnimeCharacter, loadAnimeCharacter } from './character/loadAnimeCharacter.js'
 import SpeechBubble from './SpeechBubble.jsx'
@@ -16,16 +16,37 @@ function PreloadedCharacter(props) {
   return createElement(getLoadedAnimeCharacter(), props)
 }
 
-// Kotak karakter. Di HP: 144 px di langkah Sapa dan 112 px di langkah lain
-// (gambar tokoh setinggi kira-kira 96 sampai 107 px); di desktop 208 dan 144 px.
-const FIGURE_SIZE = {
-  large: 'h-36 w-[109px] md:h-52 md:w-[158px]',
-  compact: 'h-28 w-[85px] md:h-36 md:w-[109px]',
-}
-// Perpindahan ukuran dan posisi karakter antar-langkah (FLIP, transform saja).
-const RESIZE = { duration: 0.45, ease: [0.2, 0.7, 0.3, 1] }
-// Cadangan kalau berkas karakter belum dimuat: balon tetap muncul dan kartu
-// tetap bisa pergi.
+// Kamera dekat: pembeli berdiri tepat di belakang meja kasir. Kotak gambar
+// diletakkan sehingga pinggang (73,5% tinggi gambar) tepat di tepi bawah
+// panggung, yaitu tepi atas meja; meja menutupi badan bagian bawah. Ukuran
+// berubah halus antarlangkah (scale dengan titik putar di pinggang, jadi
+// pinggang tetap menempel di meja).
+// - HP: kotak 260×342 px di langkah Sapa (sekitar 220 px terlihat), skala
+//   0,7 di langkah lain (sekitar 154 px terlihat, lebar sekitar setengah
+//   layar).
+// - Layar lebar: kotak 460×606 px di langkah Sapa (sekitar 390 px terlihat),
+//   skala 0,84 di langkah lain (sekitar 329 px terlihat).
+const FIGURE =
+  'absolute bottom-[-91px] h-[342px] w-[260px] origin-[50%_251px] transition-[left,scale] duration-500 ease-out md:bottom-[-161px] md:h-[606px] md:w-[460px] md:origin-[50%_445px]'
+// Layar HP yang pendek (misalnya 320×568): karakter Sapa sedikit diperkecil
+// supaya balon fun fact tetap muat di atas kepala.
+const FIGURE_LARGE = 'left-[calc(50%-130px)] [@media(max-height:620px)]:scale-[0.8] md:left-0 md:[@media(max-height:620px)]:scale-100'
+const FIGURE_COMPACT = '-left-[39px] scale-[0.7] md:-left-[37px] md:scale-[0.84]'
+
+// Balon bicara menempel di kepala: di HP di atas kepala saat langkah Sapa
+// (teks fun fact panjang) dan di samping kepala di langkah lain; di layar
+// lebar selalu di samping kepala.
+const BUBBLE_LARGE =
+  'inset-x-2 bottom-[234px] [@media(max-height:620px)]:bottom-[190px] md:inset-x-auto md:right-0 md:bottom-auto md:left-[350px] md:top-[max(8px,calc(100%-382px))] md:[@media(max-height:620px)]:bottom-auto'
+const BUBBLE_COMPACT = 'top-1 right-2 left-[156px] md:right-0 md:left-[296px] md:top-2'
+
+// Papan nama: di langkah Sapa di depan meja (di bawah pembeli), di langkah
+// lain kecil di tepi bawah panggung, di depan badan pembeli.
+const PLAQUE_LARGE = 'top-[calc(100%+10px)] left-1/2 -translate-x-1/2 md:left-[230px]'
+const PLAQUE_COMPACT = 'bottom-1 left-[91px] -translate-x-1/2 md:left-[193px]'
+
+// Cadangan kalau berkas karakter belum dimuat: balon tetap muncul dan
+// panggung tetap bisa pergi.
 const ARRIVE_FALLBACK_MS = 1600
 const LEAVE_FALLBACK_MS = 1600
 
@@ -44,11 +65,11 @@ const FADE = {
   shown: { opacity: 1, transition: { duration: 0.2 } },
 }
 
-// Panggung satu pembeli: karakter dan balon bicaranya. Satu panggung dipakai
-// untuk keempat langkah, jadi karakter tidak dipasang ulang saat langkah
-// berganti; ukurannya dihaluskan dari besar (Sapa) ke sedang (langkah lain).
-// Panggung adalah anak langsung AnimatePresence di PlayScreen: saat pembeli
-// berganti, balon memudar, karakter berjalan keluar, baru pembeli baru masuk.
+// Panggung satu pembeli: karakter, papan nama, dan balon bicaranya. Satu
+// panggung dipakai untuk keempat langkah, jadi karakter tidak dipasang ulang
+// saat langkah berganti. Panggung adalah anak langsung AnimatePresence di
+// PlayScreen: saat pembeli berganti, balon memudar, karakter berjalan keluar,
+// baru pembeli baru masuk.
 // - large: tampilan langkah Sapa (karakter besar, papan nama, fun fact)
 // - stepKey/talkMs: kalimat baru dan lama mulut bergerak
 // - reaction: umpan balik terakhir, untuk reaksi senang atau sedih
@@ -57,10 +78,6 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
   const [isPresent, safeToRemove] = usePresence()
   const [arrived, setArrived] = useState(false)
   const [isPreloaded] = useState(() => getLoadedAnimeCharacter() !== null)
-  const figureRef = useRef(null)
-  const last = useRef({ large, rect: null })
-  const [resizeFrom, setResizeFrom] = useState(null)
-  const pendingResize = useRef(0)
 
   useEffect(() => {
     const timer = setTimeout(() => setArrived(true), ARRIVE_FALLBACK_MS)
@@ -79,29 +96,6 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
     return () => clearTimeout(timer)
   }, [isPresent, safeToRemove])
 
-  // FLIP: saat tata letak berganti (Sapa ke langkah lain), karakter mulai dari
-  // posisi dan ukuran lamanya, lalu bergeser dan mengecil dengan halus ke
-  // tempat barunya. Transform awal ditulis langsung sebelum layar digambar
-  // supaya tidak ada satu frame pun yang meloncat; Motion melanjutkannya
-  // dari nilai yang sama pada frame berikutnya.
-  useLayoutEffect(() => {
-    const figure = figureRef.current
-    const previous = last.current
-    if (figure && previous.rect && previous.large !== large) {
-      figure.style.transform = 'none'
-      const next = figure.getBoundingClientRect()
-      const from = {
-        x: previous.rect.left - next.left,
-        y: previous.rect.top - next.top,
-        scale: previous.rect.width / next.width,
-      }
-      figure.style.transform = `translateX(${from.x}px) translateY(${from.y}px) scale(${from.scale})`
-      pendingResize.current = requestAnimationFrame(() => setResizeFrom(from))
-    }
-    last.current = { large, rect: figure?.getBoundingClientRect() ?? null }
-  }, [large])
-  useEffect(() => () => cancelAnimationFrame(pendingResize.current), [])
-
   const characterProps = {
     characterId: character.id,
     talkKey: stepKey,
@@ -116,78 +110,59 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
   const showText = arrived && isPresent ? 'shown' : 'hidden'
 
   return (
-    <section
-      aria-label="Pembeli"
-      className={
-        large
-          ? 'flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-3 md:px-4 md:pt-5'
-          : 'shrink-0 px-3 py-1 md:px-4 md:py-3'
-      }
-    >
-      <div
-        className={`mx-auto flex w-full max-w-5xl ${
-          large ? 'flex-col items-center gap-2 md:flex-row md:items-start md:gap-6' : 'items-start gap-2 md:gap-4'
-        }`}
-      >
-        <div className={`relative flex shrink-0 flex-col items-center ${large ? 'gap-1 text-center' : ''}`}>
-          <m.div
-            ref={figureRef}
-            animate={
-              resizeFrom
-                ? { x: [resizeFrom.x, 0], y: [resizeFrom.y, 0], scale: [resizeFrom.scale, 1] }
-                : undefined
-            }
-            transition={RESIZE}
-            style={{ originX: 0, originY: 0 }}
-            className={`relative shrink-0 ${large ? FIGURE_SIZE.large : FIGURE_SIZE.compact}`}
-            aria-hidden="true"
-          >
-            {isPreloaded ? (
-              <PreloadedCharacter {...characterProps} />
-            ) : (
-              <Suspense fallback={null}>
-                <LazyAnimeCharacter {...characterProps} />
-              </Suspense>
-            )}
-          </m.div>
-          {large ? (
-            <m.div
-              key="plaque-large"
-              variants={FADE}
-              initial="hidden"
-              animate={showText}
-              className="flex flex-col items-center gap-1"
-            >
-              <p className="rounded-lg border-4 border-tinta bg-terpal-tua px-2 py-0.5 font-heading text-base leading-tight text-kapur">
-                {character.name}
-              </p>
-              <p className="rounded-md bg-kapur/90 px-1.5 text-sm leading-tight">{character.origin}</p>
-            </m.div>
+    <section aria-label="Pembeli" className="absolute inset-0">
+      <div className="relative mx-auto h-full w-full max-w-5xl">
+        <div
+          data-customer-figure
+          className={`${FIGURE} ${large ? FIGURE_LARGE : FIGURE_COMPACT}`}
+          aria-hidden="true"
+        >
+          {isPreloaded ? (
+            <PreloadedCharacter {...characterProps} />
           ) : (
-            <m.p
-              key="plaque-compact"
-              variants={FADE}
-              initial="hidden"
-              animate={showText}
-              className="absolute -bottom-1 left-1/2 w-max max-w-[96px] -translate-x-1/2 rounded-md border-2 border-tinta bg-terpal-tua px-1 py-px text-center font-heading text-[11px] leading-tight text-kapur md:max-w-[120px] md:text-xs"
-            >
-              {character.name}
-            </m.p>
+            <Suspense fallback={null}>
+              <LazyAnimeCharacter {...characterProps} />
+            </Suspense>
           )}
         </div>
+        {large ? (
+          <m.div
+            key="plaque-large"
+            variants={FADE}
+            initial="hidden"
+            animate={showText}
+            className={`absolute z-20 flex flex-col items-center gap-1 text-center ${PLAQUE_LARGE}`}
+          >
+            <p className="rounded-lg border-4 border-tinta bg-terpal-tua px-3 py-0.5 font-heading text-lg leading-tight whitespace-nowrap text-kapur md:text-2xl">
+              {character.name}
+            </p>
+            <p className="rounded-md bg-kapur/90 px-1.5 text-sm leading-tight whitespace-nowrap md:text-base">
+              {character.origin}
+            </p>
+          </m.div>
+        ) : (
+          <m.p
+            key="plaque-compact"
+            variants={FADE}
+            initial="hidden"
+            animate={showText}
+            className={`absolute z-20 w-max max-w-[150px] rounded-md border-2 border-tinta bg-terpal-tua px-1.5 py-px text-center font-heading text-xs leading-tight text-kapur md:max-w-none md:border-4 md:px-2 md:text-base ${PLAQUE_COMPACT}`}
+          >
+            {character.name}
+          </m.p>
+        )}
         <m.div
           key={stepKey}
           variants={BUBBLE}
           initial="hidden"
           animate={showText}
-          style={{ originX: large ? 0.5 : 0, originY: large ? 0 : 0.5 }}
-          className={large ? 'w-full md:mt-2 md:flex-1' : 'relative z-10 min-w-0 flex-1'}
+          data-bubble
+          style={{ originX: large ? 0.5 : 0, originY: large ? 1 : 0.5 }}
+          className={`absolute z-20 ${large ? BUBBLE_LARGE : BUBBLE_COMPACT}`}
         >
-          {large ? (
-            <SpeechBubble tail="top">{children}</SpeechBubble>
-          ) : (
-            <SpeechBubble compact>{children}</SpeechBubble>
-          )}
+          <SpeechBubble tail={large ? 'bottom' : 'left'} compact={!large}>
+            {children}
+          </SpeechBubble>
         </m.div>
       </div>
     </section>

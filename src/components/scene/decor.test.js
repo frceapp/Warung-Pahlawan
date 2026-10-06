@@ -5,7 +5,7 @@ import level2 from './decor/level2.js'
 import level3 from './decor/level3.js'
 
 const PIECES = ['shelf', 'bananas', 'lamp', 'calendar', 'poster', 'banner', 'sign', 'stall', 'flags', 'sacks', 'crates']
-const SHOW = ['all', 'mobile', 'sm', 'md', 'lg', 'xl']
+const SHOW = ['all', 'mobile', 'sm', 'md', 'mdOnly', 'lg', 'xl']
 const POS = /^(l|r|t|w)(-md|-lg)?$/
 
 describe.each([
@@ -13,9 +13,8 @@ describe.each([
   [2, level2],
   [3, level3],
 ])('dekorasi level %i', (levelId, decor) => {
-  it('memakai dinding, lantai, dan potongan yang dikenal', () => {
+  it('memakai dinding dan potongan yang dikenal', () => {
     expect(['planks', 'plain', 'market']).toContain(decor.wall)
-    expect(['planks', 'tiles', 'concrete']).toContain(decor.floor)
     for (const item of decor.items) {
       expect(PIECES).toContain(item.piece)
       expect(SHOW).toContain(item.show)
@@ -23,9 +22,9 @@ describe.each([
     }
   })
 
-  it('punya papan nama "Warung Pahlawan" di HP dan di layar lebar', () => {
+  it('punya papan nama "Warung Pahlawan" di HP, tablet, dan layar lebar', () => {
     const signs = decor.items.filter((item) => item.piece === 'sign')
-    expect(signs.map((item) => item.show).sort()).toEqual(['md', 'mobile'])
+    expect(signs.map((item) => item.show).sort()).toEqual(['lg', 'mdOnly', 'mobile'])
     for (const sign of signs) expect(sign.props.lines.join(' ')).toBe('Warung Pahlawan')
   })
 
@@ -54,6 +53,6 @@ describe('variasi level', () => {
   })
 
   it('level yang tidak dikenal memakai latar polos', async () => {
-    expect(await loadDecor(99)).toEqual({ wall: 'plain', floor: 'tiles', items: [] })
+    expect(await loadDecor(99)).toEqual({ wall: 'plain', items: [] })
   })
 })
