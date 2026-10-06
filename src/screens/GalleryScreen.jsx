@@ -47,6 +47,26 @@ function GalleryScreen() {
         ),
       })),
     },
+    ...[false, true].map((mirrored) => ({
+      title: mirrored
+        ? 'Karakter anime, tampak samping dicerminkan (menghadap kiri)'
+        : 'Karakter anime, tampak samping (menghadap kanan)',
+      items: CHARACTERS.map((character) => ({
+        key: `anime-side-${mirrored ? 'kiri' : 'kanan'}-${character.id}`,
+        name: character.name,
+        render: (size) => (
+          <div style={{ height: size * 1.4, width: size }} data-anime-side={character.id}>
+            <AnimeCharacter
+              characterId={character.id}
+              entrance={false}
+              facing="samping"
+              mirrored={mirrored}
+              className="h-full w-full"
+            />
+          </div>
+        ),
+      })),
+    })),
   ]
 
   return (
