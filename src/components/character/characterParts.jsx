@@ -343,3 +343,253 @@ export function sleeveColor(look) {
 export function legColor(look) {
   return paint(look.outfit.bottom)
 }
+
+// --- Tampak samping (menghadap kanan) ---------------------------------------
+// Dipakai saat berjalan masuk dan keluar. Kepala profil menempati kotak yang
+// sama dengan kepala tampak depan (x 24 sampai 76, y 21 sampai 70) supaya
+// kepala tidak melompat saat berputar. Badan lebih ramping, lengan bertumpuk
+// di satu bahu, dan kaki tidak digambar (tertutup meja kasir). Untuk arah
+// kiri, AnimeCharacter mencerminkan gambar ini dengan scaleX(-1).
+
+export const SIDE_JOINTS = {
+  shoulder: [51, 76],
+  // Titik tempel bagian yang menjuntai (bergoyang tertinggal saat berjalan).
+  bun: [39, 25],
+  longHair: [52, 30],
+  tails: [27, 36],
+  veil: [40, 24],
+}
+
+export function sideFacePath(look) {
+  const tip = look.side.nose === 'mancung' ? 81 : 79
+  return `M26 45 C26 29 37 21 51 21 C65 21 75 29 76 42 C76 46 77 48 ${tip} 51 C77 52.5 76 53 76 55 C75 63 67 70 54 70 C38 70 26 61 26 45 Z`
+}
+
+// Rambut yang menjuntai di belakang kepala (konde, rambut panjang). Bagian
+// rambut yang menempel di kepala ada di sideHairFront dan tidak bergoyang.
+export function sideHairBack(look) {
+  const fill = paint('tinta')
+  switch (look.side.hair) {
+    case 'sanggul':
+      return <circle cx="33" cy="20" r="9" fill={fill} />
+    case 'panjang':
+      return (
+        <path
+          fill={fill}
+          d="M27 40 C25 25 38 18 52 18 C60 18 66 21 70 25 L50 56 L46 84 C36 86 26 84 21 80 Z"
+        />
+      )
+    default:
+      return null
+  }
+}
+
+// Rambut di atas kepala dan bagian belakang kepala; wajah (kanan) terbuka.
+export function sideHairFront(look) {
+  const fill = paint('tinta')
+  switch (look.side.hair) {
+    case 'tertutup':
+      return null
+    case 'belah-samping':
+      return (
+        <path
+          fill={fill}
+          d="M26 47 C24 28 37 19 53 19 C67 19 77 27 78 40 C72 36 66 34 60 35 C57 40 55 46 54 53 L45 58 C36 60 28 55 26 47 Z"
+        />
+      )
+    case 'panjang':
+      return (
+        <path
+          fill={fill}
+          d="M26 47 C24 28 37 18 52 18 C66 18 76 26 77 37 L72 35 L69 39 L66 34 C61 34 58 35 56 38 C54 44 52 50 51 57 L44 60 C35 61 28 55 26 47 Z"
+        />
+      )
+    case 'sanggul':
+      return (
+        <path
+          fill={fill}
+          d="M26 47 C24 28 37 19 52 19 C66 19 76 27 77 38 C70 34 63 32 57 33 C55 39 53 46 53 53 L45 58 C36 60 28 55 26 47 Z"
+        />
+      )
+    default:
+      return (
+        <path
+          fill={fill}
+          d="M26 46 C25 28 37 19 52 19 C65 19 75 26 76 36 C70 33 63 31 57 32 C55 38 53 45 53 52 L45 57 C36 59 28 54 26 46 Z"
+        />
+      )
+  }
+}
+
+// Telinga tertutup kerudung atau sorban.
+export function sideEarCovered(look) {
+  return look.side.headwear === 'kerudung' || look.side.headwear === 'sorban'
+}
+
+// Kain kerudung yang menjuntai di belakang punggung (di belakang badan).
+export function sideHeadwearBack(look) {
+  if (look.side.headwear !== 'kerudung') return null
+  return <path fill={paint('daun')} d="M24 46 C22 30 30 22 40 20 L42 96 C34 98 26 96 20 92 Z" />
+}
+
+export function sideHeadwear(look) {
+  switch (look.side.headwear) {
+    case 'peci':
+      return <path fill={paint('tinta')} d="M30 30 L32 13 C44 9 60 9 70 13 L72 30 C59 27 43 27 30 30 Z" />
+    case 'sorban':
+      return (
+        <>
+          <path
+            fill={paint('kapur')}
+            d="M23 40 C19 14 37 4 52 4 C66 4 82 13 79 36 C70 31 61 30 55 31 C51 38 48 47 47 58 C36 61 25 53 23 40 Z"
+          />
+          <g fill="none" strokeWidth="2">
+            <path d="M27 27 C40 17 62 15 77 22" />
+            <path d="M30 15 C42 9 59 8 71 13" />
+            <path d="M27 44 C34 40 42 38 50 38" />
+          </g>
+        </>
+      )
+    case 'blangkon':
+      return (
+        <>
+          <circle cx="24" cy="37" r="7" fill={paint('tinta')} />
+          <path fill={paint('tinta')} d="M24 39 C22 18 38 10 52 10 C66 10 80 18 78 36 C66 30 36 31 24 39 Z" />
+          <g fill={paint('kayu')} stroke="none">
+            <circle cx="40" cy="22" r="1.8" />
+            <circle cx="52" cy="17" r="1.8" />
+            <circle cx="64" cy="21" r="1.8" />
+            <circle cx="46" cy="28" r="1.8" />
+            <circle cx="58" cy="27" r="1.8" />
+          </g>
+        </>
+      )
+    case 'ikat-kepala':
+      return <path fill={paint('cabai')} d="M25 34 C40 28 62 28 77 32 L77 39 C62 35 40 35 25 41 Z" />
+    case 'kerudung':
+      return (
+        <path
+          fill={paint('daun')}
+          d="M24 50 C22 27 36 17 52 17 C66 17 77 26 78 39 C71 33 63 31 58 31 C56 40 55 52 57 66 C46 71 31 66 24 50 Z"
+        />
+      )
+    default:
+      return null
+  }
+}
+
+// Ujung kain ikat kepala di belakang kepala (bergoyang saat berjalan).
+export function sideHeadwearTails(look) {
+  if (look.side.headwear !== 'ikat-kepala') return null
+  return (
+    <>
+      <path fill={paint('cabai')} d="M28 34 L14 30 L17 39 Z" strokeWidth="2.4" />
+      <path fill={paint('cabai')} d="M28 37 L15 46 L23 47 Z" strokeWidth="2.4" />
+    </>
+  )
+}
+
+// Aksesori wajah dari samping: satu lensa kacamata dengan gagangnya, kumis.
+export function sideFaceAccessories(look) {
+  return (
+    <>
+      {has(look, 'kumis') && (
+        <path
+          fill={paint('tinta')}
+          d="M66 56.5 C69 54.5 73 54.5 75.5 56.5 C72 57.8 69 57.8 66 56.5 Z"
+          strokeWidth="1.5"
+        />
+      )}
+      {has(look, 'kacamata') && (
+        <g fill="none" strokeWidth="2.2">
+          <circle cx="64" cy="49" r="7.5" />
+          <path d="M56.5 48 L47 47" />
+        </g>
+      )}
+    </>
+  )
+}
+
+const SIDE_TORSO_PATH = 'M41 80 C41 74 45 71 51 71 C57 71 61 74 61 80 L62 104 L39 104 Z'
+
+export function sideTorso(look) {
+  const { style, top, accent } = look.outfit
+  const neck = <rect x="46" y="64" width="9" height="10" fill={paint(look.skin)} />
+  const base = <path d={SIDE_TORSO_PATH} fill={paint(top)} />
+  switch (style) {
+    case 'kebaya':
+      return (
+        <>
+          {neck}
+          <path d="M41 80 C41 74 45 71 51 71 C57 71 61 74 61 80 L63 108 C56 105 45 105 38 108 Z" fill={paint(top)} />
+          <path d="M55 72 L60 90 L62 89 L61 75 Z" fill={paint(accent)} strokeWidth="2" />
+          {has(look, 'bros') && <circle cx="60" cy="94" r="2.4" fill={paint('pisang')} strokeWidth="1.6" />}
+        </>
+      )
+    case 'jas':
+      return (
+        <>
+          {neck}
+          {base}
+          <path d="M54 72 L59 80 L60 72 Z" fill={paint('kapur')} strokeWidth="1.8" />
+          <path d="M58.5 75 L60.5 75 L61.5 87 L59.5 89 Z" fill={paint(accent)} strokeWidth="1.4" />
+          <path d="M53 72 L57 92" fill="none" strokeWidth="2" />
+        </>
+      )
+    case 'beskap':
+      return (
+        <>
+          {neck}
+          {base}
+          <g fill={paint(accent)} strokeWidth="1.4">
+            <circle cx="58" cy="82" r="1.8" />
+            <circle cx="58.8" cy="90" r="1.8" />
+            <circle cx="59.6" cy="98" r="1.8" />
+          </g>
+        </>
+      )
+    case 'jubah':
+      return (
+        <>
+          {neck}
+          {base}
+          <path d="M42 77 L47 74 L62 99 L57 102 Z" fill={paint(accent)} strokeWidth="2" />
+        </>
+      )
+    case 'mantel':
+      return (
+        <>
+          {neck}
+          {base}
+          <path d="M53 72 L59 82 L61 74" fill="none" strokeWidth="2" />
+          <g fill={paint(accent)} strokeWidth="1.4">
+            <circle cx="58" cy="88" r="1.8" />
+            <circle cx="58.6" cy="97" r="1.8" />
+          </g>
+        </>
+      )
+    case 'kurung':
+      return (
+        <>
+          {neck}
+          {base}
+          <path d="M53 72 Q57 76 60 74" fill="none" strokeWidth="2" />
+        </>
+      )
+    default:
+      return (
+        <>
+          {neck}
+          {base}
+          <path d="M54 72 L58 78 L60 73" fill="none" strokeWidth="2" />
+          <path d="M39 95 L62 95 L62 102 L39 102 Z" fill={paint(accent)} strokeWidth="2" />
+        </>
+      )
+  }
+}
+
+// Selendang di pundak dari samping.
+export function sideShoulderDrape(look) {
+  if (!has(look, 'selendang')) return null
+  return <path fill={paint('daun')} d="M38 74 C44 66 58 66 63 74 L64 90 C56 84 46 84 37 90 Z" />
+}
