@@ -112,7 +112,7 @@ Satu prompt mengerjakan satu tugas. Jangan melompat ke tugas berikutnya tanpa di
 | 6 | Layar main, langkah 3 dan 4 (hitung, kembalian), skor | Satu level bisa dimainkan sampai habis | sudah (PR #4) |
 | 7 | Beranda lengkap dan layar hasil | Alur beranda, main, hasil, lalu kembali ke beranda berjalan | sudah (PR #4) |
 | 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati | sudah (PR #4; tata letak HP diperbaiki di PR #5 dan PR #7) |
-| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: Susun Langkah (PR #8), efek suara (prompt P15) |
+| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: efek suara (PR #14); Susun Langkah (PR #8) dihapus di prompt P16 |
 | 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | sudah (PR #10): skor sebelum dicatat dari situs live, skor sesudah dari build lokal; ukur ulang di situs live setelah PR #10 digabung |
 | 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sebagian: README, uji di hosting, dan cek gerbang sudah (PR #9); butir 3 bagian 9 belum terpenuhi (jurnal baru 3 dari 5 prompt, catatan pemilik belum diisi) |
 
@@ -123,8 +123,8 @@ Dikerjakan setelah tugas 1 sampai 8 selesai, sesuai waktu yang tersisa.
 | Fitur | Status |
 | --- | --- |
 | Buku Tokoh: koleksi tokoh yang sudah pernah dilayani | rencana |
-| Mode "Susun Langkah": anak menyusun sendiri urutan langkah sebelum bermain | sudah (PR #8), dibuka dari beranda sebagai latihan terpisah |
-| Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact | sebagian: efek suara sederhana (prompt P15) dengan tombol Suara; seret dan lepas serta narasi fun fact masih rencana |
+| Mode "Susun Langkah": anak menyusun sendiri urutan langkah sebelum bermain | dihapus atas permintaan pemilik proyek (prompt P16); sebelumnya dibuat di PR #8 |
+| Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact | sebagian: efek suara sederhana (PR #14) dengan tombol Suara; seret dan lepas serta narasi fun fact masih rencana |
 | Halaman untuk guru dan orang tua | rencana |
 
 ## 6. Stack
