@@ -13,6 +13,12 @@ import { installAudioUnlock } from './lib/sfx.js'
 // yang tetap memudar. `strict` memastikan hanya komponen `m` yang dipakai.
 const loadMotionFeatures = () => import('./motionFeatures.js').then((module) => module.default)
 
+// Situs ini hanya punya satu alamat. Alamat lain (alamat lama atau salah
+// ketik) sudah menampilkan beranda; alamatnya dirapikan ke "/" juga.
+if (window.location.pathname !== '/') {
+  window.history.replaceState(null, '', `/${window.location.search}${window.location.hash}`)
+}
+
 // Efek suara: AudioContext baru dibuat setelah sentuhan atau tombol pertama.
 installAudioUnlock()
 
