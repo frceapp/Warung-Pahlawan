@@ -4,6 +4,7 @@ import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
 import SoundToggle from '../components/SoundToggle.jsx'
 import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
+import { loadWarungScene } from '../components/scene/loadWarungScene.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
@@ -13,10 +14,14 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
 
-  // Muat berkas karakter pembeli saat browser senggang setelah beranda
-  // tampil, supaya pembeli pertama bisa langsung berjalan masuk.
+  // Muat berkas karakter pembeli dan latar warung saat browser senggang
+  // setelah beranda tampil, supaya pembeli pertama bisa langsung berjalan
+  // masuk. Data dekorasi tiap level baru dimuat saat level itu dibuka.
   useEffect(() => {
-    const load = () => loadAnimeCharacter().catch(() => {})
+    const load = () => {
+      loadAnimeCharacter().catch(() => {})
+      loadWarungScene()
+    }
     if ('requestIdleCallback' in window) {
       const id = window.requestIdleCallback(load, { timeout: 1500 })
       return () => window.cancelIdleCallback(id)

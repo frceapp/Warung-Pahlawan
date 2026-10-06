@@ -17,6 +17,7 @@ Situs: https://wp.itslim.dev
 - **Delapan tokoh pembeli** (R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, Kapitan Pattimura), masing-masing dengan dua fun fact dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
 - **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser; game tetap jalan kalau penyimpanan browser tidak tersedia.
 - **Layar hasil:** skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya.
+- **Latar warung di layar main:** dinding dengan papan nama, rak, dan hiasan, lalu meja kasir dengan mesin kasir, kalkulator, dan timbangan. Tiap level punya suasana sendiri: warung kayu (Warung Kecil), warung ramai dengan lampu menyala dan spanduk (Warung Ramai), dan los pasar dengan lapak dan bendera (Pasar Besar). Layar mesin kasir menampilkan total belanja (di level 2 dan 3 baru setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian. Latar dibuat redup, diam, dan disederhanakan di layar sempit.
 - **Efek suara sederhana** (lonceng pembeli datang, buah masuk tas, tombol, jawaban benar dan salah, uang, fanfare hasil), dibuat dengan Web Audio API tanpa berkas audio. Tombol Suara ada di beranda dan layar main, pilihannya disimpan di browser. Bunyi hanya pelengkap: setiap bunyi selalu disertai umpan balik di layar.
 - **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard.** Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar, target sentuh minimal 48 px, dan animasi mengikuti pengaturan "kurangi gerakan". Di HP, tiap langkah muat dalam satu layar dengan tombol aksi selalu terlihat di bawah.
@@ -48,7 +49,8 @@ npm run preview  # coba hasil build di komputer sendiri
 
 - `src/data/`: isi game (tokoh, buah, uang, level, teks panduan)
 - `src/game/`: logika game sebagai fungsi murni beserta tesnya
-- `src/lib/`: modul kecil di luar logika game (efek suara) beserta tesnya
+- `src/lib/`: modul kecil di luar logika game (efek suara, layar mesin kasir) beserta tesnya
+- `src/components/scene/`: latar warung dan data dekorasi tiap level
 - `src/components/` dan `src/screens/`: tampilan
 - Penjelasan lengkap ada di [AGENTS.md](AGENTS.md), bagian 7.
 

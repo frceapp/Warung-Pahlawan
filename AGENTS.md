@@ -155,8 +155,9 @@ src/
   index.css            Tailwind, token warna dan font, animasi
   data/                isi game: tokoh, buah, uang, level
   game/                logika murni (tanpa React) dan tesnya
-  lib/                 modul kecil di luar logika game, misalnya efek suara
+  lib/                 modul kecil di luar logika game, misalnya efek suara dan layar mesin kasir
   components/          potongan UI yang dipakai ulang
+    scene/             latar warung di layar main dan data dekorasi tiap level
   screens/             satu berkas per layar
 ```
 

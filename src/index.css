@@ -106,3 +106,95 @@
     var(--color-jingga) 48px 96px
   );
 }
+
+/* Latar warung di layar main (components/scene/WarungScene.jsx). Warna
+   dinding dan lantai dicampur dengan langit supaya lebih redup daripada
+   objek yang bisa diklik. */
+@utility scene-wall-planks {
+  background-color: color-mix(in srgb, var(--color-kayu) 26%, var(--color-langit));
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 46px,
+    color-mix(in srgb, var(--color-tinta) 12%, transparent) 46px 49px
+  );
+}
+
+@utility scene-wall-plain {
+  background-color: color-mix(in srgb, var(--color-kapur) 60%, var(--color-langit));
+}
+
+/* Los pasar: dinding terbuka dengan tiang kayu di kejauhan. */
+@utility scene-wall-market {
+  background-color: var(--color-langit);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 210px,
+    color-mix(in srgb, var(--color-kayu) 30%, var(--color-langit)) 210px 226px,
+    transparent 226px 240px
+  );
+}
+
+@utility scene-wainscot {
+  background-color: color-mix(in srgb, var(--color-daun) 18%, var(--color-langit));
+}
+
+@utility scene-floor-planks {
+  background-color: color-mix(in srgb, var(--color-kayu) 42%, var(--color-langit));
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 26px,
+    color-mix(in srgb, var(--color-tinta) 12%, transparent) 26px 28px
+  );
+}
+
+@utility scene-floor-tiles {
+  background-color: color-mix(in srgb, var(--color-kapur) 55%, var(--color-langit));
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-tinta) 10%, transparent) 2px, transparent 2px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-tinta) 10%, transparent) 2px, transparent 2px);
+  background-size: 56px 56px;
+}
+
+/* Lantai semen los pasar. */
+@utility scene-floor-concrete {
+  background-color: color-mix(in srgb, var(--color-kayu) 16%, var(--color-langit));
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--color-tinta) 9%, transparent) 2px,
+    transparent 2px
+  );
+  background-size: 100% 64px;
+}
+
+/* Meja kasir kayu: papan tegak tipis. Dipakai di latar dan area kerja. */
+@utility scene-counter {
+  background-color: var(--color-kayu);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 58px,
+    color-mix(in srgb, var(--color-tinta) 10%, transparent) 58px 61px
+  );
+}
+
+/* Posisi hiasan latar dari data dekorasi (lihat decor/levelN.js): nilai
+   dasar untuk HP, lalu boleh ditimpa untuk layar md dan lg. */
+@utility scene-item {
+  position: absolute;
+  left: var(--l, auto);
+  right: var(--r, auto);
+  top: var(--t, auto);
+  width: var(--w, auto);
+
+  @media (width >= 48rem) {
+    left: var(--l-md, var(--l, auto));
+    right: var(--r-md, var(--r, auto));
+    top: var(--t-md, var(--t, auto));
+    width: var(--w-md, var(--w, auto));
+  }
+
+  @media (width >= 64rem) {
+    left: var(--l-lg, var(--l-md, var(--l, auto)));
+    right: var(--r-lg, var(--r-md, var(--r, auto)));
+    top: var(--t-lg, var(--t-md, var(--t, auto)));
+    width: var(--w-lg, var(--w-md, var(--w, auto)));
+  }
+}

@@ -929,3 +929,60 @@ Commit terkait:
 - `b479ed7` chore: remove Susun Langkah PR screenshots
 - `b6932ab` chore: add home screen screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P17, 6 Oktober 2026, 08.16 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: latar warung dan meja kasir di layar main (di luar daftar tugas bagian 4; terkait Tugas 8)
+Prompt:
+
+````text
+Latar permainan terasa sepi. Ubah jadi suasana warung dengan meja kasir. Kerjakan di satu PR.
+
+Latar (SVG, gaya sticker sesuai desain di AGENTS.md)
+- Tembok belakang dengan papan nama "Warung Pahlawan", rak berisi toples, karung, dan kardus, serta tandan pisang yang menggantung. Lantai kayu atau ubin di bagian bawah.
+- Atap terpal bergaris yang sudah ada tetap dipakai.
+- Meja kasir di depan, tempat tas belanja dan nampan uang berada. Di atas meja ada mesin kasir kecil, kalkulator, dan timbangan.
+- Hiasan yang tidak mengganggu: lampu gantung, kalender dinding, poster kecil. Boleh ada kucing warung yang duduk diam.
+
+Variasi tiap level
+- Warung Kecil: warung kayu sederhana, rak sedikit.
+- Warung Ramai: rak lebih penuh, lampu menyala hangat, spanduk kecil.
+- Pasar Besar: latar los pasar dengan beberapa lapak di belakang dan bendera kecil di atas.
+- Ketiganya memakai komponen yang sama dengan data dekorasi yang berbeda, bukan tiga SVG terpisah.
+
+Interaksi (hanya sebagai respons aksi anak)
+- Laci mesin kasir terbuka sebentar saat anak menekan "Berikan kembalian" dan menutup lagi.
+- Layar mesin kasir menampilkan total belanja pada langkah Hitung.
+- Tidak ada animasi latar yang jalan terus. Lampu dan kucing statis.
+
+Aturan
+- Karakter pembeli tetap besar dan jelas (minimal 120 px di langkah Sapa, 96 px di langkah lain di 360x640). Latar tidak boleh membuat karakter mengecil atau tertutup.
+- Latar harus lebih redup dan lebih sederhana daripada objek yang diklik: buah, uang, tombol, dan teks. Kontras teks dan tombol tetap lolos AA.
+- Di 360x640 tidak ada scroll halaman dan tombol utama setiap langkah terlihat. Di layar sempit, kurangi detail latar (sembunyikan hiasan), jangan perkecil area permainan.
+- Latar berupa elemen dekoratif: `aria-hidden="true"`, tidak bisa difokus.
+- Ukuran SVG latar maksimal 30 kB per level. Muat level lain secara lazy.
+- Pakai token warna yang sudah ada: terpal, jingga, pisang, kapur, langit, tinta, daun, kayu.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Cek dengan screenshot ketiga level di 360x640 dan 1280x800, lalu laporkan ukuran bundle.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Prompt meminta layar mesin kasir menampilkan total belanja di langkah Hitung, sedangkan di level 2 dan 3 anak justru memilih total dari tiga pilihan (AGENTS.md bagian 3), sehingga total di mesin kasir membocorkan jawaban. AI bertanya dulu. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Tampil setelah dijawab (Recommended)". Level 1 menampilkan total di langkah Hitung (sama dengan nota); level 2 dan 3 menampilkan "Rp ?" sampai anak memilih total yang benar, lalu totalnya tampil di langkah Kembalian. Aturan ini ada di fungsi murni `src/lib/registerScreen.js` beserta tesnya.
+- Latar baru `src/components/scene/WarungScene.jsx`: dinding, lantai, hiasan, dan meja kasir. Satu komponen untuk ketiga level dengan data dekorasi berbeda di `src/components/scene/decor/level1.js`, `level2.js`, dan `level3.js` (bukan di `src/data`, karena folder itu tidak boleh diubah). Potongan SVG (rak dengan toples, kardus, dan karung, tandan pisang, lampu gantung, kalender, poster, spanduk, papan nama "Warung Pahlawan", lapak pasar, bendera kecil, karung beras, tumpukan kardus) ada di `ScenePiece.jsx`, bergaris tepi tinta tebal seperti stiker, hanya memakai token warna yang ada. Dinding, lantai, dan meja memakai utilitas CSS baru di `src/index.css` (warna token dicampur dengan langit lewat `color-mix` supaya redup).
+- Variasi level: Warung Kecil memakai dinding papan kayu, lantai kayu, dan rak sedikit dengan lampu mati; Warung Ramai memakai dinding cat dengan lis, lantai ubin, rak lebih penuh, lampu menyala (cahaya diam), dan spanduk "Buah Segar"; Pasar Besar memakai los pasar dengan tiang kayu, lantai semen, beberapa lapak di belakang, dan bendera kecil di atas. Terpal bergaris yang sudah ada tetap dipakai.
+- Meja kasir: area kerja di layar main kini bergaya meja kayu, dan di atasnya ada mesin kasir, kalkulator, timbangan, serta kucing warung yang duduk diam (`src/components/CashCounter.jsx`). Laci mesin kasir terbuka 700 ms saat anak menekan "Berikan kembalian" lalu menutup lagi (tanpa gerak kalau "kurangi gerakan" aktif). Tidak ada animasi latar yang berjalan terus; dicek dengan `document.getAnimations()` (0 animasi di latar dan meja).
+- Aturan tata letak: ukuran karakter tidak berubah (360x640: 144 px di Sapa dan 112 px di langkah lain; 1280x800: 208 dan 144 px), dan tinggi area kerja sama dengan build `main` di setiap langkah. Hiasan di area panggung hanya digambar di langkah Sapa; di layar sempit hiasan (lampu, kalender, poster, spanduk, bendera, kucing, kalkulator, timbangan) disembunyikan. Latar dan meja `aria-hidden="true"`, `pointer-events: none`, tanpa elemen yang bisa difokus. Teks yang berada di atas latar (skor, asal tokoh, label "Urutan langkah") diberi alas `kapur/90`.
+- Pemuatan: komponen latar dimuat terpisah (dimuat lebih awal saat beranda senggang), dan data dekorasi dimuat per level saat level dibuka; dicek bahwa membuka satu level hanya mengunduh data level itu. Ukuran SVG di halaman per level (latar ditambah meja kasir): 19,4 kB, 23,8 kB, dan 22,2 kB.
+- Ukuran bundle (build `main` dibanding sesudah): JS awal 318,72 kB (gzip 100,84 kB) menjadi 323,06 kB (gzip 102,09 kB); CSS 38,29 kB (gzip 10,60 kB) menjadi 44,20 kB (gzip 11,59 kB), sebagian karena fallback `color-mix` yang dibuat otomatis. Chunk baru yang dimuat terpisah: `WarungScene` 8,91 kB (gzip 3,02 kB), data dekorasi level 1, 2, 3: 0,99, 1,32, dan 1,12 kB.
+- Diuji dengan Playwright pada build produksi, ketiga level di 360x640 dan 1280x800 (juga 768x1024, 390x844, dan 320x568), setiap langkah: tidak ada scroll halaman, tombol utama terlihat, tidak ada error. Audit axe-core di semua layar tanpa pelanggaran. Keterbatasan: di 320x568 balon bicara yang lebih tinggi menutupi sebagian layar mesin kasir di langkah Hitung dan Kembalian, dan di 360x640 menutupinya 4 px di langkah Ambil buah (saat layar masih "Rp ?"). Uji di HP asli: (tidak dapat diverifikasi).
+- AGENTS.md (bagian 7) dan README diperbarui. `npm test` (15 berkas, 109 tes, 17 tes baru), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `fa18a50` feat: add warung backdrop scene with per-level decor data
+- `ac3b3ff` feat: add cash counter with register, calculator, and scale
+- `2415b50` feat: show warung backdrop and cash counter on the play screen
+- `74ed1b5` docs: note warung backdrop in AGENTS.md and README
+- `a20a61a` chore: add warung backdrop screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
