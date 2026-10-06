@@ -1,10 +1,12 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, startTransition, Suspense, useEffect, useState } from 'react'
 import { getLevel } from './data/levels.js'
 import { getBrowserStorage, loadBestStars, recordStars, saveBestStars } from './game/progress.js'
 import HomeScreen from './screens/HomeScreen.jsx'
-import PlayScreen from './screens/PlayScreen.jsx'
+import { loadPlayScreen } from './screens/loadPlayScreen.js'
 
-// Layar hasil bukan layar inti, jadi dimuat terpisah.
+// Layar permainan dan layar hasil dimuat terpisah supaya beranda ringan.
+// Layar permainan dimuat lebih awal dari beranda (lihat HomeScreen).
+const PlayScreen = lazy(loadPlayScreen)
 const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
 
 // Galeri ilustrasi hanya untuk pengembangan; tidak ikut build produksi.
@@ -49,8 +51,10 @@ function App() {
     setScreen(next)
   }
 
+  // Transisi: layar lama tetap tampil sampai layar permainan siap, dan
+  // render layar permainan dicicil supaya ketukan anak cepat ditanggapi.
   function startLevel(levelId) {
-    leaveHome({ name: 'play', levelId, playId: Date.now() })
+    startTransition(() => leaveHome({ name: 'play', levelId, playId: Date.now() }))
   }
 
   function goHome() {
@@ -88,13 +92,15 @@ function App() {
 
   if (screen.name === 'play') {
     return (
-      <PlayScreen
-        key={screen.playId}
-        level={getLevel(screen.levelId)}
-        rng={Math.random}
-        onExit={goHome}
-        onFinish={finishLevel}
-      />
+      <Suspense fallback={<p className="p-8 text-lg">Menyiapkan warung...</p>}>
+        <PlayScreen
+          key={screen.playId}
+          level={getLevel(screen.levelId)}
+          rng={Math.random}
+          onExit={goHome}
+          onFinish={finishLevel}
+        />
+      </Suspense>
     )
   }
 

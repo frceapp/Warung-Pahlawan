@@ -5,6 +5,7 @@ import LevelCard from '../components/LevelCard.jsx'
 import SoundToggle from '../components/SoundToggle.jsx'
 import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
 import { loadWarungScene } from '../components/scene/loadWarungScene.js'
+import { loadPlayScreen } from './loadPlayScreen.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
@@ -14,11 +15,13 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
 
-  // Muat berkas karakter pembeli dan latar warung saat browser senggang
-  // setelah beranda tampil, supaya pembeli pertama bisa langsung berjalan
-  // masuk. Data dekorasi tiap level baru dimuat saat level itu dibuka.
+  // Muat layar permainan, berkas karakter pembeli, dan latar warung saat
+  // browser senggang setelah beranda tampil, supaya pembeli pertama bisa
+  // langsung berjalan masuk. Data dekorasi tiap level baru dimuat saat level
+  // itu dibuka.
   useEffect(() => {
     const load = () => {
+      loadPlayScreen().catch(() => {})
       loadAnimeCharacter().catch(() => {})
       loadWarungScene()
     }
