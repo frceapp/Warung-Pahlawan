@@ -8,12 +8,8 @@ import '@fontsource/atkinson-hyperlegible/latin-400.css'
 import '@fontsource/atkinson-hyperlegible/latin-700.css'
 import './index.css'
 import App from './App.jsx'
+import { loadMotionFeatures } from './lib/loadMotionFeatures.js'
 import { installAudioUnlock } from './lib/sfx.js'
-
-// Animasi memakai Motion. reducedMotion="user": kalau pengguna memilih
-// kurangi gerakan, animasi transform langsung selesai dan hanya opacity
-// yang tetap memudar. `strict` memastikan hanya komponen `m` yang dipakai.
-const loadMotionFeatures = () => import('./motionFeatures.js').then((module) => module.default)
 
 // Situs ini hanya punya satu alamat. Alamat lain (alamat lama atau salah
 // ketik) sudah menampilkan beranda; alamatnya dirapikan ke "/" juga.
@@ -24,6 +20,9 @@ if (window.location.pathname !== '/') {
 // Efek suara: AudioContext baru dibuat setelah sentuhan atau tombol pertama.
 installAudioUnlock()
 
+// Animasi memakai Motion. reducedMotion="user": kalau pengguna memilih
+// kurangi gerakan, animasi transform langsung selesai dan hanya opacity
+// yang tetap memudar. `strict` memastikan hanya komponen `m` yang dipakai.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
