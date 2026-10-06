@@ -4,9 +4,8 @@ import { getBrowserStorage, loadBestStars, recordStars, saveBestStars } from './
 import HomeScreen from './screens/HomeScreen.jsx'
 import PlayScreen from './screens/PlayScreen.jsx'
 
-// Layar hasil dan mode Susun Langkah bukan layar inti, jadi dimuat terpisah.
+// Layar hasil bukan layar inti, jadi dimuat terpisah.
 const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
-const SequenceScreen = lazy(() => import('./screens/SequenceScreen.jsx'))
 
 // Galeri ilustrasi hanya untuk pengembangan; tidak ikut build produksi.
 const GalleryScreen = import.meta.env.DEV
@@ -99,14 +98,6 @@ function App() {
     )
   }
 
-  if (screen.name === 'sequence') {
-    return (
-      <Suspense fallback={<p className="p-8 text-lg">Menyiapkan kartu...</p>}>
-        <SequenceScreen rng={Math.random} onExit={goHome} />
-      </Suspense>
-    )
-  }
-
   if (screen.name === 'result') {
     return (
       <Suspense fallback={<p className="p-8 text-lg">Menyiapkan hasil...</p>}>
@@ -124,7 +115,6 @@ function App() {
     <HomeScreen
       bestStars={bestStars}
       onPlay={startLevel}
-      onOpenSequence={() => leaveHome({ name: 'sequence' })}
       focusHeading={!screen.isFirst}
     />
   )
