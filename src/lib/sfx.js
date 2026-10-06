@@ -138,7 +138,7 @@ export function playCustomerBell() {
   ])
 }
 
-// Buah masuk tas: "pop" pendek.
+// Buah masuk kantong: "pop" pendek.
 export function playPop() {
   return play([{ from: 420, to: 900, duration: 0.08, type: 'sine', volume: 0.5 }])
 }
