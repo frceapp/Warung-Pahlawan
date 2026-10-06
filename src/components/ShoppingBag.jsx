@@ -12,20 +12,20 @@ function ShoppingBag({ fruits, bag, onRemove }) {
   }
 
   return (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-2.5 pt-1.5 pr-1.5 md:grid-cols-2 md:gap-3 lg:grid-cols-3">
+    <ul className="grid grid-cols-3 gap-x-2 gap-y-2.5 pt-1.5 pr-1.5 md:grid-cols-2 md:gap-x-3 md:gap-y-3 lg:grid-cols-3">
       {items.map((fruit) => (
         <li key={fruit.id} data-fruit-id={fruit.id}>
           <button
             type="button"
             onClick={() => onRemove(fruit.id)}
             aria-label={`Keluarkan 1 ${fruit.name}. Di kantong ada ${bag[fruit.id]}.`}
-            className="relative flex min-h-12 w-full items-center justify-center gap-1 rounded-xl border-2 border-tinta bg-kapur py-1 pr-4 pl-1 transition-colors hover:bg-langit md:justify-start md:gap-2 md:border-4 md:px-2 md:pr-2"
+            className="relative flex min-h-12 w-full items-center justify-center gap-1 rounded-xl border-2 border-tinta bg-kapur py-1 pr-4 pl-1 transition-colors hover:bg-langit md:gap-2 md:border-4 md:pr-5"
           >
             <FruitImage
               fruitId={fruit.id}
               size={40}
               decorative
-              className="h-7 w-7 shrink-0 md:h-10 md:w-10"
+              className="h-7 w-7 shrink-0 md:h-8 md:w-8"
             />
             <span
               key={bag[fruit.id]}
@@ -37,7 +37,7 @@ function ShoppingBag({ fruits, bag, onRemove }) {
             <span
               aria-hidden="true"
               data-bag-minus
-              className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-tinta bg-kapur font-heading text-base leading-none md:static md:ml-auto md:h-8 md:w-8 md:text-xl"
+              className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-tinta bg-kapur font-heading text-base leading-none md:h-7 md:w-7 md:text-lg"
             >
               −
             </span>
