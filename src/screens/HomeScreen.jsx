@@ -3,11 +3,15 @@ import Awning from '../components/Awning.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
 import SoundToggle from '../components/SoundToggle.jsx'
-import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
-import { loadWarungScene } from '../components/scene/loadWarungScene.js'
-import { loadPlayScreen } from './loadPlayScreen.js'
+import { preparePlayScreen } from './loadPlayScreen.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
+
+// Kegagalan di sini diabaikan; layar loading memuat ulang dan menampilkan
+// pesan kalau memang gagal.
+function preloadLevel(levelId) {
+  preparePlayScreen(levelId).catch(() => {})
+}
 
 function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
   const headingRef = useRef(null)
@@ -15,15 +19,13 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
     if (focusHeading) headingRef.current?.focus()
   }, [focusHeading])
 
-  // Muat layar permainan, berkas karakter pembeli, dan latar warung saat
-  // browser senggang setelah beranda tampil, supaya pembeli pertama bisa
-  // langsung berjalan masuk. Data dekorasi tiap level baru dimuat saat level
-  // itu dibuka.
+  // Muat lebih dulu semua yang dibutuhkan layar permainan (layar main, latar
+  // dan dekorasi ketiga level, karakter pembeli, Motion, font) saat browser
+  // senggang setelah beranda tampil, supaya pintu warung cepat terbuka.
+  // Kartu level juga memulai pemuatan levelnya saat disentuh atau difokus.
   useEffect(() => {
     const load = () => {
-      loadPlayScreen().catch(() => {})
-      loadAnimeCharacter().catch(() => {})
-      loadWarungScene()
+      for (const level of LEVELS) preloadLevel(level.id)
     }
     if ('requestIdleCallback' in window) {
       const id = window.requestIdleCallback(load, { timeout: 1500 })
@@ -62,7 +64,12 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
           <ul className="grid gap-5 md:grid-cols-3">
             {LEVELS.map((level) => (
               <li key={level.id}>
-                <LevelCard level={level} bestStars={bestStars[level.id]} onPlay={onPlay} />
+                <LevelCard
+                  level={level}
+                  bestStars={bestStars[level.id]}
+                  onPlay={onPlay}
+                  onPrepare={preloadLevel}
+                />
               </li>
             ))}
           </ul>
