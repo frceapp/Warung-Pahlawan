@@ -1,9 +1,10 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useReducer, useRef, useState } from 'react'
 import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
+import CashCounter from '../components/CashCounter.jsx'
 import ChangeStep from '../components/ChangeStep.jsx'
 import CountStep from '../components/CountStep.jsx'
 import CustomerStage from '../components/CustomerStage.jsx'
@@ -11,11 +12,13 @@ import SoundToggle from '../components/SoundToggle.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
+import { loadWarungScene } from '../components/scene/loadWarungScene.js'
 import ServedStep from '../components/ServedStep.jsx'
 import StepTracker from '../components/StepTracker.jsx'
 import TotalChoices from '../components/TotalChoices.jsx'
 import { getFruit } from '../data/fruits.js'
 import { formatRupiah } from '../game/format.js'
+import { getRegisterScreen } from '../lib/registerScreen.js'
 import { playCoins, playPop } from '../lib/sfx.js'
 import { useFeedbackSound } from '../lib/useFeedbackSound.js'
 import { getLevelFruits } from '../game/order.js'
@@ -27,6 +30,12 @@ import {
   STEPS,
   summarizeSession,
 } from '../game/session.js'
+
+// Latar warung dimuat terpisah; data dekorasinya hanya untuk level ini.
+const WarungScene = lazy(loadWarungScene)
+
+// Lama laci mesin kasir terbuka setelah "Berikan kembalian" ditekan.
+const DRAWER_OPEN_MS = 700
 
 // Petunjuk yang tampil di bar aksi saat sebuah langkah dimulai, selama belum
 // ada umpan balik dari aksi anak di langkah itu.
@@ -111,6 +120,20 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     }
     // Area kerja baru ada setelah langkah Sapa, jadi dipasang ulang saat itu.
   }, [isGreet])
+
+  // Laci mesin kasir terbuka sebentar saat anak menekan "Berikan kembalian",
+  // lalu menutup lagi (tanpa animasi kalau "kurangi gerakan" aktif).
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerTimer = useRef(0)
+  useEffect(() => () => clearTimeout(drawerTimer.current), [])
+  function giveChange() {
+    clearTimeout(drawerTimer.current)
+    setDrawerOpen(true)
+    drawerTimer.current = setTimeout(() => setDrawerOpen(false), DRAWER_OPEN_MS)
+    dispatch({ type: 'giveChange' })
+  }
+
+  const registerScreen = getRegisterScreen(state.step, level.totalMode, customer.total)
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -220,7 +243,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
     )
     actions = (
       <div className="grid grid-cols-2 gap-2 md:flex md:gap-3">
-        <Button onClick={() => dispatch({ type: 'giveChange' })} className="px-1 text-[13px] md:px-5 md:text-lg">
+        <Button onClick={giveChange} className="px-1 text-[13px] md:px-5 md:text-lg">
           Berikan kembalian
         </Button>
         <Button
@@ -265,7 +288,10 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       : 'Warung tutup'
 
   return (
-    <div className="relative flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
+    <div className="relative isolate flex h-[100vh] flex-col overflow-hidden supports-[height:100dvh]:h-dvh">
+      <Suspense fallback={null}>
+        <WarungScene levelId={level.id} greeting={isGreet} />
+      </Suspense>
       <Awning thin />
       <header className="mx-auto flex w-full max-w-5xl shrink-0 items-center gap-2 px-3 pt-1.5 md:px-4 md:pt-1">
         <Button
@@ -280,7 +306,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
         <h1 className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
           {level.name}
         </h1>
-        <p className="ml-auto flex shrink-0 flex-col items-end text-sm leading-tight font-bold md:ml-0 md:flex-row md:gap-3 md:text-base">
+        <p className="ml-auto flex shrink-0 flex-col items-end rounded-lg bg-kapur/90 px-1.5 py-0.5 text-sm leading-tight font-bold md:ml-0 md:flex-row md:gap-3 md:px-2 md:py-1 md:text-base">
           <span>
             Pembeli {state.index + 1}
             <span className="hidden md:inline"> dari {state.customers.length}</span>
@@ -318,49 +344,56 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           </CustomerStage>
         </AnimatePresence>
 
-        {/* Area kerja muncul setelah langkah Sapa dan memudar saat pembeli
-            berganti (bersamaan dengan pembeli lama yang berjalan keluar). */}
+        {/* Area kerja (meja kasir) muncul setelah langkah Sapa dan memudar saat
+            pembeli berganti (bersamaan dengan pembeli lama yang berjalan
+            keluar). Mesin kasir dan barang lain berdiri di atas meja. */}
         <AnimatePresence initial={false}>
           {!isGreet && (
             <m.section
               key={`work-${state.index}`}
-              ref={workRef}
               aria-labelledby="step-title"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.2 } }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta bg-kayu"
+              className="relative z-0 flex min-h-0 flex-1 flex-col"
             >
-              <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
-                <div className="flex flex-col gap-2 rounded-2xl border-4 border-tinta bg-kapur p-1.5 md:gap-3 md:p-4">
-                  <h2
-                    id="step-title"
-                    ref={headingRef}
-                    tabIndex={-1}
-                    className="sr-only md:not-sr-only md:font-heading md:text-xl"
-                  >
-                    {heading}
-                  </h2>
-                  <m.div
-                    key={stepKey}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex flex-col gap-2 md:gap-3"
-                  >
-                    {body}
-                  </m.div>
-                </div>
-              </div>
+              <CashCounter screen={registerScreen} drawerOpen={drawerOpen} />
               <div
-                aria-hidden="true"
-                data-scroll-hint
-                className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+                ref={workRef}
+                data-work-area
+                className="scene-counter relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto border-t-4 border-tinta"
               >
-                <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
-                  Geser ke bawah ↓
-                </span>
+                <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 py-1.5 md:px-4 md:py-2">
+                  <div className="flex flex-col gap-2 rounded-2xl border-4 border-tinta bg-kapur p-1.5 md:gap-3 md:p-4">
+                    <h2
+                      id="step-title"
+                      ref={headingRef}
+                      tabIndex={-1}
+                      className="sr-only md:not-sr-only md:font-heading md:text-xl"
+                    >
+                      {heading}
+                    </h2>
+                    <m.div
+                      key={stepKey}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex flex-col gap-2 md:gap-3"
+                    >
+                      {body}
+                    </m.div>
+                  </div>
+                </div>
+                <div
+                  aria-hidden="true"
+                  data-scroll-hint
+                  className={`pointer-events-none sticky bottom-0 -mt-8 flex h-8 items-end justify-end bg-linear-to-t from-tinta/35 to-transparent px-2 pb-1 transition-opacity duration-200 md:justify-center ${canScrollDown ? 'opacity-100' : 'opacity-0'}`}
+                >
+                  <span className="rounded-full border-2 border-tinta bg-kapur px-3 py-0.5 text-xs font-bold">
+                    Geser ke bawah ↓
+                  </span>
+                </div>
               </div>
             </m.section>
           )}

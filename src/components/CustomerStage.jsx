@@ -161,7 +161,7 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
               <p className="rounded-lg border-4 border-tinta bg-terpal-tua px-2 py-0.5 font-heading text-base leading-tight text-kapur">
                 {character.name}
               </p>
-              <p className="text-sm leading-tight">{character.origin}</p>
+              <p className="rounded-md bg-kapur/90 px-1.5 text-sm leading-tight">{character.origin}</p>
             </m.div>
           ) : (
             <m.p
