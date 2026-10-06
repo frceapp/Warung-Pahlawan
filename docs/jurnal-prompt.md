@@ -8,7 +8,7 @@ Lima prompt pilihan untuk juri, satu untuk tiap jenis pekerjaan. Teks prompt dis
 | --- | --- | --- | --- |
 | 1 | Ide dan PRD | P1 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 | 2 | Debugging | P6 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 3 | Audit dan optimasi | - | belum |
+| 3 | Audit dan optimasi | P20 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 | 4 | Finishing | - | belum |
 | 5 | Bebas | P5 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 
@@ -141,16 +141,69 @@ HP. Jangan menambah fitur baru.
 
 ## 3. Audit dan optimasi
 
-Status: belum. Diisi setelah pekerjaannya terjadi.
+Sumber: P20 di prompt-log.md; commit `e926ece` sampai `2464c84` dan PR untuk prompt ini; angka lengkap di [audit.md](audit.md)
 
 ### Konteks
 
+Game sudah lengkap dan live: kamera dekat dengan meja kasir, latar per level, efek suara, dan pembeli bertampak samping. Tugas 10 pernah dikerjakan di PR #10. Angka sebelum audit ini diukur pada `main` commit `8f04e48`, dari build produksi dengan Lighthouse 13.5.0 mode mobile (median 5 run):
+
+- **Beranda:**
+  - Performance 98, Accessibility 100, Best Practices 100, SEO 100.
+  - LCP 1.954 ms, CLS 0,020, TBT 0 ms.
+- **Layar permainan** (alur pengguna dari ketukan "Buka warung"):
+  - Performance 93, TBT 219 ms, INP 326 ms, CLS 0.
+  - Accessibility, Best Practices, dan SEO masing-masing 100.
+- **Bundle:** JS awal 101,08 kB gzip, CSS 11,88 kB gzip. Layar permainan masih ada di bundel awal.
+- **Lima modul terbesar:** react-dom, motion-dom, framer-motion, `AnimeCharacter.jsx`, dan `characterParts.jsx`.
+- **Temuan lain:**
+  - Font ikut membawa subset latin-ext (10 berkas font).
+  - Berkas yang tidak ada mendapat teks `NOT_FOUND` tanpa tautan.
+  - Di 768 dan 1280 px, nama buah di keranjang meluber dan tombol "−" di kantong terjepit.
 
 ### Prompt
 
+````text
+Kerjakan Tugas 10: audit dan optimasi. Kerjakan di satu PR.
+
+Ukur dulu, sebelum mengubah apa pun
+- Lighthouse mode mobile pada build produksi untuk beranda dan layar permainan: Performance, Accessibility, Best Practices, SEO, serta LCP, CLS, dan TBT.
+- Ukuran bundle per chunk (gzip) dan 5 modul terbesar.
+- Simpan angkanya di `docs/audit.md` sebagai "sebelum".
+
+Periksa dan perbaiki bila masih ada
+- Performa: pemisahan kode untuk layar permainan, hasil, dan karakter; Motion lewat LazyMotion; font hanya subset dan bobot yang dipakai; SVG latar dan karakter tidak dobel; header cache jangka panjang untuk `/assets` di `vercel.json`.
+- Aksesibilitas: kontras AA, urutan fokus, label tombol, aria-live untuk umpan balik, target sentuh 48 px, reduced motion, tombol Suara.
+- SEO dan berbagi: title dan description, `og:image`, `robots.txt`, `sitemap.xml`, favicon, `lang="id"`.
+- Ketahanan: halaman 404 yang ramah dengan tombol ke beranda, tidak ada error di konsol, localStorage yang rusak atau diblokir tidak membuat game macet.
+- Tata letak: 320, 360, 768, dan 1280 px. Tas berisi banyak buah tidak terpotong.
+
+Ukur lagi
+- Jalankan pengukuran yang sama dan tulis "sesudah" di `docs/audit.md` di samping "sebelum". Bila ada angka yang turun atau tidak bisa diperbaiki, tulis alasannya.
+
+Jurnal
+- Isi bagian "3. Audit dan optimasi" di `docs/jurnal-prompt.md`: Konteks berisi angka sebelum, Prompt disalin persis dari entri log prompt ini, Hasil berisi angka sesudah. Perbarui tabel status.
+
+Jangan menambah fitur. Jangan ubah isi `src/game` dan `src/data`. Pastikan lint, tes, dan build lolos.
+````
 
 ### Hasil
 
+- **Beranda** (sesudah, median 5 run):
+  - Performance 98, Accessibility 100, Best Practices 100, SEO 100.
+  - LCP 1.855 ms, CLS 0,020, TBT 0 ms.
+- **Layar permainan:** Performance 100, TBT 39 ms, INP 98 ms, CLS 0. Accessibility, Best Practices, dan SEO masing-masing 100.
+- **Bundle:**
+  - JS awal 84,44 kB + 0,56 kB gzip, CSS 7,96 kB gzip.
+  - Yang dimuat saat halaman dibuka turun dari 112,96 kB ke 92,96 kB.
+  - Total semua chunk JS naik 3,1 kB karena pemecahan chunk.
+- **Perubahan:**
+  - Layar permainan dimuat terpisah, dimuat lebih awal dari beranda, dan dibuka dengan `startTransition`.
+  - Font hanya subset latin.
+  - Halaman `404.html` ramah dengan tombol ke beranda, untuk berkas yang tidak ada. Alamat halaman tetap dialihkan ke beranda sesuai keputusan P16.
+  - Keranjang dan kantong rapi di 768 dan 1280 px.
+  - Area meja yang bisa digeser diberi nama untuk pembaca layar.
+- **Yang tidak membaik:** CLS 0,020 (pergantian font) dan CSS yang memblokir render (sekitar 450 ms). Alasannya ada di audit.md.
+- `npm test` (15 berkas, 109 tes), `npm run build`, dan `npm run lint` lulus.
 
 ### Keputusan saya
 

@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { LazyMotion, MotionConfig } from 'motion/react'
-import '@fontsource/lilita-one/400.css'
-import '@fontsource/atkinson-hyperlegible/400.css'
-import '@fontsource/atkinson-hyperlegible/700.css'
+// Font hanya subset latin dan bobot yang dipakai. Semua teks game memakai
+// huruf latin dasar, jadi subset latin-ext tidak perlu.
+import '@fontsource/lilita-one/latin-400.css'
+import '@fontsource/atkinson-hyperlegible/latin-400.css'
+import '@fontsource/atkinson-hyperlegible/latin-700.css'
 import './index.css'
 import App from './App.jsx'
 import { installAudioUnlock } from './lib/sfx.js'

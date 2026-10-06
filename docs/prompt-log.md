@@ -1102,3 +1102,56 @@ Commit terkait:
 - `97fbe00` docs: mention side-view walking in README
 - `d6c223d` chore: add side-view walking screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P20, 6 Oktober 2026, 10.11 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: Tugas 10, audit dan optimasi
+Prompt:
+
+````text
+Kerjakan Tugas 10: audit dan optimasi. Kerjakan di satu PR.
+
+Ukur dulu, sebelum mengubah apa pun
+- Lighthouse mode mobile pada build produksi untuk beranda dan layar permainan: Performance, Accessibility, Best Practices, SEO, serta LCP, CLS, dan TBT.
+- Ukuran bundle per chunk (gzip) dan 5 modul terbesar.
+- Simpan angkanya di `docs/audit.md` sebagai "sebelum".
+
+Periksa dan perbaiki bila masih ada
+- Performa: pemisahan kode untuk layar permainan, hasil, dan karakter; Motion lewat LazyMotion; font hanya subset dan bobot yang dipakai; SVG latar dan karakter tidak dobel; header cache jangka panjang untuk `/assets` di `vercel.json`.
+- Aksesibilitas: kontras AA, urutan fokus, label tombol, aria-live untuk umpan balik, target sentuh 48 px, reduced motion, tombol Suara.
+- SEO dan berbagi: title dan description, `og:image`, `robots.txt`, `sitemap.xml`, favicon, `lang="id"`.
+- Ketahanan: halaman 404 yang ramah dengan tombol ke beranda, tidak ada error di konsol, localStorage yang rusak atau diblokir tidak membuat game macet.
+- Tata letak: 320, 360, 768, dan 1280 px. Tas berisi banyak buah tidak terpotong.
+
+Ukur lagi
+- Jalankan pengukuran yang sama dan tulis "sesudah" di `docs/audit.md` di samping "sebelum". Bila ada angka yang turun atau tidak bisa diperbaiki, tulis alasannya.
+
+Jurnal
+- Isi bagian "3. Audit dan optimasi" di `docs/jurnal-prompt.md`: Konteks berisi angka sebelum, Prompt disalin persis dari entri log prompt ini, Hasil berisi angka sesudah. Perbarui tabel status.
+
+Jangan menambah fitur. Jangan ubah isi `src/game` dan `src/data`. Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Prompt meminta halaman 404 ramah dengan tombol ke beranda, sedangkan di P16 alamat lama dialihkan ke beranda. AI bertanya dulu. Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "Dua-duanya (Recommended)". Alamat halaman tetap membuka beranda, dan berkas yang tidak ada mendapat `public/404.html` yang ramah dengan tombol "Kembali ke beranda".
+- Diukur dulu pada `main` commit `8f04e48` sebelum ada perubahan: Lighthouse 13.5.0 mode mobile, median 5 run, pada build produksi di server lokal yang meniru Vercel. Beranda memakai mode navigasi; layar permainan memakai alur pengguna (timespan dari ketukan "Buka warung", lalu snapshot). Ukuran bundle per chunk diukur dengan gzip, dan lima modul terbesar dari daftar modul hasil build. Angka sebelum dan sesudah ditulis di `docs/audit.md` (berkas baru).
+- Sebelum dan sesudah, beranda: Performance 98 dan 98, Accessibility, Best Practices, dan SEO 100; LCP 1.954 dan 1.855 ms; CLS 0,020 dan 0,020; TBT 0 dan 0 ms. Layar permainan: Performance 93 dan 100; TBT 219 dan 39 ms; INP 326 dan 98 ms; CLS 0; Accessibility, Best Practices, dan SEO 100. JS awal 101,08 menjadi 84,44 kB gzip (ditambah 0,56 kB `jsx-runtime`), CSS 11,88 menjadi 7,96 kB gzip; total semua chunk JS 130,2 menjadi 133,3 kB gzip karena pemecahan chunk.
+- Perbaikan performa: layar permainan dimuat terpisah (`src/screens/loadPlayScreen.js`, `React.lazy`), dimuat lebih awal oleh beranda saat browser senggang, dan dibuka dengan `startTransition`; font hanya subset latin (berkas font 10 menjadi 6). Motion lewat LazyMotion, pemisahan layar hasil dan karakter, dan header cache `/assets` di `vercel.json` sudah ada dan tidak diubah. Tidak ada SVG atau modul yang masuk dua chunk.
+- Aksesibilitas: axe-core tanpa pelanggaran di semua layar (360x640 dan 1280x800); urutan fokus, label tombol, `aria-live`, target sentuh 48 px, reduced motion, dan tombol Suara (48x48 px, `aria-pressed`) dicek. Area meja yang bisa digeser kini punya `role="region"` dan nama "Meja kasir (bisa digeser)". SEO dan berbagi (title, description, `og:image`, `robots.txt`, `sitemap.xml`, favicon, `lang="id"`) sudah lengkap.
+- Ketahanan: satu level dimainkan penuh dengan localStorage normal, rusak, dan diblokir; level tetap tamat dan konsol bersih. Tata letak: kantong berisi 6 jenis buah dicek di 320, 360, 768, dan 1280 px; di 768 dan 1280 px nama buah di keranjang yang meluber dan tombol "−" yang terjepit diperbaiki (`FruitBasket`, `PickStep`, `ShoppingBag`).
+- Yang tidak membaik ditulis beserta alasannya di `docs/audit.md`: CLS beranda 0,020 (pergantian font), CSS yang memblokir render (sekitar 450 ms), JavaScript tidak terpakai 47 KiB, dan total transfer beranda naik 0,7 kB karena layar permainan dimuat lebih awal. Situs live belum diukur ulang: (tidak dapat diverifikasi).
+- Jurnal: bagian "3. Audit dan optimasi" di `docs/jurnal-prompt.md` diisi (Konteks dengan angka sebelum, Prompt disalin persis dari entri ini, Hasil dengan angka sesudah) dan tabel status diperbarui; bagian milik pemilik proyek tidak diisi. AGENTS.md diperbarui (status Tugas 10 dan 11, struktur folder).
+- `npm test` (15 berkas, 109 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `e926ece` perf: load only the latin font subsets that the game uses
+- `2089b8e` perf: lazy-load the play screen and preload it from home
+- `4a00e9a` fix: keep basket and bag buttons intact on tablet and desktop
+- `8af704e` fix: name the scrollable counter region for keyboard users
+- `df84c26` fix: add a friendly 404 page for missing files
+- `2464c84` docs: note audit file and 404 page in AGENTS.md
+- `1e5ac89` docs: record audit numbers before and after in docs/audit.md
+- `f0ad2ac` docs: fill journal section 3 (audit and optimization)
+- `621cf62` chore: add audit screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

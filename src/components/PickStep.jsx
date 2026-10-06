@@ -7,7 +7,7 @@ function PickStep({ fruits, bag, onAdd, onRemove }) {
   const bagCount = Object.values(bag).reduce((sum, count) => sum + count, 0)
 
   return (
-    <div className="grid gap-1.5 md:grid-cols-[3fr_2fr] md:gap-4">
+    <div className="grid gap-1.5 md:grid-cols-[3fr_2fr] md:gap-4 lg:grid-cols-[7fr_4fr]">
       <section
         aria-labelledby="basket-title"
         className="counter-basket rounded-2xl border-4 border-tinta p-1.5 md:p-3"

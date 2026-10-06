@@ -389,6 +389,8 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
                     ref={workRef}
                     data-work-area
                     tabIndex={isScrollable ? 0 : undefined}
+                    role={isScrollable ? 'region' : undefined}
+                    aria-label={isScrollable ? 'Meja kasir (bisa digeser)' : undefined}
                     className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
                   >
                     <div ref={contentRef} className="mx-auto w-full max-w-5xl px-2 pt-2.5 pb-1 md:px-4 md:pt-3 md:pb-1">
