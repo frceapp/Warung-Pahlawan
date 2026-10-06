@@ -986,3 +986,56 @@ Commit terkait:
 - `74ed1b5` docs: note warung backdrop in AGENTS.md and README
 - `a20a61a` chore: add warung backdrop screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P18, 6 Oktober 2026, 08.54 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: komposisi layar main dengan kamera dekat (di luar daftar tugas bagian 4; terkait Tugas 8)
+Prompt:
+
+````text
+Komposisi layar permainan masih salah: meja kasir jauh, banyak ruang kosong, dan karakter pembeli terlalu kecil. Perbaiki komposisinya. Kerjakan di satu PR.
+
+Ukur dulu
+- Di 360x640 dan 1280x800, catat untuk tiap langkah: tinggi karakter yang terlihat (px), jarak karakter ke meja, dan area kosong terbesar. Tulis angkanya di deskripsi PR sebagai "sebelum".
+
+Komposisi baru (kamera dekat)
+- Pembeli digambar setengah badan, berdiri tepat di belakang meja kasir. Tepi atas meja menutupi badan pembeli di sekitar pinggang. Tidak ada celah antara pembeli dan meja.
+- Meja kasir membentang selebar layar dan menjadi tempat kerja: keranjang buah, tas belanja, nampan uang, dan mesin kasir berada di atas meja, bukan di panel terpisah di bawahnya.
+- Gelembung bicara menempel di samping atau di atas kepala pembeli dan boleh menimpa latar. Jangan diberi baris kosong sendiri.
+- Latar (rak, papan nama) ikut diperbesar dan terpotong di tepi layar, seperti difoto dari dekat. Jangan diperkecil supaya muat semuanya.
+- Buang margin, padding, dan jarak antarbagian yang hanya membuat ruang kosong.
+
+Target ukuran
+- 360x640: tinggi karakter yang terlihat minimal 200 px di langkah Sapa dan minimal 150 px di langkah Ambil buah, Hitung, dan Kembalian. Lebar karakter sekitar setengah lebar layar.
+- 1280x800: tinggi karakter minimal 320 px. Area permainan boleh dibatasi lebarnya, tetapi isinya diperbesar, bukan dibiarkan kecil di tengah.
+- Ukuran karakter berubah halus saat pindah langkah, tidak melompat.
+
+Yang tidak boleh rusak
+- Di 360x640 tidak ada scroll halaman dan tombol utama setiap langkah tetap terlihat.
+- Target sentuh buah, uang, dan tombol minimal 48 px.
+- Teks nama, fun fact, dan pesanan tetap terbaca dan tidak tertutup karakter.
+- Jangan ubah isi `src/game` dan `src/data`.
+
+Cek sebelum PR
+- Screenshot keempat langkah di 360x640 dan 1280x800, lalu tulis angka "sesudah" di samping angka "sebelum".
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Ukur dulu dengan skrip Playwright pada build `main` (Warung Ramai). Tinggi karakter yang terlihat diukur dari ujung rambut sampai tepi atas meja; area kosong terbesar adalah persegi terbesar tanpa teks, gambar, tombol, atau balon (dinding, hiasan latar, dan permukaan meja dihitung kosong). Sebelum, 360x640: Sapa 128 px, jarak ke meja 237 px, kosong 360x152 (24%); Ambil buah 102 px, jarak 6 px, kosong 11%; Hitung 100 px, jarak 6 px, kosong 27%; Kembalian 101 px, jarak 6 px, kosong 5%. Sebelum, 1280x800: Sapa 185 px, jarak 188 px, kosong 968x484 (46%); Ambil buah 131 px, Hitung 128 px, Kembalian 130 px, jarak 15 px, kosong 11 sampai 16%.
+- Kamera dekat: pembeli setengah badan berdiri tepat di belakang meja kasir; pinggang gambar (73,5% tinggi) ada di tepi atas meja dan meja menutupi badan bagian bawah (`src/components/CustomerStage.jsx`, `src/screens/PlayScreen.jsx`). Panggung pembeli dan meja kasir ada dalam satu kolom: di HP panggung tinggi di langkah Sapa lalu memendek halus di langkah lain, dan ukuran karakter berubah lewat transisi CSS (scale dengan titik putar di pinggang, 500 ms; diukur 55 frame, perubahan terbesar 13 px per frame). Balon bicara menempel di atas kepala (HP, langkah Sapa) atau di samping kepala, tanpa baris sendiri. Papan nama pindah ke depan meja (Sapa) atau ke tepi bawah panggung (langkah lain). Label "Urutan langkah" di layar lebar kini hanya untuk pembaca layar.
+- Meja kasir selebar layar menjadi tempat kerja: panel putih dihapus, keranjang buah, kantong belanja, nota, laci uang, dan nampan kembalian tampil sebagai barang di atas meja, dan mesin kasir berdiri di tepi meja. Di layar lebar keranjang dan laci uang menjadi satu baris. Tombol "Kosongkan" tetap di baris judul nampan (area sentuh 48 px tanpa menambah tinggi baris), nama buah di tombol kantong hanya dibacakan lewat `aria-label`, dan nota dibuat lebih rapat di layar lebar.
+- Latar (`src/components/scene/`) kini hanya dinding dengan hiasan yang diperbesar dan terpotong di tepi layar; lantai dan meja latar dihapus karena tertutup meja kasir. Papan nama dan hiasan punya posisi sendiri untuk HP, tablet (768 sampai 1023 px), dan layar lebar.
+- Sesudah, 360x640 (Warung Ramai): Sapa 220 px, Ambil buah 158 px, Hitung 154 px, Kembalian 158 px; jarak ke meja 0 px di semua langkah; kosong terbesar Sapa 8%, Ambil buah 10%, Hitung 20%, Kembalian 3%. Sesudah, 1280x800: Sapa 390 px, Ambil buah 336 px, Hitung 328 px, Kembalian 336 px; jarak 0 px; kosong terbesar Sapa 30%, Ambil buah 13%, Hitung 16%, Kembalian 12% (sebagian besar dinding dengan rak dan spanduk di bawah balon). Level 1 dan 3 memberi angka yang hampir sama (selisih tinggi karakter paling banyak 6 px).
+- Dicek di 360x640 dan 1280x800 untuk ketiga level (juga 320x568, 390x844, dan 768x1024 untuk level 3): tidak ada scroll halaman, tombol utama selalu terlihat, tidak ada tombol yang lebih kecil dari 48 px, dan tidak ada teks yang tertutup karakter. Di layar HP yang pendek (tinggi 620 px atau kurang) karakter Sapa diperkecil 0,8 supaya balon tetap muat. Isi meja muat tanpa digeser, kecuali di 360x640 level 2 dan 3 saat nampan berisi tiga jenis uang (lebih 25 px, ada tanda "Geser ke bawah"; di `main` lebih 38 px dengan dua jenis uang). Area kerja bisa difokus dengan keyboard saat isinya bisa digeser (temuan axe `scrollable-region-focusable`). Audit axe-core di semua layar tanpa pelanggaran. Uji di HP asli: (tidak dapat diverifikasi).
+- Ukuran bundle (build `main` dibanding sesudah): JS awal 323,06 kB (gzip 102,09 kB) menjadi 323,24 kB (gzip 102,19 kB); CSS 44,20 kB (gzip 11,59 kB) menjadi 44,82 kB (gzip 11,98 kB); `WarungScene` 8,91 kB menjadi 8,30 kB.
+- README diperbarui. `npm test` (15 berkas, 109 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `332799d` feat: show the customer half-body behind the counter in a close-up stage
+- `2de0b3f` feat: place basket, bag, receipt, drawer, and tray on the counter
+- `b00c840` refactor: make the warung backdrop wall-only with larger edge-cropped decor
+- `5a60ff4` docs: describe the close-up play screen in README
+- `b074152` chore: add close-up composition screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
