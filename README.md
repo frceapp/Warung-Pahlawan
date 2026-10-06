@@ -18,6 +18,7 @@ Situs: https://wp.itslim.dev
 - **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser; game tetap jalan kalau penyimpanan browser tidak tersedia.
 - **Layar hasil:** skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya.
 - **Mode Susun Langkah:** latihan menyusun empat langkah melayani pembeli dalam urutan yang benar, dengan penjelasan konsep urutan (sequence).
+- **Efek suara sederhana** (lonceng pembeli datang, buah masuk tas, tombol, jawaban benar dan salah, uang, fanfare hasil), dibuat dengan Web Audio API tanpa berkas audio. Tombol Suara ada di beranda dan layar main, pilihannya disimpan di browser. Bunyi hanya pelengkap: setiap bunyi selalu disertai umpan balik di layar.
 - **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard.** Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar, target sentuh minimal 48 px, dan animasi mengikuti pengaturan "kurangi gerakan". Di HP, tiap langkah muat dalam satu layar dengan tombol aksi selalu terlihat di bawah.
 - Semua ilustrasi (buah, uang, tokoh) adalah SVG buatan sendiri. Desain uang tidak meniru uang rupiah asli.
@@ -48,12 +49,13 @@ npm run preview  # coba hasil build di komputer sendiri
 
 - `src/data/`: isi game (tokoh, buah, uang, level, teks panduan, kartu Susun Langkah)
 - `src/game/`: logika game sebagai fungsi murni beserta tesnya
+- `src/lib/`: modul kecil di luar logika game (efek suara) beserta tesnya
 - `src/components/` dan `src/screens/`: tampilan
 - Penjelasan lengkap ada di [AGENTS.md](AGENTS.md), bagian 7.
 
 ## Status pengembangan
 
-Tugas 1 sampai 8 selesai, Tugas 9 baru satu fitur (Susun Langkah), dan Tugas 10 (audit aksesibilitas, performa, dan SEO) sudah dikerjakan di PR #10. Status lengkap tiap tugas ada di [AGENTS.md](AGENTS.md), bagian 4 dan 5.
+Tugas 1 sampai 8 selesai, Tugas 9 baru sebagian (Susun Langkah dan efek suara), dan Tugas 10 (audit aksesibilitas, performa, dan SEO) sudah dikerjakan di PR #10. Status lengkap tiap tugas ada di [AGENTS.md](AGENTS.md), bagian 4 dan 5.
 
 Keterbatasan yang diketahui: di layar sangat kecil (320×568), beberapa langkah perlu digeser di dalam area kerja; tanda "Geser ke bawah" baru ada di layar main, belum di mode Susun Langkah.
 

@@ -1,6 +1,7 @@
 import { usePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { createElement, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { playCustomerBell } from '../lib/sfx.js'
 import { getLoadedAnimeCharacter, loadAnimeCharacter } from './character/loadAnimeCharacter.js'
 import SpeechBubble from './SpeechBubble.jsx'
 
@@ -65,6 +66,12 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
     const timer = setTimeout(() => setArrived(true), ARRIVE_FALLBACK_MS)
     return () => clearTimeout(timer)
   }, [])
+
+  // Lonceng warung saat pembeli sampai (bersamaan dengan papan nama dan
+  // balon bicara yang muncul).
+  useEffect(() => {
+    if (arrived) playCustomerBell()
+  }, [arrived])
 
   useEffect(() => {
     if (isPresent) return undefined

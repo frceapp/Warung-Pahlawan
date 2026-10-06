@@ -3,6 +3,7 @@ import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
+import SoundToggle from '../components/SoundToggle.jsx'
 import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
 import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
@@ -29,8 +30,11 @@ function HomeScreen({ bestStars, onPlay, onOpenSequence, focusHeading = false })
     <div className="flex min-h-dvh flex-col">
       <Awning />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 pt-6 pb-12">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 pt-3 pb-12">
         <header className="flex flex-col items-center gap-5 text-center">
+          <div className="flex w-full justify-end">
+            <SoundToggle />
+          </div>
           <h1
             ref={headingRef}
             tabIndex={-1}

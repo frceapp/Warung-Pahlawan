@@ -842,3 +842,52 @@ Commit terkait:
 - `0452300` docs: note Motion in the stack sections of AGENTS.md and README
 - `d6fb389` chore: add Motion animation recordings for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P15, 6 Oktober 2026, 07.30 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: Tugas 9, fitur tambahan (suara; bagian 5)
+Prompt:
+
+````text
+Tambahkan efek suara sederhana. Kerjakan di satu PR.
+
+Teknik
+- Pakai Web Audio API (OscillatorNode dan GainNode). Tanpa berkas audio dan tanpa library.
+- Buat satu modul kecil `src/lib/sfx.ts` dengan fungsi per bunyi. Buat AudioContext hanya setelah sentuhan pertama anak, lalu `resume()` bila tertunda (aturan autoplay di iOS dan Chrome).
+
+Bunyi (singkat, di bawah 400 ms, volume kecil)
+- Pembeli datang: lonceng warung dua nada.
+- Ambil buah ke tas: "pop" pendek.
+- Tombol ditekan: klik halus.
+- Jawaban benar: nada naik ceria.
+- Jawaban salah: nada turun yang lembut (bukan bunyi buzzer keras).
+- Uang diberikan: dua dentingan koin.
+- Hasil akhir: fanfare pendek, lebih meriah untuk 3 bintang.
+
+Aturan
+- Tombol Suara di header (ikon speaker, `aria-pressed`, minimal 48 px). Status tersimpan di localStorage dengan key sendiri.
+- Bunyi mati bila tab tersembunyi (`visibilitychange`).
+- Tampilkan umpan balik visual tiap bunyi; bunyi hanya pelengkap, bukan satu-satunya petunjuk.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Pastikan lint, tes, dan build lolos. Catat di PR bahwa uji suara perlu dilakukan di HP asli.
+````
+
+Hasil AI:
+- Sebelum mulai, AI bertanya dua hal. (1) Prompt meminta `src/lib/sfx.ts` (TypeScript), sedangkan AGENTS.md bagian 6 menulis "JavaScript tanpa TypeScript". Jawaban pemilik proyek (dipilih lewat pertanyaan AI): "src/lib/sfx.js (Recommended)". (2) Letak tombol Suara di header. Jawaban: "Beranda dan layar main (Recommended)".
+- Modul baru `src/lib/sfx.js` dengan Web Audio API (OscillatorNode dan GainNode), tanpa berkas audio dan tanpa library. AudioContext baru dibuat pada sentuhan, klik, atau tombol keyboard pertama (listener `pointerdown`, `touchstart`, `keydown` dipasang di `main.jsx`), lalu `resume()` kalau masih tertunda. Volume keseluruhan 0,2. Saat tab tersembunyi (`visibilitychange`) AudioContext di-`suspend()` dan tidak ada bunyi baru.
+- Tujuh bunyi, semuanya selesai sebelum 400 ms: lonceng dua nada saat pembeli sampai, "pop" saat buah masuk tas, klik halus di setiap `Button`, nada naik (do-mi-sol) untuk jawaban benar, nada turun lembut (gelombang sinus) untuk jawaban salah, dua dentingan koin saat uang ditaruh di nampan kembalian, dan fanfare di layar hasil (3 bintang: lima nada lebih meriah; 2 bintang: tiga nada; 1 bintang: dua nada). Bunyi benar dan salah juga dipakai di mode Susun Langkah.
+- Setiap bunyi berpasangan dengan umpan balik yang terlihat: karakter berjalan masuk dan balon muncul (lonceng), angka di tas memantul (pop), tombol turun saat ditekan (klik), teks umpan balik di `aria-live` dan reaksi karakter (benar dan salah), nampan kembalian memantul (koin), bintang dan skor di layar hasil (fanfare).
+- Komponen baru `SoundToggle`: tombol Suara dengan ikon speaker SVG (garis gelombang saat menyala, tanda silang saat mati), `aria-pressed`, label "Suara", ukuran 48x48 px di HP dan dengan teks "Suara" di layar lebar. Dipasang di header beranda dan layar main. Pilihan disimpan di localStorage dengan key `warungPahlawanSuara`; game tetap jalan kalau localStorage tidak tersedia.
+- Tes baru `src/lib/sfx.test.js` (14 tes) dengan AudioContext palsu: belum ada AudioContext sebelum sentuhan pertama, dibuat dan di-resume saat sentuhan pertama, setiap bunyi di bawah 400 ms, fanfare 3 bintang lebih meriah dari 1 bintang, pilihan suara tersimpan dan dibaca ulang, localStorage yang error tidak membuat game berhenti, tab tersembunyi menghentikan bunyi.
+- Diuji dengan Playwright pada build produksi (Chromium headless, Web Audio dicatat lewat instrumen, bukan didengar): bunyi muncul di urutan yang benar dari pembeli datang sampai layar hasil, tombol Suara berganti `aria-pressed` dan pilihannya bertahan setelah halaman dimuat ulang, tidak ada bunyi saat suara mati atau tab tersembunyi. Header di 360x640 dan 1280x800 tanpa scroll mendatar; di 320x568 judul level terpotong ("Pasar Be…"). Audit axe-core di semua layar tanpa pelanggaran. Uji suara di HP asli (iOS dan Android): (tidak dapat diverifikasi).
+- Ukuran bundle JS awal: 314,54 kB (gzip 99,33 kB) di `main` menjadi 318,72 kB (gzip 100,64 kB).
+- AGENTS.md (bagian 4, 5, dan 7) dan README diperbarui: folder `src/lib/` dan status fitur suara.
+- `npm test` (109 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `dec167f` feat: add Web Audio sound effects module
+- `b15c7ad` feat: play sound effects for game actions and add a sound toggle
+- `c92a523` docs: note sound effects in AGENTS.md and README
+- `e954dc9` chore: add sound toggle screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

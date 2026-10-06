@@ -3,6 +3,7 @@ import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import StepCard from '../components/StepCard.jsx'
+import { useFeedbackSound } from '../lib/useFeedbackSound.js'
 import {
   CORRECT_ORDER,
   createSequenceState,
@@ -24,6 +25,7 @@ function SequenceScreen({ rng, onExit }) {
   const isSolved = result?.isCorrect ?? false
   const wrong = new Set(result?.wrongPositions ?? [])
   const feedback = result ? { id: state.checkCount, ...describeSequenceResult(result) } : null
+  useFeedbackSound(feedback)
 
   const headingRef = useRef(null)
   useEffect(() => {
