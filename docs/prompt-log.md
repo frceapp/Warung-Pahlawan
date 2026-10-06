@@ -1155,3 +1155,44 @@ Commit terkait:
 - `f0ad2ac` docs: fill journal section 3 (audit and optimization)
 - `621cf62` chore: add audit screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P21, 6 Oktober 2026, 10.33 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: Tugas 11, finishing
+Prompt:
+
+````text
+Kerjakan Tugas 11: finishing. Kerjakan di satu PR. Jangan menambah fitur.
+
+- Periksa keenam butir Gerbang kelayakan di AGENTS.md satu per satu. Tulis hasilnya (lolos atau belum, dengan bukti) di deskripsi PR.
+- Mainkan ketiga level dari awal sampai hasil di 360x640 dan 1280x800. Catat dan perbaiki bug yang ditemukan.
+- Rapikan teks: ejaan, konsistensi istilah, kalimat fun fact sama persis dengan `docs/sumber-fakta.md`.
+- Bersihkan kode: console.log, kode mati, komponen dan dependensi yang tidak dipakai, komentar TODO.
+- README final: deskripsi singkat, tautan situs, cara menjalankan, stack, daftar fitur yang benar-benar ada, 2 sampai 3 screenshot, dan tautan ke AGENTS.md, jurnal, serta log prompt.
+- Pastikan dokumen tidak menyebut fitur yang sudah dihapus.
+- Cocokkan `docs/prompt-log.md` dengan riwayat commit. Laporkan entri yang hash commitnya kosong atau tidak cocok, tetapi jangan ubah isi entri lama.
+- Isi bagian "4. Finishing" di `docs/jurnal-prompt.md`: Konteks, Prompt disalin persis dari entri log prompt ini, dan Hasil. Perbarui tabel status.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Gerbang kelayakan diperiksa satu per satu; hasil dan buktinya ditulis di deskripsi PR. Butir 1 (AGENTS.md ada), 2 (repository public menurut API GitHub, `"visibility": "public"`), 4 (stack bebas), 5 (tema dan subtema), dan 6 (https://wp.itslim.dev menjawab 200, memakai berkas `assets/index-BWIC3kQt.js` yang sama dengan build `main` commit `9d84ef2`, dan berkas yang tidak ada mendapat halaman 404) lolos. Butir 3 belum: kelima bagian jurnal sudah berisi Konteks, Prompt, dan Hasil, tetapi bagian "Keputusan saya", "Dugaan saya", dan "Yang saya pelajari" di semua bagian belum diisi pemilik proyek.
+- Ketiga level dimainkan dari beranda sampai layar hasil lalu kembali ke beranda, di 360x640 dan 1280x800, dengan skrip Playwright pada build produksi (pembeli pertama: satu kesalahan di tiap langkah). Skor level 1, 2, dan 3: 36 dari 40, 44 dari 50, dan 54 dari 60; konsol bersih; fun fact di balon Sapa dan di layar hasil sama persis dengan `docs/sumber-fakta.md`; kembalian selalu bisa disusun dari laci.
+- Bug yang ditemukan: di 1280x800, saat pesan umpan balik muncul, isi meja kasir lebih 16 sampai 61 px sehingga harus digeser, dan tanda "Geser ke bawah" menutupi nama buah di keranjang. Diperbaiki di `src/components/ActionBar.jsx` (di layar lebar pesan ada di samping tombol) dan `src/screens/PlayScreen.jsx` (jarak atas meja sedikit lebih rapat di layar lebar). Sesudahnya kelebihan 0 px di semua langkah dan level di 1280x800 dan 768x1024; tampilan 360x640 tidak berubah. Di layar laptop yang lebih pendek (1366x768, 1280x720) isi meja masih bisa perlu digeser; ditulis di README sebagai keterbatasan.
+- Teks: daftar tiga jenis buah di pesan salah kini memakai koma sebelum "dan" ("3 semangka, 3 jeruk, dan 4 pisang"), dan "Kembaliannya kelebihan" menjadi "Kembaliannya terlalu banyak" (`src/game/feedback.js`, tesnya ditambah satu). Istilah "tas" diganti "kantong" di README dan komentar `src/lib/sfx.js`. Fun fact di `src/data/characters.js` sama persis dengan `docs/sumber-fakta.md` (16 kalimat, semuanya "sudah dicek").
+- Kode: tidak ada `console.log`, `debugger`, atau komentar TODO; semua komponen dan modul dipakai (galeri dan layar gambar pratinjau hanya untuk pengembangan dan tidak ikut build produksi). Paket `@types/react` dan `@types/react-dom` dihapus dari `package.json` karena proyek tidak memakai TypeScript.
+- README final: deskripsi, tautan situs, tiga screenshot di `.github/readme/`, daftar fitur yang ada, cara menjalankan, stack, keterbatasan, dan tautan ke AGENTS.md, jurnal, log prompt, sumber fakta, dan audit. AGENTS.md: status Tugas 9 dan 11 diperbarui, baris mode "Susun Langkah" yang sudah dihapus dibuang dari bagian 5, dan `.github/readme/` ditambahkan ke struktur folder. `docs/audit.md` masih menyebut alamat `/susun-langkah` sebagai contoh alamat lama; tidak diubah karena berkas lain di `docs/` tidak boleh diubah.
+- Log prompt dicocokkan dengan riwayat commit: semua hash di P1 sampai P20 ada di `main` dan pesan commitnya cocok, dan untuk entri yang mencantumkan hash, jam di judulnya sama dengan waktu commit pertama yang dicantumkan. P7 tidak mencantumkan hash; commit untuk P7 menurut riwayat adalah `7cdf048`, `3767de3`, dan `e5fdf81` (PR #6). P8 sampai P20 tidak mencantumkan commit "docs: log prompt" miliknya sendiri, sesuai catatan di entri itu. Baris "AI Agent: (isi nama AI Agent yang dipakai)" di bagian atas log belum diisi. Entri lama tidak diubah.
+- Jurnal: bagian "4. Finishing" di `docs/jurnal-prompt.md` diisi (Konteks, Prompt disalin persis dari entri ini, Hasil) dan tabel status diperbarui; bagian milik pemilik proyek tidak diisi.
+- `npm test` (15 berkas, 110 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. axe-core tanpa pelanggaran di semua layar (360x640 dan 1280x800). Uji di HP asli: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `d904732` fix: keep the counter free of scrolling on 1280x800 when feedback shows
+- `355fe60` fix: use the standard list comma and clearer wording in feedback
+- `113b834` chore: remove unused React type packages
+- `ad5bb34` style: call the shopping bag kantong in the pop sound comment
+- `b1bd1f1` docs: finalize README with features, screenshots, and document links
+- `ef5de6c` docs: update task status and drop the removed mode from AGENTS.md
+- `69c246e` docs: fill journal section 4 (finishing)
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
