@@ -1039,3 +1039,66 @@ Commit terkait:
 - `5a60ff4` docs: describe the close-up play screen in README
 - `b074152` chore: add close-up composition screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P19, 6 Oktober 2026, 09.34 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: tampak samping karakter saat berjalan (di luar daftar tugas bagian 4; terkait Tugas 8)
+Prompt:
+
+````text
+Saat pembeli berjalan masuk dan keluar, badannya masih menghadap depan sehingga terlihat seperti digeser. Buat tampak samping untuk berjalan. Kerjakan di satu PR.
+
+Tampak samping
+- Tambahkan tampak samping pada rangka karakter bersama (prop arah: "depan" atau "samping"). Bukan SVG baru per tokoh.
+- Tampak samping: kepala profil dengan satu mata, hidung, dan satu telinga, badan lebih ramping, lengan depan dan lengan belakang bertumpuk, rambut dan aksesori khas tokoh digambar dari samping (peci, blangkon, sanggul, ikat kepala).
+- Tambahkan data tampak samping untuk kedelapan tokoh di berkas data karakter yang sama.
+- Untuk arah sebaliknya, cerminkan dengan scaleX(-1). Jangan menggambar dua kali.
+
+Urutan gerak
+1. Masuk: tampak samping menghadap kanan, berjalan dari kiri ke belakang meja kasir. Lengan berayun bergantian dan badan naik turun tiap langkah. Kaki tertutup meja, jadi tidak perlu digambar.
+2. Berhenti: berputar ke depan sekitar 200 ms (badan menyempit, ganti tampak, melebar lagi), lalu melambai.
+3. Selama melayani: tampak depan seperti sekarang.
+4. Keluar: berputar ke samping menghadap kanan, lalu berjalan keluar ke kanan.
+
+Aturan
+- Saat pergantian tampak, tidak boleh ada frame kosong atau dua tampak terlihat bersamaan.
+- Ukuran dan posisi kepala harus sama di kedua tampak, supaya karakter tidak melompat saat berputar.
+- prefers-reduced-motion: tanpa berjalan dan tanpa berputar. Karakter langsung muncul tampak depan dengan fade.
+- Ukuran karakter dan komposisi meja kasir yang sekarang jangan diubah.
+- Jangan ubah isi src/game dan src/data selain data tampilan karakter.
+
+Cek sebelum PR
+- Screenshot frame tengah saat berjalan masuk, saat berputar, dan saat berjalan keluar untuk Kartini dan Pangeran Diponegoro, di 360x640 dan 1280x800.
+- Laporkan perubahan ukuran bundle.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Prompt tambahan (dikirim di tengah pengerjaan prompt ini):
+
+````text
+Tambahan:
+
+* Rambut karakter bergoyang tidak natural ketika berjalan
+````
+
+Hasil AI:
+- Pesan tambahan "Rambut karakter bergoyang tidak natural ketika berjalan" dikirim pemilik proyek di tengah pengerjaan dan dikerjakan di PR yang sama.
+- Rangka karakter bersama (`src/components/character/AnimeCharacter.jsx`) kini punya dua tampak: depan dan samping. Prop `facing` (`depan` atau `samping`) dan `mirrored` bisa memaksa satu tampak; arah kiri memakai cermin `scale(-1 1)` tanpa menggambar dua kali. Nama prop memakai bahasa Inggris sesuai AGENTS.md, nilainya tetap "depan" dan "samping".
+- Tampak samping (`src/components/character/characterParts.jsx`): kepala profil dengan satu mata, hidung, dan satu telinga, di kotak yang sama dengan kepala tampak depan (x 24 sampai 76, y 21 sampai 70); badan lebih ramping; lengan depan dan belakang bertumpuk di satu bahu; kaki tidak digambar karena tertutup meja kasir. Rambut dan aksesori dari samping: konde Kartini, peci, sorban yang menutup sampai tengkuk, blangkon dengan mondolan, ikat kepala dengan ujung kain, kerudung, kacamata satu lensa, dan kumis. Data tampak samping kedelapan tokoh (`side: { hair, headwear, nose }`) ditambahkan di `src/components/character/characterLooks.js`.
+- Urutan gerak: berjalan masuk tampak samping dari kiri (lengan berayun bergantian, badan naik turun tiap langkah), berputar ke depan dalam 200 ms (menyempit sampai 6%, tampak diganti dalam satu commit React lewat `flushSync` saat paling sempit, lalu melebar), melambai, melayani dengan tampak depan, lalu saat pergi berputar ke samping menghadap kanan dan berjalan keluar ke kanan. Dicek per frame dengan jam tiruan Playwright dan dengan waktu asli: tidak ada frame tanpa tampak atau dengan dua tampak sekaligus, dan posisi serta tinggi kepala sama sebelum dan sesudah berputar.
+- Rambut: bagian rambut yang menempel di kepala tidak diputar lagi (sebelumnya seluruh rambut diputar sehingga tampak lepas dari kepala). Saat berjalan, hanya bagian yang menjuntai (konde, rambut panjang, ujung ikat kepala, kain kerudung) yang tertinggal sedikit ke belakang dari titik tempelnya dan memantul kecil tiap langkah. Gerak diam rambut tampak depan hanya untuk rambut belakang.
+- Perbaikan: saat pembeli berganti, panggung baru membesar setelah pembeli lama selesai berjalan keluar (`onExitComplete`), sehingga pembeli lama berjalan lurus ke kanan dan tidak ikut turun. Ukuran karakter dan komposisi meja kasir tidak berubah (diukur ulang: 360x640 Sapa 220 px, langkah lain 154 sampai 158 px; 1280x800 328 sampai 390 px).
+- Kurangi gerakan: tanpa berjalan dan berputar; karakter hanya muncul tampak depan dengan fade (dicek: hanya tampak depan yang pernah tampil).
+- Galeri ilustrasi pengembangan (`/?galeri`) menampilkan tampak samping kedelapan tokoh, menghadap kanan dan dicerminkan ke kiri.
+- Ukuran bundle (build `main` dibanding sesudah): berkas karakter (dimuat terpisah) 18,21 kB (gzip 5,69 kB) menjadi 25,72 kB (gzip 7,33 kB); JS awal 323,24 kB (gzip 102,19 kB) menjadi 323,34 kB (gzip 102,22 kB); CSS tidak berubah (44,82 kB).
+- Screenshot frame tengah berjalan masuk, berputar, dan berjalan keluar untuk Kartini dan Pangeran Diponegoro di 360x640 dan 1280x800 ada di `.github/pr-assets/tampak-samping/`. Audit axe-core di semua layar tanpa pelanggaran. `npm test` (15 berkas, 109 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. `src/game` dan `src/data` tidak diubah. Uji di HP asli: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `3abf66e` feat: add a side view to the shared character rig
+- `10cd1b6` feat: walk in and out in side view and turn to face the counter
+- `50a495a` fix: grow the stage only after the previous customer has walked out
+- `acb6e56` feat: show side views in the illustration gallery
+- `97fbe00` docs: mention side-view walking in README
+- `d6c223d` chore: add side-view walking screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
