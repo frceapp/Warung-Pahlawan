@@ -1,13 +1,14 @@
-import { lazy, startTransition, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import OpeningGate from './components/OpeningGate.jsx'
 import { getLevel } from './data/levels.js'
 import { getBrowserStorage, loadBestStars, recordStars, saveBestStars } from './game/progress.js'
 import HomeScreen from './screens/HomeScreen.jsx'
-import { loadPlayScreen } from './screens/loadPlayScreen.js'
+import { getLoadedPlayScreen, preparePlayScreen } from './screens/loadPlayScreen.js'
+import { getLoadedResultScreen, prepareResultScreen } from './screens/loadResultScreen.js'
 
 // Layar permainan dan layar hasil dimuat terpisah supaya beranda ringan.
-// Layar permainan dimuat lebih awal dari beranda (lihat HomeScreen).
-const PlayScreen = lazy(loadPlayScreen)
-const ResultScreen = lazy(() => import('./screens/ResultScreen.jsx'))
+// Keduanya dibuka lewat OpeningGate: pintu warung tertutup sampai semua
+// berkasnya siap, lalu pintu naik dan layarnya tampil utuh.
 
 // Galeri ilustrasi hanya untuk pengembangan; tidak ikut build produksi.
 const GalleryScreen = import.meta.env.DEV
@@ -27,6 +28,9 @@ const IN_APP_STATE = 'warungPahlawanScreen'
 function App() {
   const [screen, setScreen] = useState({ name: 'home', isFirst: true })
   const [bestStars, setBestStars] = useState(() => loadBestStars(storage))
+  // Nomor unik tiap kali layar permainan atau hasil dibuka, supaya layar dan
+  // pintu warungnya dipasang ulang dari awal (misalnya saat "Main lagi").
+  const openCount = useRef(0)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -51,10 +55,10 @@ function App() {
     setScreen(next)
   }
 
-  // Transisi: layar lama tetap tampil sampai layar permainan siap, dan
-  // render layar permainan dicicil supaya ketukan anak cepat ditanggapi.
+  // Pintu warung (layar loading) langsung tampil setelah anak memilih level.
   function startLevel(levelId) {
-    startTransition(() => leaveHome({ name: 'play', levelId, playId: Date.now() }))
+    openCount.current += 1
+    leaveHome({ name: 'play', levelId, playId: openCount.current })
   }
 
   function goHome() {
@@ -71,7 +75,8 @@ function App() {
       setBestStars(updated)
       saveBestStars(storage, updated)
     }
-    setScreen({ name: 'result', summary, isNewBest: updated !== bestStars })
+    openCount.current += 1
+    setScreen({ name: 'result', resultId: openCount.current, summary, isNewBest: updated !== bestStars })
   }
 
   if (GalleryScreen && new URLSearchParams(window.location.search).has('galeri')) {
@@ -91,29 +96,48 @@ function App() {
   }
 
   if (screen.name === 'play') {
+    const level = getLevel(screen.levelId)
     return (
-      <Suspense fallback={<p className="p-8 text-lg">Menyiapkan warung...</p>}>
-        <PlayScreen
-          key={screen.playId}
-          level={getLevel(screen.levelId)}
-          rng={Math.random}
-          onExit={goHome}
-          onFinish={finishLevel}
-        />
-      </Suspense>
+      <OpeningGate
+        key={screen.playId}
+        sign={level.name}
+        loadingText="Membuka warung..."
+        errorText="Warung belum bisa dibuka. Coba lagi ya."
+        prepare={() => preparePlayScreen(level.id)}
+        onBack={goHome}
+      >
+        {(opened) => {
+          const PlayScreen = getLoadedPlayScreen()
+          return (
+            <PlayScreen level={level} rng={Math.random} opened={opened} onExit={goHome} onFinish={finishLevel} />
+          )
+        }}
+      </OpeningGate>
     )
   }
 
   if (screen.name === 'result') {
     return (
-      <Suspense fallback={<p className="p-8 text-lg">Menyiapkan hasil...</p>}>
-        <ResultScreen
-          summary={screen.summary}
-          isNewBest={screen.isNewBest}
-          onPlayAgain={() => startLevel(screen.summary.levelId)}
-          onHome={goHome}
-        />
-      </Suspense>
+      <OpeningGate
+        key={screen.resultId}
+        sign={getLevel(screen.summary.levelId).name}
+        loadingText="Menyiapkan hasil..."
+        errorText="Hasil belum bisa ditampilkan. Coba lagi ya."
+        prepare={prepareResultScreen}
+        onBack={goHome}
+      >
+        {() => {
+          const ResultScreen = getLoadedResultScreen()
+          return (
+            <ResultScreen
+              summary={screen.summary}
+              isNewBest={screen.isNewBest}
+              onPlayAgain={() => startLevel(screen.summary.levelId)}
+              onHome={goHome}
+            />
+          )
+        }}
+      </OpeningGate>
     )
   }
 

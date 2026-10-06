@@ -1,13 +1,18 @@
 import { describeLevel } from '../data/guide.js'
 import StarRating from './StarRating.jsx'
 
-// Kartu pilihan level di beranda. Seluruh kartu adalah tombol.
-function LevelCard({ level, bestStars, onPlay }) {
+// Kartu pilihan level di beranda. Seluruh kartu adalah tombol. Saat kartu
+// disentuh, ditunjuk, atau difokus, berkas level itu mulai dimuat (onPrepare)
+// supaya pintu warung cepat terbuka setelah kartu diketuk.
+function LevelCard({ level, bestStars, onPlay, onPrepare }) {
   return (
     <button
       type="button"
       data-level-id={level.id}
       onClick={() => onPlay(level.id)}
+      onPointerDown={() => onPrepare?.(level.id)}
+      onPointerEnter={() => onPrepare?.(level.id)}
+      onFocus={() => onPrepare?.(level.id)}
       className="group flex h-full w-full flex-col gap-3 rounded-2xl border-4 border-tinta bg-kapur p-4 text-left shadow-[0_6px_0_var(--color-tinta)] transition-transform duration-150 motion-safe:hover:-translate-y-1 active:translate-y-1 active:shadow-none"
     >
       <span className="flex items-center justify-between gap-2">

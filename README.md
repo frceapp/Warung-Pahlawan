@@ -33,6 +33,12 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   - Keranjang buah, kantong belanja, nota, laci uang, nampan kembalian, dan mesin kasir ada di atas meja.
   - Tiap level punya latar sendiri: warung kayu, warung ramai, dan los pasar.
   - Layar mesin kasir menampilkan total belanja (di level 2 dan 3 setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian.
+- **Layar loading "Membuka warung":**
+  - Saat level dipilih, pintu gulung warung yang tertutup langsung tampil, dengan papan nama level.
+  - Pintu baru naik setelah latar, meja kasir, karakter pembeli, animasi, dan font siap, jadi warung tampil utuh. Setelah itu pembeli pertama berjalan masuk.
+  - Kalau gagal dimuat atau lebih dari 8 detik, muncul pesan ramah dengan tombol "Coba lagi" dan "Kembali".
+  - Layar hasil memakai pintu yang sama.
+  - Beranda memuat berkas level lebih dulu saat browser senggang dan saat kartu level disentuh atau difokus.
 - **Efek suara sederhana** dibuat dengan Web Audio API, tanpa berkas audio. Ada lonceng pembeli datang, buah masuk kantong, tombol, jawaban benar dan salah, uang, dan fanfare hasil. Tombol Suara ada di beranda dan layar main, dan setiap bunyi selalu disertai umpan balik di layar.
 - **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard:**

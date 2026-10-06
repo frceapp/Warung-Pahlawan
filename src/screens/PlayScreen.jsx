@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { lazy, Suspense, useEffect, useReducer, useRef, useState } from 'react'
+import { Suspense, useEffect, useReducer, useRef, useState } from 'react'
 import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
@@ -12,7 +12,8 @@ import SoundToggle from '../components/SoundToggle.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
-import { loadWarungScene } from '../components/scene/loadWarungScene.js'
+import { loadAnimeCharacter } from '../components/character/loadAnimeCharacter.js'
+import WarungScene from '../components/scene/WarungScene.jsx'
 import ServedStep from '../components/ServedStep.jsx'
 import StepTracker from '../components/StepTracker.jsx'
 import TotalChoices from '../components/TotalChoices.jsx'
@@ -21,6 +22,7 @@ import { formatRupiah } from '../game/format.js'
 import { getRegisterScreen } from '../lib/registerScreen.js'
 import { playCoins, playPop } from '../lib/sfx.js'
 import { useFeedbackSound } from '../lib/useFeedbackSound.js'
+import { loadResultScreen } from './loadResultScreen.js'
 import { getLevelFruits } from '../game/order.js'
 import {
   createSession,
@@ -30,9 +32,6 @@ import {
   STEPS,
   summarizeSession,
 } from '../game/session.js'
-
-// Latar warung dimuat terpisah; data dekorasinya hanya untuk level ini.
-const WarungScene = lazy(loadWarungScene)
 
 // Lama laci mesin kasir terbuka setelah "Berikan kembalian" ditekan.
 const DRAWER_OPEN_MS = 700
@@ -56,7 +55,9 @@ function speechMs(text) {
 // Layar main memakai tinggi layar penuh: terpal, header, urutan langkah,
 // pembeli, area kerja (satu-satunya bagian yang boleh di-scroll), dan bar
 // aksi yang selalu terlihat di bawah.
-function PlayScreen({ level, rng, onExit, onFinish }) {
+// `opened`: pintu warung (layar loading) sudah terbuka. Sebelum itu adegan
+// sudah lengkap di belakang pintu, tetapi pembeli pertama belum masuk.
+function PlayScreen({ level, rng, opened = true, onExit, onFinish }) {
   const [state, dispatch] = useReducer(sessionReducer, null, () => createSession(level, rng))
   const customer = getCurrentCustomer(state)
   const { character } = customer
@@ -75,6 +76,22 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   // pengguna keyboard dan pembaca layar langsung tahu langkah barunya.
   const headingRef = useRef(null)
   const greetHeadingRef = useRef(null)
+  const titleRef = useRef(null)
+  // Setelah pintu warung terbuka, fokus pindah ke judul layar permainan.
+  useEffect(() => {
+    if (opened) titleRef.current?.focus({ preventScroll: true })
+  }, [opened])
+
+  // Selama anak melayani pembeli ini, muat lebih dulu yang dibutuhkan
+  // berikutnya di latar belakang: karakter pembeli berikutnya (satu berkas
+  // berisi kedelapan tokoh, jadi biasanya sudah ada) dan, saat pembeli
+  // terakhir, layar hasil.
+  const isLastCustomer = state.index + 1 >= state.customers.length
+  useEffect(() => {
+    if (isLastCustomer) loadResultScreen().catch(() => {})
+    else loadAnimeCharacter().catch(() => {})
+  }, [state.index, isLastCustomer])
+
   const workRef = useRef(null)
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -266,13 +283,12 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       </div>
     )
   } else if (state.step === 'served') {
-    const isLast = state.index + 1 >= state.customers.length
     speech = 'Terima kasih! Senang belanja di warungmu.'
     bubble = <p>{speech}</p>
-    body = <ServedStep isLast={isLast} />
+    body = <ServedStep isLast={isLastCustomer} />
     actions = (
       <Button onClick={() => dispatch({ type: 'nextCustomer' })} className="w-full md:w-auto md:self-start">
-        {isLast ? 'Lihat hasil' : 'Layani pembeli berikutnya'}
+        {isLastCustomer ? 'Lihat hasil' : 'Layani pembeli berikutnya'}
       </Button>
     )
   } else {
@@ -313,7 +329,10 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           <span aria-hidden="true">←</span>
           <span className="hidden md:inline">Beranda</span>
         </Button>
-        <h1 className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
+        <h1
+          ref={titleRef}
+          tabIndex={-1}
+          className="min-w-0 truncate rounded-lg border-4 border-tinta bg-terpal px-2 py-0.5 font-heading text-base text-kapur md:mx-auto md:rounded-xl md:px-3 md:py-1 md:text-lg">
           {level.name}
         </h1>
         <p className="ml-auto flex shrink-0 flex-col items-end rounded-lg bg-kapur/90 px-1.5 py-0.5 text-sm leading-tight font-bold md:ml-0 md:flex-row md:gap-3 md:px-2 md:py-1 md:text-base">
@@ -351,18 +370,21 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           >
             {/* Satu panggung per pembeli. Saat pembeli berganti, panggung lama
                 pergi dulu (karakter berjalan keluar), baru panggung baru masuk. */}
+            {/* Pembeli pertama baru berjalan masuk setelah pintu warung terbuka. */}
             <AnimatePresence mode="wait" onExitComplete={() => setStageIndex(state.index)}>
-              <CustomerStage
-                key={state.index}
-                character={character}
-                large={isGreet}
-                stepKey={stepKey}
-                talkMs={speechMs(speech)}
-                reaction={state.feedback ?? undefined}
-                farewell={state.step === 'served'}
-              >
-                {bubble}
-              </CustomerStage>
+              {opened && (
+                <CustomerStage
+                  key={state.index}
+                  character={character}
+                  large={isGreet}
+                  stepKey={stepKey}
+                  talkMs={speechMs(speech)}
+                  reaction={state.feedback ?? undefined}
+                  farewell={state.step === 'served'}
+                >
+                  {bubble}
+                </CustomerStage>
+              )}
             </AnimatePresence>
           </div>
 

@@ -1196,3 +1196,60 @@ Commit terkait:
 - `ef5de6c` docs: update task status and drop the removed mode from AGENTS.md
 - `69c246e` docs: fill journal section 4 (finishing)
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P22, 6 Oktober 2026, 12.52 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: layar loading "Membuka warung" (di luar daftar tugas bagian 4; terkait Tugas 8 dan 10)
+Prompt:
+
+````text
+Saat level pertama kali dibuka, latar warung muncul belakangan sehingga terlihat kosong lalu tiba-tiba ada. Tambahkan layar loading dan pastikan adegan tampil utuh. Kerjakan di satu PR.
+
+Layar loading "Membuka warung"
+- Tampil segera setelah anak memilih level: rolling door warung tertutup dengan papan nama level dan teks "Membuka warung...".
+- Setelah semua siap, rolling door naik sekitar 500 ms dan memperlihatkan warung yang sudah lengkap. Pembeli pertama baru berjalan masuk setelah pintu terbuka.
+- Tampil minimal 600 ms supaya tidak berkedip saat koneksi cepat.
+
+Yang harus siap sebelum pintu dibuka
+- Latar level, meja kasir, karakter pembeli pertama, fitur Motion, dan font. Tidak boleh ada bagian yang menyusul setelah pintu terbuka.
+- Tidak ada pergeseran tata letak setelah adegan tampil.
+
+Supaya loading singkat
+- Di beranda, muat lebih dulu aset level saat browser sedang menganggur (requestIdleCallback) dan saat tombol level disentuh atau difokus.
+- Muat karakter pembeli berikutnya di latar belakang selama anak melayani pembeli sekarang, supaya pergantian pembeli tidak menunggu.
+
+Keadaan lain
+- Gagal memuat atau lebih dari 8 detik: tampilkan pesan ramah ("Warung belum bisa dibuka. Coba lagi ya.") dengan tombol "Coba lagi" dan "Kembali".
+- Pakai komponen loading yang sama untuk layar hasil, menggantikan teks "Menyiapkan hasil...".
+- `prefers-reduced-motion`: tanpa gerak pintu, cukup fade 150 ms.
+- Teks loading memakai `role="status"` supaya terbaca pembaca layar. Fokus pindah ke judul layar permainan setelah pintu terbuka.
+- Layar loading tidak boleh memunculkan scroll di 360x640.
+- Jangan ubah isi `src/game` dan `src/data`.
+
+Cek sebelum PR
+- Uji dengan throttling "Slow 4G" dan cache kosong: rekam urutan dari ketuk level sampai pembeli pertama masuk. Tidak boleh ada frame dengan latar kosong.
+- Uji kunjungan kedua (aset sudah di cache): loading tetap mulus, tidak berkedip.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Diukur dulu pada build `main` (commit `fd5c9a3`) dengan Playwright, throttling "Slow 4G" (latensi 562,5 ms, unduh 1,44 Mbps), cache kosong, di 360x640, dengan mencatat setiap frame. Kunjungan pertama: teks "Menyiapkan warung..." di layar polos dari 106 sampai 1.287 ms setelah ketuk level, lalu layar main tampil tanpa latar sampai 1.923 ms, dan pembeli sudah mulai berjalan di latar kosong sejak 1.587 ms. Ada 109 frame kosong. Kunjungan kedua (cache terisi): 18 frame kosong.
+- Layar loading baru (`src/components/LoadingScreen.jsx`, `src/components/OpeningGate.jsx`): pintu gulung warung tertutup dengan papan nama level dan teks "Membuka warung..." (`role="status"`) tampil langsung setelah level dipilih. Setelah semua siap, layar main dirender di belakang pintu, lalu pintu naik 500 ms; pembeli pertama baru berjalan masuk setelah pintu terbuka, dan fokus pindah ke judul layar permainan. Layar loading tampil minimal 600 ms (`src/lib/loadingGate.js`, dengan tes).
+- Yang ditunggu sebelum pintu dibuka (`preparePlayScreen` di `src/screens/loadPlayScreen.js`): layar main (latar warung kini ikut di berkas yang sama), data dekorasi level, berkas karakter pembeli, fitur Motion (`src/lib/loadMotionFeatures.js`), dan font (`src/lib/fonts.js`). Data dekorasi ditandai selesai supaya `use()` tidak menunda satu frame pun (`loadDecor.js`).
+- Gagal memuat atau lebih dari 8 detik: pesan "Warung belum bisa dibuka. Coba lagi ya." dengan tombol "Coba lagi" dan "Kembali". Ditemukan saat uji: Chromium mengingat `import()` yang gagal dan tidak mengunduh ulang, jadi "Coba lagi" selalu gagal walaupun jaringan sudah pulih. Diperbaiki dengan `src/lib/importWithRetry.js` (dengan tes): kalau import gagal dan pesan errornya menyebut alamat berkas, berkas itu diminta lagi dengan alamat yang sedikit berbeda. Safari tidak menyebut alamat di pesan errornya; perilaku di Safari (tidak dapat diverifikasi).
+- Layar hasil memakai komponen loading yang sama ("Menyiapkan hasil...") menggantikan teks lama. `prefers-reduced-motion`: pintu tidak bergerak, hanya memudar 150 ms. Di beranda, berkas ketiga level dimuat lebih dulu saat browser senggang (`requestIdleCallback`) dan saat kartu level disentuh, ditunjuk, atau difokus. Selama anak melayani, berkas karakter dimuat untuk pembeli berikutnya (satu berkas berisi kedelapan tokoh, jadi biasanya sudah ada), dan layar hasil dimuat saat pembeli terakhir.
+- Sesudah, Slow 4G dan cache kosong di 360x640 (level 1, diketuk langsung setelah halaman dimuat): pintu tampil 126 ms setelah ketuk, latar siap 1.438 ms, pintu mulai naik 1.501 ms dan hilang 2.005 ms, pembeli mulai berjalan 2.017 ms; 0 frame kosong, 0 frame pembeli berjalan sebelum pintu terbuka, dan CLS 0 setelah adegan tampil. Hasil yang sama (0 frame kosong, CLS 0) untuk level 2 di 360x640 dan level 3 di 1280x800 (diketuk langsung dan 200 ms setelah dimuat). Kunjungan kedua (aset di cache): pintu tampil 58 sampai 65 ms setelah ketuk dan mulai naik 732 sampai 745 ms (batas minimal 600 ms), tanpa frame kosong. Selama satu level penuh tidak ada unduhan saat pembeli berganti; satu-satunya unduhan adalah layar hasil saat pembeli terakhir.
+- Dicek juga: layar loading tanpa scroll di 320x568, 360x640, dan 1280x800; target tombol 48 px; fokus ke "Coba lagi" saat gagal; "Kembali" membuka beranda; pesan muncul sekitar 8,5 detik setelah ketuk kalau berkas tidak pernah selesai; axe-core tanpa pelanggaran di layar loading, layar gagal, dan semua layar permainan (360x640 dan 1280x800); ketiga level dimainkan sampai hasil di 360x640 dan 1280x800; konsol bersih.
+- Ukuran bundle gzip (sebelum dan sesudah): JS awal 84,35 menjadi 85,57 kB; CSS 7,96 menjadi 8,15 kB; `PlayScreen` 13,39 menjadi 15,66 kB karena `WarungScene` (2,82 kB) kini ikut di dalamnya; total semua chunk 141,12 menjadi 141,97 kB. README diperbarui. `src/game` dan `src/data` tidak diubah.
+- `npm test` (17 berkas, 119 tes), `npm run build`, dan `npm run lint` lulus dengan Node 24.21.0. Uji di HP asli: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `db9425a` feat: add loading helpers for fonts, Motion, and wait limits
+- `7492b53` fix: add an import helper that re-downloads a file after a failed import
+- `ed5c786` feat: prepare everything the play and result screens need before showing them
+- `23c20cd` perf: preload level files from home when idle or when a level card is touched
+- `21d5298` feat: open the warung with a rolling door loading screen
+- `6602b77` docs: describe the warung opening screen in README
+- `eaf7af3` chore: add loading screen recordings for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
