@@ -6,7 +6,7 @@ const LOADERS = {
   2: () => import('./decor/level2.js'),
   3: () => import('./decor/level3.js'),
 }
-const PLAIN = { wall: 'plain', floor: 'tiles', items: [] }
+const PLAIN = { wall: 'plain', items: [] }
 const cache = new Map()
 
 export function loadDecor(levelId) {
