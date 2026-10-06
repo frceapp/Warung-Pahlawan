@@ -197,3 +197,27 @@
     width: var(--w-lg, var(--w-md, var(--w, auto)));
   }
 }
+
+/* Pintu gulung warung di layar loading (components/LoadingScreen.jsx):
+   bilah logam mendatar yang tenang (kontras rendah), supaya terpal tetap
+   satu-satunya bagian yang ramai. */
+@utility rolling-door {
+  background-color: color-mix(in srgb, var(--color-langit) 70%, var(--color-kapur));
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 22px,
+    color-mix(in srgb, var(--color-tinta) 14%, transparent) 22px 25px,
+    color-mix(in srgb, var(--color-kapur) 70%, transparent) 25px 27px
+  );
+}
+
+/* Pintu naik dalam 500 ms (properti `translate`, yang dipakai utilitas
+   translate-* Tailwind 4). Kalau "kurangi gerakan" aktif, pintu tidak
+   bergerak dan hanya memudar 150 ms (menang atas aturan global di atas). */
+@utility door-transition {
+  transition: translate 500ms ease-in-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity 150ms ease-out !important;
+  }
+}
