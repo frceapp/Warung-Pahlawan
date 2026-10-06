@@ -107,10 +107,10 @@ function CashCounter({ screen, drawerOpen = false }) {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-full z-10 select-none">
       <div className="relative mx-auto h-0 w-full max-w-5xl">
-        <svg viewBox="0 0 64 62" className="absolute bottom-0 left-[150px] hidden w-11 md:block" focusable="false">
-          {CAT}
-        </svg>
         <div className="absolute right-3 bottom-0 flex items-end gap-1.5 md:right-4 md:gap-3">
+          <svg viewBox="0 0 64 62" className="hidden w-11 md:block" focusable="false">
+            {CAT}
+          </svg>
           <svg viewBox="0 0 64 56" className="hidden w-12 sm:block md:w-16" focusable="false">
             {SCALE}
           </svg>
