@@ -7,6 +7,7 @@ import Button from '../components/Button.jsx'
 import ChangeStep from '../components/ChangeStep.jsx'
 import CountStep from '../components/CountStep.jsx'
 import CustomerStage from '../components/CustomerStage.jsx'
+import SoundToggle from '../components/SoundToggle.jsx'
 import MoneyImage from '../components/MoneyImage.jsx'
 import OrderList from '../components/OrderList.jsx'
 import PickStep from '../components/PickStep.jsx'
@@ -15,6 +16,8 @@ import StepTracker from '../components/StepTracker.jsx'
 import TotalChoices from '../components/TotalChoices.jsx'
 import { getFruit } from '../data/fruits.js'
 import { formatRupiah } from '../game/format.js'
+import { playCoins, playPop } from '../lib/sfx.js'
+import { useFeedbackSound } from '../lib/useFeedbackSound.js'
 import { getLevelFruits } from '../game/order.js'
 import {
   createSession,
@@ -87,6 +90,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       ? state.feedback
       : null
   const visibleFeedback = ownFeedback ?? STEP_HINTS[state.step] ?? null
+  useFeedbackSound(state.feedback)
 
   // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
   const contentRef = useRef(null)
@@ -150,7 +154,10 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       <PickStep
         fruits={fruits}
         bag={state.bag}
-        onAdd={(fruitId) => dispatch({ type: 'addFruit', fruitId })}
+        onAdd={(fruitId) => {
+          playPop()
+          dispatch({ type: 'addFruit', fruitId })
+        }}
         onRemove={(fruitId) => dispatch({ type: 'removeFruit', fruitId })}
       />
     )
@@ -203,7 +210,10 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
       <ChangeStep
         level={level}
         givenChange={state.givenChange}
-        onAdd={(value) => dispatch({ type: 'addMoney', value })}
+        onAdd={(value) => {
+          playCoins()
+          dispatch({ type: 'addMoney', value })
+        }}
         onRemove={(index) => dispatch({ type: 'removeMoney', index })}
         onClear={() => dispatch({ type: 'clearMoney' })}
       />
@@ -278,6 +288,7 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           </span>
           <span data-score={score}>Skor {score}</span>
         </p>
+        <SoundToggle />
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col">

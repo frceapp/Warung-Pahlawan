@@ -4,6 +4,7 @@ import Button from '../components/Button.jsx'
 import CharacterAvatar from '../components/CharacterAvatar.jsx'
 import StarRating from '../components/StarRating.jsx'
 import { getLevel } from '../data/levels.js'
+import { playFanfare } from '../lib/sfx.js'
 
 const PRAISE = {
   3: 'Hebat! Kamu melayani semua pembeli dengan teliti.',
@@ -17,6 +18,15 @@ function ResultScreen({ summary, isNewBest, onPlayAgain, onHome }) {
   useEffect(() => {
     headingRef.current?.focus()
   }, [])
+
+  // Fanfare pendek (lebih meriah untuk 3 bintang), sekali saat layar muncul.
+  // Bintang dan skor tetap terlihat di layar.
+  const fanfarePlayed = useRef(false)
+  useEffect(() => {
+    if (fanfarePlayed.current) return
+    fanfarePlayed.current = true
+    playFanfare(summary.stars)
+  }, [summary.stars])
 
   return (
     <div className="flex min-h-dvh flex-col">
