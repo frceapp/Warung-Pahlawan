@@ -1,3 +1,5 @@
+import { importWithRetry } from '../../lib/importWithRetry.js'
+
 // Pemuat berkas karakter anime (dimuat terpisah dari bundel awal).
 // Beranda memanggil loadAnimeCharacter() lebih awal. Setelah selesai,
 // getLoadedAnimeCharacter() mengembalikan komponennya sehingga CustomerStage
@@ -6,7 +8,7 @@
 let loaded = null
 
 export function loadAnimeCharacter() {
-  return import('./AnimeCharacter.jsx').then((module) => {
+  return importWithRetry(() => import('./AnimeCharacter.jsx')).then((module) => {
     loaded = module.default
     return module
   })
