@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Halaman tidak ditemukan · Warung Pahlawan</title>
+    <!-- Halaman 404 untuk berkas yang tidak ada (Vercel memakai 404.html).
+         Alamat halaman yang tidak dikenal tetap membuka beranda (lihat
+         vercel.json dan src/main.jsx). Berdiri sendiri tanpa JavaScript. -->
+    <style>
+      :root {
+        --terpal: #1d5bbf;
+        --jingga: #f47b20;
+        --pisang: #ffd23f;
+        --kapur: #fffdf5;
+        --langit: #dcebff;
+        --tinta: #17233f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--langit);
+        color: var(--tinta);
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+      }
+      .terpal {
+        height: 48px;
+        border-bottom: 4px solid var(--tinta);
+        background: repeating-linear-gradient(90deg, var(--terpal) 0 48px, var(--jingga) 48px 96px);
+      }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 24px 16px 48px;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        padding: 12px 24px;
+        border: 4px solid var(--tinta);
+        border-radius: 16px;
+        background: var(--terpal);
+        color: var(--kapur);
+        font-family: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.2;
+        box-shadow: 0 6px 0 var(--tinta);
+        transform: rotate(-1deg);
+      }
+      p {
+        max-width: 28rem;
+        margin: 0;
+        padding: 12px 20px;
+        border: 4px solid var(--tinta);
+        border-radius: 16px;
+        background: var(--kapur);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 10px 24px;
+        border: 4px solid var(--tinta);
+        border-radius: 12px;
+        background: var(--pisang);
+        color: var(--tinta);
+        font-family: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 0 var(--tinta);
+      }
+      a:focus-visible {
+        outline: 4px solid var(--tinta);
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="terpal" aria-hidden="true"></div>
+    <main>
+      <h1>Halaman tidak ditemukan</h1>
+      <p>Wah, yang kamu cari tidak ada di warung ini. Yuk kembali ke beranda dan layani para pahlawan.</p>
+      <a href="/">Kembali ke beranda</a>
+    </main>
+  </body>
+</html>
