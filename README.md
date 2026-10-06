@@ -4,24 +4,43 @@ Game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah 
 
 Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innovating Education Through Technology", subtema Web Education for Kids.
 
-Situs: https://wp.itslim.dev
+**Situs: https://wp.itslim.dev**
 
-## Yang bisa dimainkan
+<p>
+  <img src=".github/readme/beranda.jpg" alt="Beranda Warung Pahlawan dengan pilihan tiga level warung" width="49%">
+  <img src=".github/readme/layar-main.jpg" alt="Langkah Ambil buah: Cut Nyak Dhien memesan buah, keranjang dan kantong belanja ada di atas meja kasir" width="49%">
+</p>
+<p>
+  <img src=".github/readme/hp-sapa.jpg" alt="Tampilan HP, langkah Sapa: Ir. Soekarno menyapa dan membagikan fun fact" width="240">
+</p>
 
-- **Tiga level warung.** Warung Kecil (4 pembeli, 1 jenis buah, total sudah dihitung di nota), Warung Ramai (5 pembeli, 2 jenis buah, hasil kali tiap baris dibantu), dan Pasar Besar (6 pembeli, 3 jenis buah, tanpa bantuan). Semua level bisa langsung dipilih dari beranda.
-- **Empat langkah melayani satu pembeli,** dengan penanda urutan langkah:
+## Fitur
+
+- **Tiga level warung**, semuanya bisa langsung dipilih dari beranda:
+  - Warung Kecil: 4 pembeli, 1 jenis buah per pesanan, total sudah dihitung di nota.
+  - Warung Ramai: 5 pembeli, 2 jenis buah, hasil kali tiap baris dibantu.
+  - Pasar Besar: 6 pembeli, 3 jenis buah, tanpa bantuan.
+- **Empat langkah melayani satu pembeli**, dengan penanda urutan langkah di atas layar:
   1. Sapa: tokoh datang dan membagikan satu fun fact.
   2. Ambil buah: ketuk buah di keranjang, keluarkan lagi kalau kelebihan, lalu bungkus. Kalau belum pas, game menyebut buah yang kurang atau lebih.
   3. Hitung: pilih total belanja dari tiga pilihan.
   4. Kembalian: susun kembalian dari laci uang, atau pilih "Tidak perlu kembalian" kalau uangnya pas.
-- **Delapan tokoh pembeli** (R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, Kapitan Pattimura), masing-masing dengan dua fun fact dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
-- **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser; game tetap jalan kalau penyimpanan browser tidak tersedia.
-- **Layar hasil:** skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya.
-- **Kamera dekat di layar main:** pembeli digambar setengah badan, berdiri tepat di belakang meja kasir, dengan balon bicara di samping atau di atas kepalanya. Pembeli berjalan masuk dan keluar dengan tampak samping, lalu berputar ke depan untuk dilayani. Meja kasir selebar layar menjadi tempat kerja: keranjang buah, kantong belanja, nota, laci uang, nampan kembalian, dan mesin kasir ada di atas meja. Latar dinding (papan nama, rak, dan hiasan) dibuat besar dan terpotong di tepi layar. Tiap level punya suasana sendiri: warung kayu (Warung Kecil), warung ramai dengan lampu menyala dan spanduk (Warung Ramai), dan los pasar dengan lapak dan bendera (Pasar Besar). Layar mesin kasir menampilkan total belanja (di level 2 dan 3 baru setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian. Latar dibuat redup dan diam.
-- **Efek suara sederhana** (lonceng pembeli datang, buah masuk tas, tombol, jawaban benar dan salah, uang, fanfare hasil), dibuat dengan Web Audio API tanpa berkas audio. Tombol Suara ada di beranda dan layar main, pilihannya disimpan di browser. Bunyi hanya pelengkap: setiap bunyi selalu disertai umpan balik di layar.
+- **Delapan tokoh pembeli:** R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, dan Kapitan Pattimura. Masing-masing punya dua fun fact dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
+- **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser. Game tetap jalan kalau penyimpanan browser tidak tersedia.
+- **Layar hasil** menampilkan skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya. Dari sini anak bisa main lagi atau kembali ke beranda.
+- **Suasana warung di layar main:**
+  - Pembeli digambar setengah badan, berdiri tepat di belakang meja kasir. Ia berjalan masuk dan keluar dengan tampak samping.
+  - Keranjang buah, kantong belanja, nota, laci uang, nampan kembalian, dan mesin kasir ada di atas meja.
+  - Tiap level punya latar sendiri: warung kayu, warung ramai, dan los pasar.
+  - Layar mesin kasir menampilkan total belanja (di level 2 dan 3 setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian.
+- **Efek suara sederhana** dibuat dengan Web Audio API, tanpa berkas audio. Ada lonceng pembeli datang, buah masuk kantong, tombol, jawaban benar dan salah, uang, dan fanfare hasil. Tombol Suara ada di beranda dan layar main, dan setiap bunyi selalu disertai umpan balik di layar.
 - **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
-- **Bisa dipakai dengan sentuhan, mouse, dan keyboard.** Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar, target sentuh minimal 48 px, dan animasi mengikuti pengaturan "kurangi gerakan". Di HP, tiap langkah muat dalam satu layar dengan tombol aksi selalu terlihat di bawah.
-- Semua ilustrasi (buah, uang, tokoh) adalah SVG buatan sendiri. Desain uang tidak meniru uang rupiah asli.
+- **Bisa dipakai dengan sentuhan, mouse, dan keyboard:**
+  - Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar.
+  - Target sentuh minimal 48 px.
+  - Animasi mengikuti pengaturan "kurangi gerakan".
+  - Di HP, tombol aksi selalu terlihat di bawah layar.
+- **Ilustrasi buatan sendiri.** Semua ilustrasi (buah, uang, tokoh) adalah SVG buatan sendiri. Desain uang tidak meniru uang rupiah asli.
 
 ## Menjalankan di komputer sendiri
 
@@ -50,15 +69,14 @@ npm run preview  # coba hasil build di komputer sendiri
 - `src/data/`: isi game (tokoh, buah, uang, level, teks panduan)
 - `src/game/`: logika game sebagai fungsi murni beserta tesnya
 - `src/lib/`: modul kecil di luar logika game (efek suara, layar mesin kasir) beserta tesnya
-- `src/components/scene/`: latar warung dan data dekorasi tiap level
-- `src/components/` dan `src/screens/`: tampilan
+- `src/components/` dan `src/screens/`: tampilan; latar warung ada di `src/components/scene/`
 - Penjelasan lengkap ada di [AGENTS.md](AGENTS.md), bagian 7.
 
-## Status pengembangan
+## Keterbatasan yang diketahui
 
-Tugas 1 sampai 8 selesai, Tugas 9 baru sebagian (efek suara), dan Tugas 10 (audit aksesibilitas, performa, dan SEO) sudah dikerjakan di PR #10. Status lengkap tiap tugas ada di [AGENTS.md](AGENTS.md), bagian 4 dan 5.
-
-Keterbatasan yang diketahui: di layar sangat kecil (320×568), beberapa langkah perlu digeser di dalam area kerja (ada tanda "Geser ke bawah").
+- Di layar HP, isi meja kasir perlu digeser di beberapa keadaan, misalnya kantong berisi banyak jenis buah atau nampan berisi banyak uang. Saat itu muncul tanda "Geser ke bawah".
+- Di layar laptop yang pendek (tinggi jendela di bawah sekitar 800 px), isi meja juga bisa perlu digeser.
+- Uji di HP asli belum tercatat di repo. Pengecekan dilakukan di browser dengan ukuran layar HP.
 
 ## Dokumen
 
@@ -66,3 +84,4 @@ Keterbatasan yang diketahui: di layar sangat kecil (320×568), beberapa langkah 
 - [docs/jurnal-prompt.md](docs/jurnal-prompt.md): lima prompt terkurasi untuk juri.
 - [docs/prompt-log.md](docs/prompt-log.md): log prompt mentah dari awal sampai akhir.
 - [docs/sumber-fakta.md](docs/sumber-fakta.md): teks dan sumber tiap fun fact tokoh.
+- [docs/audit.md](docs/audit.md): hasil audit performa, aksesibilitas, dan SEO, sebelum dan sesudah.

@@ -7,7 +7,9 @@ import { formatRupiah } from './format.js'
 function listFruits(items) {
   const parts = items.map(({ fruitId, count }) => `${count} ${getFruit(fruitId).name.toLowerCase()}`)
   if (parts.length <= 1) return parts.join('')
-  return `${parts.slice(0, -1).join(', ')} dan ${parts[parts.length - 1]}`
+  if (parts.length === 2) return parts.join(' dan ')
+  // Tiga atau lebih: koma sebelum "dan", sesuai ejaan baku (EYD).
+  return `${parts.slice(0, -1).join(', ')}, dan ${parts[parts.length - 1]}`
 }
 
 export function describeBagProblem({ missing, extra }) {
@@ -56,7 +58,7 @@ export function describeChange(result, payment) {
   if (result.difference < 0) {
     return 'Kembaliannya masih kurang. Tambah uang dari laci, lalu berikan lagi.'
   }
-  return 'Kembaliannya kelebihan. Kembalikan sebagian uang ke laci, lalu berikan lagi.'
+  return 'Kembaliannya terlalu banyak. Kembalikan sebagian uang ke laci, lalu berikan lagi.'
 }
 
 export function describeServed(points) {

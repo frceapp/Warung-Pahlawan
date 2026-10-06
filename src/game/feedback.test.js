@@ -21,6 +21,19 @@ describe('describeBagProblem', () => {
     ).toBe('Ada 1 pisang dan 2 mangga yang lebih. Keluarkan yang lebih dari kantong, lalu bungkus lagi.')
   })
 
+  it('memakai koma sebelum "dan" untuk tiga jenis buah', () => {
+    expect(
+      describeBagProblem({
+        missing: [
+          { fruitId: 'watermelon', count: 3 },
+          { fruitId: 'orange', count: 3 },
+          { fruitId: 'banana', count: 4 },
+        ],
+        extra: [],
+      }),
+    ).toBe('Masih kurang 3 semangka, 3 jeruk, dan 4 pisang. Ambil lagi dari keranjang, lalu bungkus lagi.')
+  })
+
   it('menyebut keduanya sekaligus', () => {
     expect(
       describeBagProblem({
@@ -32,7 +45,6 @@ describe('describeBagProblem', () => {
     )
   })
 })
-
 
 describe('describeChange', () => {
   const payment = createPayment(7000, false)
@@ -49,7 +61,7 @@ describe('describeChange', () => {
 
   it('menjelaskan yang salah dan apa yang harus dilakukan', () => {
     expect(describeChange(checkChange([1000], payment), payment)).toMatch(/masih kurang. Tambah/)
-    expect(describeChange(checkChange([5000], payment), payment)).toMatch(/kelebihan. Kembalikan/)
+    expect(describeChange(checkChange([5000], payment), payment)).toMatch(/terlalu banyak. Kembalikan/)
     expect(describeChange(checkChange([], payment), payment)).toMatch(/perlu kembalian/)
     expect(describeChange(checkChange([1000], exact), exact)).toMatch(/Tidak perlu kembalian/)
   })

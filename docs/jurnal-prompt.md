@@ -9,7 +9,7 @@ Lima prompt pilihan untuk juri, satu untuk tiap jenis pekerjaan. Teks prompt dis
 | 1 | Ide dan PRD | P1 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 | 2 | Debugging | P6 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 | 3 | Audit dan optimasi | P20 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 4 | Finishing | - | belum |
+| 4 | Finishing | P21 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 | 5 | Bebas | P5 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
 
 ## 1. Ide dan PRD
@@ -216,16 +216,67 @@ Jangan menambah fitur. Jangan ubah isi `src/game` dan `src/data`. Pastikan lint,
 
 ## 4. Finishing
 
-Status: belum. Diisi setelah pekerjaannya terjadi.
+Sumber: P21 di prompt-log.md; commit `d904732` sampai `ef5de6c` dan PR untuk prompt ini
 
 ### Konteks
 
+Game sudah lengkap dan live di https://wp.itslim.dev setelah PR #19 (audit dan optimasi) digabung ke `main` (commit `9d84ef2`). Keadaan sebelum prompt ini:
+
+- **Jurnal:** empat dari lima bagian sudah berisi Konteks, Prompt, dan Hasil. Catatan pemilik di semua bagian masih kosong.
+- **Log prompt:** berisi P1 sampai P20.
+- **README:**
+  - masih menyebut Tugas 10 "dikerjakan di PR #10";
+  - menyebut "buah masuk tas", padahal di game namanya kantong;
+  - belum punya screenshot.
+- **Data:** fun fact di `src/data/characters.js` sudah dites sama dengan `docs/sumber-fakta.md` sejak PR #3.
 
 ### Prompt
 
+````text
+Kerjakan Tugas 11: finishing. Kerjakan di satu PR. Jangan menambah fitur.
+
+- Periksa keenam butir Gerbang kelayakan di AGENTS.md satu per satu. Tulis hasilnya (lolos atau belum, dengan bukti) di deskripsi PR.
+- Mainkan ketiga level dari awal sampai hasil di 360x640 dan 1280x800. Catat dan perbaiki bug yang ditemukan.
+- Rapikan teks: ejaan, konsistensi istilah, kalimat fun fact sama persis dengan `docs/sumber-fakta.md`.
+- Bersihkan kode: console.log, kode mati, komponen dan dependensi yang tidak dipakai, komentar TODO.
+- README final: deskripsi singkat, tautan situs, cara menjalankan, stack, daftar fitur yang benar-benar ada, 2 sampai 3 screenshot, dan tautan ke AGENTS.md, jurnal, serta log prompt.
+- Pastikan dokumen tidak menyebut fitur yang sudah dihapus.
+- Cocokkan `docs/prompt-log.md` dengan riwayat commit. Laporkan entri yang hash commitnya kosong atau tidak cocok, tetapi jangan ubah isi entri lama.
+- Isi bagian "4. Finishing" di `docs/jurnal-prompt.md`: Konteks, Prompt disalin persis dari entri log prompt ini, dan Hasil. Perbarui tabel status.
+- Pastikan lint, tes, dan build lolos.
+````
 
 ### Hasil
 
+- **Gerbang kelayakan** (rinciannya di deskripsi PR):
+  - Butir 1, 2, 4, 5, dan 6 lolos.
+  - Repository bersifat public (API GitHub: `"visibility": "public"`).
+  - Situs live menjawab 200 dan memakai berkas JS yang sama dengan build `main`.
+  - Butir 3 belum: kelima bagian jurnal sudah berisi Konteks, Prompt, dan Hasil, tetapi catatan pemilik belum diisi.
+- **Ketiga level dimainkan sampai layar hasil** di 360x640 dan 1280x800, dengan satu kesalahan di tiap langkah pada pembeli pertama.
+  - Skor level 1, 2, dan 3: 36 dari 40, 44 dari 50, dan 54 dari 60.
+  - Konsol bersih.
+  - Fun fact di balon dan di layar hasil sama persis dengan sumbernya.
+- **Bug yang ditemukan dan diperbaiki:**
+  - Di 1280x800, pesan umpan balik membuat meja kasir harus digeser 16 sampai 61 px.
+  - Tanda "Geser ke bawah" menutupi nama buah di keranjang.
+  - Perbaikan: di layar lebar pesan ditaruh di samping tombol. Sesudahnya kelebihan 0 px di semua langkah dan level.
+- **Teks:**
+  - Daftar tiga buah di pesan salah kini memakai koma sebelum "dan".
+  - "Kembaliannya kelebihan" menjadi "Kembaliannya terlalu banyak".
+  - README memakai istilah kantong.
+- **Kode:**
+  - Tidak ada `console.log` atau komentar TODO.
+  - Semua komponen dipakai.
+  - Paket `@types/react` dan `@types/react-dom` dihapus karena proyek tidak memakai TypeScript.
+- **README final:** fitur yang benar-benar ada, keterbatasan, tiga screenshot, dan tautan ke dokumen. Baris mode yang sudah dihapus juga dibuang dari AGENTS.md bagian 5.
+- **Log prompt dicocokkan dengan riwayat commit:**
+  - Semua hash di P1 sampai P20 ada di `main`, dan pesan commitnya cocok.
+  - P7 tidak mencantumkan hash.
+  - P8 sampai P20 tidak mencantumkan commit "docs: log prompt" miliknya sendiri.
+- **Pemeriksaan otomatis:**
+  - `npm test` (15 berkas, 110 tes), `npm run build`, dan `npm run lint` lulus.
+  - axe-core tanpa pelanggaran di semua layar.
 
 ### Keputusan saya
 
