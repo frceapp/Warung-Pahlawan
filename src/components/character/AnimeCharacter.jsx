@@ -1,6 +1,7 @@
 import { useAnimationControls, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { CHARACTER_LOOKS } from './characterLooks.js'
 import {
   cloth,
@@ -14,6 +15,17 @@ import {
   legColor,
   paint,
   shoulderDrape,
+  SIDE_JOINTS,
+  sideFaceAccessories,
+  sideFacePath,
+  sideHairBack,
+  sideHairFront,
+  sideHeadwear,
+  sideEarCovered,
+  sideHeadwearBack,
+  sideHeadwearTails,
+  sideShoulderDrape,
+  sideTorso,
   sleeveColor,
   torso,
   VIEW_BOX,
@@ -32,49 +44,37 @@ function pivot([x, y]) {
   return { transformBox: 'view-box', originX: `${x - VIEW_BOX.x}px`, originY: `${y - VIEW_BOX.y}px` }
 }
 
+// Berputar antara tampak samping dan tampak depan dalam sekitar 200 ms:
+// badan menyempit, tampak diganti saat paling sempit, lalu melebar lagi.
+const TURN_HALF_S = 0.1
+const TURN_NARROW = 0.06
+
 // Tiga langkah dalam 1,2 s; langkah terakhir lebih lambat dan kecil.
 const WALK_TIMES = [0, 0.075, 0.15, 0.225, 0.3, 0.38, 0.458, 0.537, 0.617, 0.71, 0.808, 0.905, 1]
-const LEG_SWING = [0, -26, 0, 26, 0, -24, 0, 24, 0, -16, 0, 10, 0]
-const ARM_SWING = [0, 21, 0, -21, 0, 19, 0, -19, 0, 13, 0, -8, 0]
+// Lengan tampak samping berayun bergantian (kaki tertutup meja kasir).
+const ARM_SWING = [0, 28, 0, -28, 0, 26, 0, -26, 0, 16, 0, -10, 0]
 // Badan turun saat kaki terbuka, naik saat kaki berpapasan.
-const WALK_BOB = [0, 1, -1.6, 1, -1.6, 1, -1.6, 1, -1.6, 1, -1.6, 1, 0]
+const WALK_BOB = [0, 1.5, -2, 1.5, -2, 1.5, -2, 1.5, -2, 1.5, -2, 1, 0]
 const negate = (values) => values.map((v) => (v === 0 ? 0 : -v))
 
 // Satu langkah 0,4 s untuk berjalan keluar (diulang).
 const STEP_TIMES = [0, 0.25, 0.5, 0.75, 1]
-
-// Rambut dan kain mengikuti langkah dengan jeda tipis.
-const SWAY_TIMES = [0, 0.15, 0.3, 0.45, 0.62, 0.8, 1]
-const sway = (amount, delay, duration = WALK_S) => ({
-  rotate: [0, amount, -amount * 0.7, amount, -amount * 0.7, amount * 0.7, 0],
-  transition: { duration, times: SWAY_TIMES, ease: 'easeInOut', delay },
-})
-
-const LEAVE_DELAY_S = 0.15
 const LEAVE_STEPS = 2
 
-// Lengan dan kaki: tiga langkah saat datang, langkah berulang saat pergi
-// (dengan arah ayunan pertama yang sama).
-function limb(swing) {
+// Bagian yang menjuntai: miring ke belakang saat badan turun (kaki terbuka),
+// kembali sedikit saat badan naik, sejalan dengan WALK_BOB.
+const TRAIL = [0, 5, 2, 5, 2, 5, 2, 5, 2, 4, 1.5, 2, 0]
+
+// Lengan tampak samping: tiga langkah saat datang, langkah berulang saat
+// pergi (dengan arah ayunan pertama yang sama).
+function sideArm(swing) {
   const first = swing[1]
   return {
     walk: { rotate: swing, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'linear' } },
     leave: {
       rotate: [0, first, 0, -first, 0],
-      transition: { duration: STEP_S, times: STEP_TIMES, ease: 'linear', delay: LEAVE_DELAY_S, repeat: LEAVE_STEPS - 1 },
+      transition: { duration: STEP_S, times: STEP_TIMES, ease: 'linear', repeat: LEAVE_STEPS - 1 },
     },
-  }
-}
-
-// Posisi bagian rangka saat tampak samping (menghadap kanan) dan kembali ke
-// depan saat berhenti.
-function facing(sideX) {
-  return {
-    hidden: { x: sideX },
-    walk: { x: sideX },
-    greet: { x: 0, transition: { duration: 0.22, ease: 'easeOut' } },
-    still: { x: 0 },
-    leave: { x: sideX, transition: { duration: 0.15, ease: 'easeOut' } },
   }
 }
 
@@ -84,11 +84,15 @@ const WAVE = {
 }
 
 const VARIANTS = {
+  turn: {
+    squeeze: { scaleX: TURN_NARROW, transition: { duration: TURN_HALF_S, ease: 'easeIn' } },
+    unsqueeze: { scaleX: 1, transition: { duration: TURN_HALF_S, ease: 'easeOut' } },
+  },
   walkBob: {
     walk: { y: WALK_BOB, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'linear' } },
     leave: {
-      y: [0, 1, -1.6, 1, 0],
-      transition: { duration: STEP_S, times: STEP_TIMES, ease: 'linear', delay: LEAVE_DELAY_S, repeat: LEAVE_STEPS - 1 },
+      y: [0, 1.5, -2, 1.5, 0],
+      transition: { duration: STEP_S, times: STEP_TIMES, ease: 'linear', repeat: LEAVE_STEPS - 1 },
     },
   },
   up: {
@@ -96,23 +100,27 @@ const VARIANTS = {
     rest: { y: 0, transition: { duration: 0.2 } },
     leave: { y: 0, transition: { duration: 0.15 } },
   },
-  legB: limb(LEG_SWING),
-  legF: limb(negate(LEG_SWING)),
-  armB: limb(ARM_SWING),
+  sideArmB: sideArm(ARM_SWING),
+  sideArmF: sideArm(negate(ARM_SWING)),
   armF: {
-    ...limb(negate(ARM_SWING)),
-    greet: { rotate: WAVE.rotate, transition: { duration: 0.8, times: WAVE.times, ease: 'easeInOut', delay: 0.25 } },
+    greet: { rotate: WAVE.rotate, transition: { duration: 0.8, times: WAVE.times, ease: 'easeInOut', delay: 0.05 } },
     farewell: { rotate: WAVE.rotate, transition: { duration: 0.8, times: WAVE.times, ease: 'easeInOut', delay: 0.4 } },
   },
+  // Rambut belakang (tampak depan) bergoyang pelan saat diam. Rambut yang
+  // menempel di kepala tidak diputar, supaya tidak tampak lepas dari kepala.
   hair: {
-    walk: sway(3, 0.06),
     idle: { rotate: [0, 1.5, 0], transition: { duration: 3.6, ease: 'easeInOut', repeat: Infinity } },
     rest: { rotate: 0, transition: { duration: 0.2 } },
-    leave: sway(3, LEAVE_DELAY_S + 0.06, STEP_S * LEAVE_STEPS),
   },
-  cloth: {
-    walk: sway(-2.5, 0.08),
-    leave: sway(-2.5, LEAVE_DELAY_S + 0.08, STEP_S * LEAVE_STEPS),
+  // Bagian yang menjuntai di tampak samping (konde, rambut panjang, ujung
+  // ikat kepala, kerudung): tertinggal sedikit ke belakang dari titik
+  // tempelnya dan memantul kecil tiap langkah, sedikit terlambat dari badan.
+  trail: {
+    walk: { rotate: TRAIL, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'easeInOut', delay: 0.06 } },
+    leave: {
+      rotate: [0, 5, 2, 5, 2],
+      transition: { duration: STEP_S, times: STEP_TIMES, ease: 'easeInOut', delay: 0.06, repeat: LEAVE_STEPS - 1 },
+    },
   },
   jump: {
     happy: { y: [0, -14, 0, -3, 0], transition: { duration: 0.52, times: [0, 0.35, 0.6, 0.75, 1], ease: 'easeOut' } },
@@ -126,11 +134,6 @@ const VARIANTS = {
   browR: {
     sad: { y: [0, 2.5, 2.5, 0], rotate: [0, 20, 20, 0], transition: { duration: REACTION_MS / 1000, times: [0, 0.15, 0.85, 1] } },
   },
-  face: facing(7),
-  legBPos: facing(4),
-  legFPos: facing(-4),
-  armBPos: facing(16),
-  armFPos: facing(-17),
 }
 
 function rootVariants(leaveDistance) {
@@ -147,8 +150,8 @@ function rootVariants(leaveDistance) {
       x: leaveDistance,
       opacity: [1, 1, 0],
       transition: {
-        x: { duration: STEP_S * LEAVE_STEPS, ease: [0.3, 0, 0.7, 1], delay: LEAVE_DELAY_S },
-        opacity: { duration: STEP_S * LEAVE_STEPS + LEAVE_DELAY_S, times: [0, 0.8, 1] },
+        x: { duration: STEP_S * LEAVE_STEPS, ease: [0.3, 0, 0.7, 1] },
+        opacity: { duration: STEP_S * LEAVE_STEPS, times: [0, 0.8, 1] },
       },
     },
     fadeOut: { opacity: 0, transition: { duration: 0.15 } },
@@ -185,21 +188,40 @@ function Eye({ cx }) {
   )
 }
 
+function SideEye() {
+  return (
+    <g>
+      <ellipse cx="65" cy="50" rx="3.6" ry="6.6" fill={paint('tinta')} stroke="none" />
+      <ellipse cx="65.6" cy="52.6" rx="2.3" ry="3" fill="#6B4528" stroke="none" />
+      <circle cx="66.4" cy="47.4" r="1.6" fill={paint('kapur')} stroke="none" />
+      <path d="M60.5 45 Q65 40.8 69.5 44.6" fill="none" strokeWidth="2.6" />
+    </g>
+  )
+}
+
 const INSTANT = { duration: 0 }
 
-// Karakter pembeli bergaya anime (chibi) dari satu rangka SVG bersama.
-// Bagian rangka: rambut belakang, kaki kiri dan kanan, lengan kiri dan
-// kanan, badan, kain bawah, kepala (wajah, rambut depan, penutup kepala).
+// Karakter pembeli bergaya anime (chibi) dari satu rangka SVG bersama, dengan
+// dua tampak: depan dan samping (menghadap kanan; dicerminkan dengan
+// scaleX(-1) untuk arah kiri, tanpa digambar dua kali).
+// Bagian rangka tampak depan: rambut belakang, kaki, lengan kiri dan kanan,
+// badan, kain bawah, kepala (wajah, rambut depan, penutup kepala). Tampak
+// samping: kepala profil (satu mata, hidung, satu telinga), badan ramping,
+// dan dua lengan bertumpuk; kaki tidak digambar karena tertutup meja kasir.
 // Semua gerak memakai Motion dan hanya transform serta opacity:
-// - saat muncul: berjalan masuk dari kiri (tampak samping), menoleh ke depan,
-//   melambai, lalu diam (napas pelan, rambut bergoyang, kedip acak)
+// - saat muncul: tampak samping berjalan masuk dari kiri (lengan berayun,
+//   badan naik turun), berputar ke depan, melambai, lalu diam (napas pelan,
+//   rambut bergoyang, kedip acak)
 // - talkKey/talkMs: mulut bergerak selama kalimat baru tampil
 // - reaction: { id, tone } dari umpan balik; 'success' melompat dan senyum,
 //   'error' menggeleng, alis turun, dan mulut cemberut
 // - farewell: melambai setelah selesai dilayani
-// - leaving + onLeft: menoleh ke samping dan berjalan keluar ke kanan
-// Dengan kurangi gerakan: hanya memudar 150 ms, tanpa gerak diam, kedip,
-// bicara, atau reaksi. Ilustrasi ini dekoratif (aria-hidden).
+// - leaving + onLeft: berputar ke samping lalu berjalan keluar ke kanan
+// - facing ('depan' atau 'samping') dan mirrored: memaksa satu tampak diam,
+//   misalnya untuk galeri ilustrasi
+// Dengan kurangi gerakan: tanpa berjalan dan berputar; hanya tampak depan
+// yang memudar 150 ms, tanpa gerak diam, kedip, bicara, atau reaksi.
+// Ilustrasi ini dekoratif (aria-hidden).
 function AnimeCharacter({
   characterId,
   entrance = true,
@@ -210,6 +232,8 @@ function AnimeCharacter({
   leaving = false,
   onArrived,
   onLeft,
+  facing,
+  mirrored = false,
   rng = Math.random,
   className = '',
 }) {
@@ -219,6 +243,7 @@ function AnimeCharacter({
   const rig = useAnimationControls()
   const [phase, setPhase] = useState('hidden')
   const phaseRef = useRef('hidden')
+  const [view, setView] = useState(() => (reduce || !entrance ? 'depan' : 'samping'))
   const [talking, setTalking] = useState(false)
   const [blink, setBlink] = useState(false)
   // Jarak berjalan keluar: sampai lewat tepi kanan layar, paling jauh 600 px.
@@ -237,9 +262,24 @@ function AnimeCharacter({
     [rig],
   )
 
-  // Datang: berjalan masuk, menoleh, melambai, lalu diam.
+  // Berputar: menyempit, ganti tampak tepat saat paling sempit (dalam satu
+  // commit, jadi tidak ada frame kosong atau dua tampak sekaligus), lalu
+  // melebar lagi.
+  const turnTo = useCallback(
+    async (next, isAlive) => {
+      await rig.start('squeeze')
+      if (!isAlive()) return
+      flushSync(() => setView(next))
+      await rig.start('unsqueeze')
+    },
+    [rig],
+  )
+
+  // Datang: berjalan masuk (tampak samping), berputar ke depan, melambai,
+  // lalu diam.
   useEffect(() => {
     let alive = true
+    const isAlive = () => alive
     const run = async () => {
       if (reduce || !entrance) {
         await go(reduce ? 'appear' : 'still')
@@ -250,6 +290,10 @@ function AnimeCharacter({
       }
       await go('walk')
       if (!alive) return
+      phaseRef.current = 'turn'
+      setPhase('turn')
+      await turnTo('depan', isAlive)
+      if (!alive) return
       callbacks.current.onArrived?.()
       await go('greet')
       if (alive && phaseRef.current === 'greet') go('idle')
@@ -258,20 +302,29 @@ function AnimeCharacter({
     return () => {
       alive = false
     }
-  }, [entrance, go, reduce])
+  }, [entrance, go, reduce, turnTo])
 
-  // Pergi: menoleh ke samping lalu berjalan keluar ke kanan.
+  // Pergi: berputar ke samping (menghadap kanan) lalu berjalan keluar ke kanan.
   useEffect(() => {
     if (!leaving) return undefined
     let alive = true
+    const isAlive = () => alive
     phaseRef.current = 'leave'
-    rig.start(reduce ? 'fadeOut' : 'leave').then(() => {
+    const run = async () => {
+      if (reduce) {
+        await rig.start('fadeOut')
+      } else {
+        await turnTo('samping', isAlive)
+        if (!alive) return
+        await rig.start('leave')
+      }
       if (alive) callbacks.current.onLeft?.()
-    })
+    }
+    run()
     return () => {
       alive = false
     }
-  }, [leaving, reduce, rig])
+  }, [leaving, reduce, rig, turnTo])
 
   // Melambai setelah selesai dilayani.
   useEffect(() => {
@@ -314,7 +367,7 @@ function AnimeCharacter({
 
   // Bicara setelah sampai di warung, selama kalimat baru tampil.
   const shownPhase = leaving ? 'leave' : phase
-  const arrived = shownPhase !== 'hidden' && shownPhase !== 'walk' && shownPhase !== 'leave'
+  const arrived = !['hidden', 'walk', 'turn', 'leave'].includes(shownPhase)
   useEffect(() => {
     if (talkKey === undefined || reduce || !arrived) return undefined
     const start = setTimeout(() => setTalking(true), 80)
@@ -351,6 +404,7 @@ function AnimeCharacter({
     shownPhase === 'leave' ? 'smile' : mood === 'happy' ? 'grin' : mood === 'sad' ? 'frown' : talking ? 'talk' : 'smile'
   const covered = look.accessories.includes('selendang')
   const show = (on) => ({ opacity: on ? 1 : 0 })
+  const shownView = facing ?? view
 
   return (
     <m.div
@@ -359,6 +413,7 @@ function AnimeCharacter({
       animate={rig}
       variants={rootVariants(leaveDistance)}
       data-phase={shownPhase}
+      data-view={shownView}
       data-mouth={mouth}
       data-blink={blink ? '' : undefined}
       aria-hidden="true"
@@ -368,119 +423,157 @@ function AnimeCharacter({
         className="block h-full w-full overflow-visible"
       >
         <g stroke={paint('tinta')} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
-          <m.g variants={VARIANTS.jump}>
-            <m.g variants={VARIANTS.walkBob}>
-              <m.g variants={VARIANTS.up}>
-                <m.g variants={VARIANTS.shake} style={pivot(JOINTS.neck)}>
-                  <m.g variants={VARIANTS.hair} style={pivot(JOINTS.hairTop)}>
-                    {headwearBack(look)}
-                    {hairBack(look)}
+          <m.g variants={VARIANTS.turn} style={pivot(JOINTS.neck)}>
+            <m.g variants={VARIANTS.jump}>
+              <m.g variants={VARIANTS.walkBob}>
+                {/* Tampak depan: saat sampai di warung dan selama melayani. */}
+                <g data-figure="depan" display={shownView === 'depan' ? undefined : 'none'}>
+                  <m.g variants={VARIANTS.up}>
+                    <m.g variants={VARIANTS.shake} style={pivot(JOINTS.neck)}>
+                      <m.g variants={VARIANTS.hair} style={pivot(JOINTS.hairTop)}>
+                        {headwearBack(look)}
+                        {hairBack(look)}
+                      </m.g>
+                    </m.g>
                   </m.g>
-                </m.g>
-              </m.g>
-              <m.g variants={VARIANTS.legBPos}>
-                <m.g variants={VARIANTS.legB} style={pivot(JOINTS.hipBack)}>
                   <Leg x={JOINTS.hipBack[0]} look={look} />
-                </m.g>
-              </m.g>
-              <m.g variants={VARIANTS.up}>
-                <m.g variants={VARIANTS.armBPos}>
-                  <m.g variants={VARIANTS.armB} style={pivot(JOINTS.shoulderBack)}>
+                  <m.g variants={VARIANTS.up}>
                     <Arm x={JOINTS.shoulderBack[0]} look={look} />
+                    <g>{torso(look)}</g>
                   </m.g>
-                </m.g>
-                <g>{torso(look)}</g>
-              </m.g>
-              <m.g variants={VARIANTS.legFPos}>
-                <m.g variants={VARIANTS.legF} style={pivot(JOINTS.hipFront)}>
                   <Leg x={JOINTS.hipFront[0]} look={look} />
-                </m.g>
-              </m.g>
-              <m.g variants={VARIANTS.cloth} style={pivot(JOINTS.waist)}>
-                {cloth(look)}
-              </m.g>
-              <m.g variants={VARIANTS.up}>
-                {shoulderDrape(look)}
-                <m.g variants={VARIANTS.shake} style={pivot(JOINTS.neck)}>
-                  {!covered && (
-                    <g fill={paint(look.skin)}>
-                      <ellipse cx="24.5" cy="49" rx="3.8" ry="5.2" />
-                      <ellipse cx="75.5" cy="49" rx="3.8" ry="5.2" />
-                    </g>
-                  )}
-                  <path d={FACE_PATH} fill={paint(look.skin)} />
-                  <g fill={paint('cabai')} opacity="0.28" stroke="none">
-                    <ellipse cx="32.5" cy="58" rx="4" ry="2.4" />
-                    <ellipse cx="67.5" cy="58" rx="4" ry="2.4" />
-                  </g>
-                  <m.g variants={VARIANTS.face}>
-                    <m.g animate={show(!blink)} transition={INSTANT}>
-                      <Eye cx={40} />
-                      <Eye cx={60} />
+                  {cloth(look)}
+                  <m.g variants={VARIANTS.up}>
+                    {shoulderDrape(look)}
+                    <m.g variants={VARIANTS.shake} style={pivot(JOINTS.neck)}>
+                      {!covered && (
+                        <g fill={paint(look.skin)}>
+                          <ellipse cx="24.5" cy="49" rx="3.8" ry="5.2" />
+                          <ellipse cx="75.5" cy="49" rx="3.8" ry="5.2" />
+                        </g>
+                      )}
+                      <path d={FACE_PATH} fill={paint(look.skin)} />
+                      <g fill={paint('cabai')} opacity="0.28" stroke="none">
+                        <ellipse cx="32.5" cy="58" rx="4" ry="2.4" />
+                        <ellipse cx="67.5" cy="58" rx="4" ry="2.4" />
+                      </g>
+                      <g>
+                        <m.g animate={show(!blink)} transition={INSTANT}>
+                          <Eye cx={40} />
+                          <Eye cx={60} />
+                        </m.g>
+                        <m.g animate={show(blink)} initial={false} transition={INSTANT} fill="none" strokeWidth="2.6">
+                          <path d="M33.6 50 Q40 54.2 46.4 50" />
+                          <path d="M53.6 50 Q60 54.2 66.4 50" />
+                        </m.g>
+                        <m.path
+                          variants={VARIANTS.browL}
+                          style={pivot(JOINTS.browBack)}
+                          d="M33 38.5 Q39 35 45 37"
+                          fill="none"
+                          strokeWidth="2.2"
+                        />
+                        <m.path
+                          variants={VARIANTS.browR}
+                          style={pivot(JOINTS.browFront)}
+                          d="M55 37 Q61 35 67 38.5"
+                          fill="none"
+                          strokeWidth="2.2"
+                        />
+                        <path d="M50.6 54.6 l-0.9 1.7" fill="none" strokeWidth="1.6" />
+                        <m.path
+                          animate={show(mouth === 'smile')}
+                          transition={INSTANT}
+                          d="M45.5 59 Q50 62.6 54.5 59"
+                          fill="none"
+                          strokeWidth="2.2"
+                        />
+                        <m.path
+                          initial={false}
+                          animate={show(mouth === 'frown')}
+                          transition={INSTANT}
+                          d="M46 61.5 Q50 58.6 54 61.5"
+                          fill="none"
+                          strokeWidth="2.2"
+                        />
+                        <m.g
+                          initial={false}
+                          style={pivot(JOINTS.mouth)}
+                          animate={mouth === 'talk' ? { opacity: 1, scaleY: [0.3, 1] } : { opacity: 0, scaleY: 1 }}
+                          transition={
+                            mouth === 'talk'
+                              ? { opacity: INSTANT, scaleY: { duration: 0.22, ease: 'easeInOut', repeat: Infinity, repeatType: 'mirror' } }
+                              : INSTANT
+                          }
+                        >
+                          <ellipse cx="50" cy="60" rx="3.2" ry="2.8" fill={paint('tinta')} strokeWidth="1.4" />
+                          <ellipse cx="50" cy="61.4" rx="1.8" ry="1" fill={paint('cabai')} stroke="none" />
+                        </m.g>
+                        <m.g initial={false} animate={show(mouth === 'grin')} transition={INSTANT}>
+                          <path d="M43.5 57.5 Q50 67 56.5 57.5 Z" fill={paint('tinta')} strokeWidth="1.6" />
+                          <path d="M46.5 62.4 Q50 64.6 53.5 62.4 Q50 60.7 46.5 62.4 Z" fill={paint('cabai')} stroke="none" />
+                        </m.g>
+                        {faceAccessories(look)}
+                      </g>
+                      {hairFront(look)}
+                      {headwear(look)}
                     </m.g>
-                    <m.g animate={show(blink)} initial={false} transition={INSTANT} fill="none" strokeWidth="2.6">
-                      <path d="M33.6 50 Q40 54.2 46.4 50" />
-                      <path d="M53.6 50 Q60 54.2 66.4 50" />
+                    <m.g variants={VARIANTS.armF} style={pivot(JOINTS.shoulderFront)}>
+                      <Arm x={JOINTS.shoulderFront[0]} look={look} />
                     </m.g>
-                    <m.path
-                      variants={VARIANTS.browL}
-                      style={pivot(JOINTS.browBack)}
-                      d="M33 38.5 Q39 35 45 37"
-                      fill="none"
-                      strokeWidth="2.2"
-                    />
-                    <m.path
-                      variants={VARIANTS.browR}
-                      style={pivot(JOINTS.browFront)}
-                      d="M55 37 Q61 35 67 38.5"
-                      fill="none"
-                      strokeWidth="2.2"
-                    />
-                    <path d="M50.6 54.6 l-0.9 1.7" fill="none" strokeWidth="1.6" />
-                    <m.path
-                      animate={show(mouth === 'smile')}
-                      transition={INSTANT}
-                      d="M45.5 59 Q50 62.6 54.5 59"
-                      fill="none"
-                      strokeWidth="2.2"
-                    />
-                    <m.path
-                      initial={false}
-                      animate={show(mouth === 'frown')}
-                      transition={INSTANT}
-                      d="M46 61.5 Q50 58.6 54 61.5"
-                      fill="none"
-                      strokeWidth="2.2"
-                    />
+                  </m.g>
+                </g>
+
+                {/* Tampak samping (menghadap kanan): saat berjalan masuk dan
+                    keluar. mirrored mencerminkannya untuk arah kiri. */}
+                <g data-figure="samping" display={shownView === 'samping' ? undefined : 'none'}>
+                  <g transform={mirrored ? 'translate(100 0) scale(-1 1)' : undefined}>
+                    <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.veil)}>
+                      {sideHeadwearBack(look)}
+                    </m.g>
                     <m.g
-                      initial={false}
-                      style={pivot(JOINTS.mouth)}
-                      animate={mouth === 'talk' ? { opacity: 1, scaleY: [0.3, 1] } : { opacity: 0, scaleY: 1 }}
-                      transition={
-                        mouth === 'talk'
-                          ? { opacity: INSTANT, scaleY: { duration: 0.22, ease: 'easeInOut', repeat: Infinity, repeatType: 'mirror' } }
-                          : INSTANT
-                      }
+                      variants={VARIANTS.trail}
+                      style={pivot(look.side.hair === 'sanggul' ? SIDE_JOINTS.bun : SIDE_JOINTS.longHair)}
                     >
-                      <ellipse cx="50" cy="60" rx="3.2" ry="2.8" fill={paint('tinta')} strokeWidth="1.4" />
-                      <ellipse cx="50" cy="61.4" rx="1.8" ry="1" fill={paint('cabai')} stroke="none" />
+                      {sideHairBack(look)}
                     </m.g>
-                    <m.g initial={false} animate={show(mouth === 'grin')} transition={INSTANT}>
-                      <path d="M43.5 57.5 Q50 67 56.5 57.5 Z" fill={paint('tinta')} strokeWidth="1.6" />
-                      <path d="M46.5 62.4 Q50 64.6 53.5 62.4 Q50 60.7 46.5 62.4 Z" fill={paint('cabai')} stroke="none" />
+                    <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.tails)}>
+                      {sideHeadwearTails(look)}
                     </m.g>
-                    {faceAccessories(look)}
-                  </m.g>
-                  <m.g variants={VARIANTS.hair} style={pivot(JOINTS.hairTop)}>
-                    {hairFront(look)}
-                  </m.g>
-                  {headwear(look)}
-                </m.g>
-                <m.g variants={VARIANTS.armFPos}>
-                  <m.g variants={VARIANTS.armF} style={pivot(JOINTS.shoulderFront)}>
-                    <Arm x={JOINTS.shoulderFront[0]} look={look} />
-                  </m.g>
-                </m.g>
+                    <m.g variants={VARIANTS.sideArmB} style={pivot(SIDE_JOINTS.shoulder)}>
+                      <Arm x={SIDE_JOINTS.shoulder[0]} look={look} />
+                    </m.g>
+                    <g>{sideTorso(look)}</g>
+                    {sideShoulderDrape(look)}
+                    <path d={sideFacePath(look)} fill={paint(look.skin)} />
+                    <ellipse cx="66" cy="57.5" rx="3.4" ry="2.2" fill={paint('cabai')} opacity="0.28" stroke="none" />
+                    <m.g animate={show(!blink)} transition={INSTANT}>
+                      <SideEye />
+                    </m.g>
+                    <m.path
+                      animate={show(blink)}
+                      initial={false}
+                      transition={INSTANT}
+                      d="M60.5 50 Q65 53.8 69.5 50"
+                      fill="none"
+                      strokeWidth="2.6"
+                    />
+                    <path d="M60 38 Q65 35.4 70 37.4" fill="none" strokeWidth="2.2" />
+                    <path d="M67.5 59.5 Q70.5 61.6 73.5 59" fill="none" strokeWidth="2.2" />
+                    {sideHairFront(look)}
+                    {!sideEarCovered(look) && (
+                      <g>
+                        <ellipse cx="47" cy="50" rx="4.2" ry="5.6" fill={paint(look.skin)} />
+                        <path d="M48 47 Q45.5 50 48 53" fill="none" strokeWidth="1.6" />
+                      </g>
+                    )}
+                    {sideFaceAccessories(look)}
+                    {sideHeadwear(look)}
+                    <m.g variants={VARIANTS.sideArmF} style={pivot(SIDE_JOINTS.shoulder)}>
+                      <Arm x={SIDE_JOINTS.shoulder[0]} look={look} />
+                    </m.g>
+                  </g>
+                </g>
               </m.g>
             </m.g>
           </m.g>

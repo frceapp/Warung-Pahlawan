@@ -47,7 +47,7 @@ const PLAQUE_COMPACT = 'bottom-1 left-[91px] -translate-x-1/2 md:left-[193px]'
 
 // Cadangan kalau berkas karakter belum dimuat: balon tetap muncul dan
 // panggung tetap bisa pergi.
-const ARRIVE_FALLBACK_MS = 1600
+const ARRIVE_FALLBACK_MS = 2000
 const LEAVE_FALLBACK_MS = 1600
 
 // Balon bicara muncul (pop) setelah pembeli sampai, lalu chip pesanan di

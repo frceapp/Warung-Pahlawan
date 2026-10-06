@@ -65,6 +65,11 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
   const stepName = STEPS[stepIndex]?.name
   const score = getSessionScore(state)
   const isGreet = state.step === 'greet'
+  // Pembeli yang sedang tampil di panggung. Saat pembeli berganti, panggung
+  // baru membesar setelah pembeli lama selesai berjalan keluar, supaya
+  // pembeli lama berjalan lurus ke kanan tanpa ikut turun.
+  const [stageIndex, setStageIndex] = useState(state.index)
+  const stageLarge = isGreet && stageIndex === state.index
 
   // Pindahkan fokus ke judul langkah setiap kali langkah berganti, supaya
   // pengguna keyboard dan pembaca layar langsung tahu langkah barunya.
@@ -341,12 +346,12 @@ function PlayScreen({ level, rng, onExit, onFinish }) {
           <div
             data-stage
             className={`relative shrink-0 transition-[height] duration-500 ease-out ${
-              isGreet ? 'h-[calc(100%-100px)] md:h-[calc(100%-130px)]' : 'h-[161px] md:h-[335px]'
+              stageLarge ? 'h-[calc(100%-100px)] md:h-[calc(100%-130px)]' : 'h-[161px] md:h-[335px]'
             }`}
           >
             {/* Satu panggung per pembeli. Saat pembeli berganti, panggung lama
                 pergi dulu (karakter berjalan keluar), baru panggung baru masuk. */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" onExitComplete={() => setStageIndex(state.index)}>
               <CustomerStage
                 key={state.index}
                 character={character}
