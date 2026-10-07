@@ -57,11 +57,15 @@ const BLINK_MS = 160
 const REACTION_MS = 900
 const WALK_IN_PX = 240
 
-// Titik putar bagian rangka dalam koordinat viewBox. Untuk transform-box
-// view-box, Chromium mengukur transform-origin dari pojok kiri atas viewBox
-// (minX, minY), jadi koordinat dikurangi VIEW_BOX.y.
+// Titik putar bagian rangka dalam koordinat gambar. Untuk transform-box
+// view-box, browser berbeda dalam mengukur transform-origin: dari titik
+// (0, 0) atau dari pojok kiri atas viewBox (minX, minY). viewBox svg karena
+// itu dimulai di (0, 0) dan gambarnya digeser (SVG_SHIFT), supaya titik putar
+// selalu tepat di sendi.
+const SVG_VIEW_BOX = `0 0 ${VIEW_BOX.width} ${VIEW_BOX.height}`
+const SVG_SHIFT = `translate(${-VIEW_BOX.x} ${-VIEW_BOX.y})`
 function pivot([x, y]) {
-  return { transformBox: 'view-box', originX: `${x - VIEW_BOX.x}px`, originY: `${y - VIEW_BOX.y}px` }
+  return { transformBox: 'view-box', originX: `${x}px`, originY: `${y}px` }
 }
 
 // Berputar antara tampak samping dan tampak depan dalam sekitar 180 ms:
@@ -581,7 +585,7 @@ function AnimeCharacter({
       aria-hidden="true"
     >
       <svg
-        viewBox={`${VIEW_BOX.x} ${VIEW_BOX.y} ${VIEW_BOX.width} ${VIEW_BOX.height}`}
+        viewBox={SVG_VIEW_BOX}
         className="block h-full w-full overflow-visible"
       >
         {behindCounter && (
@@ -591,7 +595,13 @@ function AnimeCharacter({
             </clipPath>
           </defs>
         )}
-        <g stroke={paint('tinta')} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
+        <g
+          transform={SVG_SHIFT}
+          stroke={paint('tinta')}
+          strokeWidth="3"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        >
           {/* Lapisan badan: di belakang meja kasir, dipotong di tepi meja. */}
           <g clipPath={behindCounter ? `url(#${clipId})` : undefined}>
             {chain(
