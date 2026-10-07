@@ -111,22 +111,22 @@ function CustomerStage({
   const [arrived, setArrived] = useState(false)
   const [isPreloaded] = useState(() => getLoadedAnimeCharacter() !== null)
 
+  // Lonceng pintu berbunyi saat pembeli masuk (panggungnya dipasang tepat
+  // saat ia mulai berjalan masuk); langkah kakinya menyusul (AnimeCharacter).
   useEffect(() => {
+    playCustomerBell()
     const timer = setTimeout(() => setArrived(true), ARRIVE_FALLBACK_MS)
     return () => clearTimeout(timer)
   }, [])
 
-  // Lonceng warung saat pembeli sampai (bersamaan dengan papan nama dan
-  // balon bicara yang muncul). Layar main juga diberi tahu, supaya tombol
-  // "Mulai melayani" baru muncul saat pembeli diam menghadap depan.
+  // Layar main diberi tahu saat pembeli sampai, supaya tombol "Mulai
+  // melayani" baru muncul saat pembeli diam menghadap depan.
   const arrivedRef = useRef(onArrived)
   useEffect(() => {
     arrivedRef.current = onArrived
   })
   useEffect(() => {
-    if (!arrived) return
-    playCustomerBell()
-    arrivedRef.current?.()
+    if (arrived) arrivedRef.current?.()
   }, [arrived])
 
   useEffect(() => {

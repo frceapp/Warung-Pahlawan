@@ -112,7 +112,7 @@ Satu prompt mengerjakan satu tugas. Jangan melompat ke tugas berikutnya tanpa di
 | 6 | Layar main, langkah 3 dan 4 (hitung, kembalian), skor | Satu level bisa dimainkan sampai habis | sudah (PR #4) |
 | 7 | Beranda lengkap dan layar hasil | Alur beranda, main, hasil, lalu kembali ke beranda berjalan | sudah (PR #4) |
 | 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati | sudah (PR #4; tata letak HP diperbaiki di PR #5 dan PR #7) |
-| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: efek suara (PR #14) |
+| 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: efek suara (PR #14; diganti rekaman CC0 di prompt P25) |
 | 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | sudah (PR #10; diulang di prompt P20 dengan angka sebelum dan sesudah di `docs/audit.md`) |
 | 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sebagian: README final, uji ketiga level, dan cek gerbang sudah (prompt P21); butir 3 bagian 9 belum terpenuhi sampai catatan pemilik di kelima bagian jurnal diisi |
 
@@ -123,7 +123,7 @@ Dikerjakan setelah tugas 1 sampai 8 selesai, sesuai waktu yang tersisa.
 | Fitur | Status |
 | --- | --- |
 | Buku Tokoh: koleksi tokoh yang sudah pernah dilayani | rencana |
-| Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact | sebagian: efek suara sederhana (PR #14) dengan tombol Suara; seret dan lepas serta narasi fun fact masih rencana |
+| Seret dan lepas buah (selain ketuk), suara, dan narasi fun fact | sebagian: efek suara (PR #14, diganti rekaman CC0 di prompt P25) dengan tombol Suara; seret dan lepas serta narasi fun fact masih rencana |
 | Halaman untuk guru dan orang tua | rencana |
 
 ## 6. Stack
@@ -149,8 +149,10 @@ docs/
   jurnal-prompt.md     lima prompt terkurasi untuk juri
   sumber-fakta.md      teks dan sumber tiap fun fact tokoh
   audit.md             hasil audit dan optimasi (Tugas 10), sebelum dan sesudah
+  kredit-aset.md       asal dan lisensi efek suara (CC0)
 public/                aset statis (favicon, gambar pratinjau, robots.txt,
                        sitemap.xml, halaman 404)
+  sfx/                 efek suara MP3 (daftarnya di src/lib/sfxFiles.js)
 src/
   main.jsx             titik masuk, memuat font dan CSS
   App.jsx              pindah layar: beranda, main, hasil
@@ -172,6 +174,7 @@ src/
 - Berkas di `docs/` tidak boleh diubah, kecuali dua hal berikut:
   - `docs/prompt-log.md`: AI Agent hanya boleh MENAMBAH entri baru di bagian paling bawah. Entri lama tidak boleh diubah, dihapus, atau dirapikan.
   - `docs/jurnal-prompt.md`: AI Agent boleh mengisinya, hanya dengan fakta yang ada di repo. Bagian "Keputusan saya", "Dugaan saya", dan "Yang saya pelajari" adalah milik pemilik proyek dan tidak diisi AI Agent.
+  - `docs/kredit-aset.md`: diperbarui bersama berkas di `public/sfx/` dan `src/lib/sfxFiles.js`. Hanya rekaman berlisensi CC0.
   - Berkas lain di `docs/`, termasuk `sumber-fakta.md`, tetap tidak boleh diubah.
 - Di setiap PR, tambahkan entri untuk prompt yang sedang dikerjakan di bagian paling bawah `docs/prompt-log.md`, memakai format yang ada di berkas itu. Prompt disalin persis apa adanya, termasuk salah ketik, tanpa dirapikan atau diringkas. "Hasil AI" ditulis dari pekerjaan di PR itu. Bagian yang tidak bisa diverifikasi ditulis "(tidak dapat diverifikasi)"; jangan menebak.
 - Jangan memalsukan dokumentasi prompt: jangan menulis prompt yang tidak pernah dikirim pemilik proyek, jangan mengubah urutan, dan jangan menambahkan kalimat ke dalam teks prompt.

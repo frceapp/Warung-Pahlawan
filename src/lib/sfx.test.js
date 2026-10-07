@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { SFX_FILES } from './sfxFiles.js'
 
 // AudioContext palsu: mencatat nada yang dijadwalkan, tanpa bunyi sungguhan.
 class FakeParam {
@@ -21,6 +22,8 @@ class FakeAudioContext {
     this.currentTime = 10
     this.destination = {}
     this.oscillators = []
+    this.sources = []
+    this.decoded = []
     this.resumeCalls = 0
     this.suspendCalls = 0
     FakeAudioContext.created.push(this)
@@ -35,6 +38,23 @@ class FakeAudioContext {
   }
   createGain() {
     return { gain: new FakeParam(), connect() {} }
+  }
+  createBufferSource() {
+    const source = {
+      buffer: null,
+      playbackRate: new FakeParam(),
+      connect() {},
+      start(time) {
+        source.startAt = time
+      },
+    }
+    this.sources.push(source)
+    return source
+  }
+  // Seperti Safari lama: hasil lewat callback (tanpa Promise).
+  decodeAudioData(data, resolve) {
+    this.decoded.push(data)
+    resolve({ id: data.id })
   }
   createOscillator() {
     const oscillator = {
@@ -64,8 +84,22 @@ function fakeStorage(initial = {}) {
   }
 }
 
+// fetch palsu untuk berkas di public/sfx/. failing: daftar nama berkas yang
+// gagal dimuat; tanpa `files`, semua berkas gagal.
+function fakeFetch({ ok = true, failing = [] } = {}) {
+  const calls = []
+  const fetch = (url) => {
+    calls.push(url)
+    const file = url.split('/').pop()
+    if (!ok || failing.includes(file)) return Promise.resolve({ ok: false, status: 404 })
+    return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve({ id: file }) })
+  }
+  fetch.calls = calls
+  return fetch
+}
+
 let documentStub
-async function loadSfx({ stored = {}, hidden = false } = {}) {
+async function loadSfx({ stored = {}, hidden = false, fetch = fakeFetch({ ok: false }) } = {}) {
   vi.resetModules()
   FakeAudioContext.created = []
   const listeners = {}
@@ -80,17 +114,22 @@ async function loadSfx({ stored = {}, hidden = false } = {}) {
   vi.stubGlobal('AudioContext', FakeAudioContext)
   vi.stubGlobal('document', documentStub)
   vi.stubGlobal('localStorage', storage)
+  vi.stubGlobal('fetch', fetch)
   const sfx = await import('./sfx.js')
-  return { sfx, storage }
+  return { sfx, storage, fetch }
 }
 
 const SOUNDS = [
+  'playDoorRoll',
   'playCustomerBell',
-  'playPop',
+  'playFruitIn',
+  'playFruitOut',
+  'playWrap',
+  'playRegisterKeys',
+  'playDrawer',
   'playClick',
   'playCorrect',
   'playWrong',
-  'playCoins',
 ]
 
 describe('efek suara', () => {
@@ -105,7 +144,7 @@ describe('efek suara', () => {
     const { sfx } = await loadSfx()
     sfx.installAudioUnlock()
     expect(FakeAudioContext.created).toHaveLength(0)
-    expect(sfx.playPop()).toBe(false)
+    expect(sfx.playFruitIn()).toBe(false)
   })
 
   it('membuat AudioContext saat sentuhan pertama dan melanjutkannya bila tertunda', async () => {
@@ -118,11 +157,11 @@ describe('efek suara', () => {
     expect(FakeAudioContext.created).toHaveLength(1)
   })
 
-  it.each([...SOUNDS, 'playFanfare'])('%s pendek (di bawah 400 ms) dan pelan', async (name) => {
+  it.each([...SOUNDS, 'playFanfare', 'playMoney'])('cadangan %s pendek (di bawah 400 ms) dan pelan', async (name) => {
     const { sfx } = await loadSfx()
     sfx.unlockAudio()
     const audio = FakeAudioContext.created[0]
-    const plays = name === 'playFanfare' ? [1, 2, 3] : [undefined]
+    const plays = name === 'playFanfare' ? [1, 2, 3] : name === 'playMoney' ? [500, 5000] : [undefined]
     for (const stars of plays) {
       audio.oscillators = []
       expect(sfx[name](stars)).toBe(true)
@@ -183,10 +222,77 @@ describe('efek suara', () => {
     documentStub.hidden = true
     documentStub.listeners.visibilitychange()
     expect(audio.suspendCalls).toBe(1)
-    expect(sfx.playCoins()).toBe(false)
+    expect(sfx.playMoney(500)).toBe(false)
     documentStub.hidden = false
     documentStub.listeners.visibilitychange()
     expect(audio.state).toBe('running')
-    expect(sfx.playCoins()).toBe(true)
+    expect(sfx.playMoney(500)).toBe(true)
+  })
+
+  it('baru memuat berkas suara setelah sentuhan pertama, sekali saja', async () => {
+    const fetch = fakeFetch()
+    const { sfx } = await loadSfx({ fetch })
+    sfx.installAudioUnlock()
+    expect(fetch.calls).toHaveLength(0)
+    documentStub.listeners.pointerdown()
+    documentStub.listeners.keydown()
+    await sfx.loadSamples()
+    expect(fetch.calls).toHaveLength(SFX_FILES.length)
+    expect(fetch.calls.every((url) => /\/sfx\/[a-z0-9-]+\.mp3$/.test(url))).toBe(true)
+    expect(SFX_FILES.every(({ id }) => sfx.sampleStatus(id) === 'ready')).toBe(true)
+  })
+
+  it('tidak memuat berkas suara kalau suara dimatikan', async () => {
+    const fetch = fakeFetch()
+    const { sfx } = await loadSfx({ fetch, stored: { warungPahlawanSuara: 'off' } })
+    sfx.installAudioUnlock()
+    documentStub.listeners.pointerdown()
+    expect(fetch.calls).toHaveLength(0)
+  })
+
+  it('memutar rekaman lewat Web Audio setelah berkas siap', async () => {
+    const { sfx } = await loadSfx({ fetch: fakeFetch() })
+    sfx.unlockAudio()
+    await sfx.loadSamples()
+    const audio = FakeAudioContext.created[0]
+    expect(sfx.playCorrect()).toBe(true)
+    expect(audio.sources).toHaveLength(1)
+    expect(audio.sources[0].buffer).toEqual({ id: 'benar.mp3' })
+    expect(audio.oscillators).toHaveLength(0)
+    sfx.playMoney(500)
+    sfx.playMoney(2000)
+    expect(audio.sources.slice(1).map((source) => source.buffer.id)).toEqual(['koin.mp3', 'uang-kertas.mp3'])
+  })
+
+  it('memakai bunyi sintetis lama kalau berkas gagal dimuat', async () => {
+    const { sfx } = await loadSfx({ fetch: fakeFetch({ failing: ['salah.mp3'] }) })
+    sfx.unlockAudio()
+    await sfx.loadSamples()
+    const audio = FakeAudioContext.created[0]
+    expect(sfx.sampleStatus('wrong')).toBe('failed')
+    expect(sfx.playWrong()).toBe(true)
+    expect(audio.sources).toHaveLength(0)
+    expect(audio.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('memakai bunyi sintetis selama berkas belum selesai dimuat', async () => {
+    const pending = () => new Promise(() => {})
+    const { sfx } = await loadSfx({ fetch: pending })
+    sfx.unlockAudio()
+    const audio = FakeAudioContext.created[0]
+    expect(sfx.sampleStatus('doorBell')).toBe('loading')
+    expect(sfx.playCustomerBell()).toBe(true)
+    expect(audio.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('menjadwalkan langkah kaki pada waktu kaki menapak, bergantian dua rekaman', async () => {
+    const { sfx } = await loadSfx({ fetch: fakeFetch() })
+    sfx.unlockAudio()
+    await sfx.loadSamples()
+    const audio = FakeAudioContext.created[0]
+    sfx.playFootsteps([0.09, 0.27, 0.456])
+    const offsets = audio.sources.map((source) => source.startAt - audio.currentTime)
+    for (const [i, t] of [0.09, 0.27, 0.456].entries()) expect(offsets[i]).toBeCloseTo(t, 6)
+    expect(audio.sources.map((source) => source.buffer.id)).toEqual(['langkah-1.mp3', 'langkah-2.mp3', 'langkah-1.mp3'])
   })
 })

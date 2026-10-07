@@ -2,6 +2,7 @@ import { useAnimationControls, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import { playFootsteps } from '../../lib/sfx.js'
 import { CHARACTER_LOOKS } from './characterLooks.js'
 import {
   ARM_JOINTS,
@@ -40,11 +41,20 @@ import {
   VIEW_BOX,
 } from './characterParts.jsx'
 import { shoppingBag } from './shoppingBag.jsx'
+import {
+  LEAVE_BOB,
+  LEAVE_STEPS,
+  STEP_S,
+  STEP_TIMES,
+  WALK_BOB,
+  WALK_IN_STEPS,
+  WALK_OUT_STEPS,
+  WALK_S,
+  WALK_TIMES,
+} from './walkCycle.js'
 
 const BLINK_MS = 160
 const REACTION_MS = 900
-const WALK_S = 1.2
-const STEP_S = 0.4
 const WALK_IN_PX = 240
 
 // Titik putar bagian rangka dalam koordinat viewBox. Untuk transform-box
@@ -62,17 +72,10 @@ const TURN_NARROW = 0.6
 
 const INSTANT_T = { duration: 0 }
 
-// Tiga langkah dalam 1,2 s; langkah terakhir lebih lambat dan kecil.
-const WALK_TIMES = [0, 0.075, 0.15, 0.225, 0.3, 0.38, 0.458, 0.537, 0.617, 0.71, 0.808, 0.905, 1]
 // Lengan tampak samping berayun bergantian (kaki tertutup meja kasir).
 const ARM_SWING = [0, 28, 0, -28, 0, 26, 0, -26, 0, 16, 0, -10, 0]
-// Badan turun saat kaki terbuka, naik saat kaki berpapasan.
-const WALK_BOB = [0, 1.5, -2, 1.5, -2, 1.5, -2, 1.5, -2, 1.5, -2, 1, 0]
 const negate = (values) => values.map((v) => (v === 0 ? 0 : -v))
 
-// Satu langkah 0,4 s untuk berjalan keluar (diulang).
-const STEP_TIMES = [0, 0.25, 0.5, 0.75, 1]
-const LEAVE_STEPS = 2
 
 // Bagian yang menjuntai: miring ke belakang saat badan turun (kaki terbuka),
 // kembali sedikit saat badan naik, sejalan dengan WALK_BOB.
@@ -173,7 +176,7 @@ const VARIANTS = {
   walkBob: {
     walk: { y: WALK_BOB, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'linear' } },
     leave: {
-      y: [0, 1.5, -2, 1.5, 0],
+      y: LEAVE_BOB,
       transition: { duration: STEP_S, times: STEP_TIMES, ease: 'linear', repeat: LEAVE_STEPS - 1 },
     },
   },
@@ -411,6 +414,8 @@ function AnimeCharacter({
         if (!reduce) go('idle')
         return
       }
+      // Bunyi langkah dijadwalkan sekaligus pada titik kaki menapak.
+      playFootsteps(WALK_IN_STEPS)
       await go('walk')
       if (!alive) return
       phaseRef.current = 'turn'
@@ -439,6 +444,7 @@ function AnimeCharacter({
       } else {
         await turnTo('samping', isAlive)
         if (!alive) return
+        playFootsteps(WALK_OUT_STEPS)
         await rig.start('leave')
       }
       if (alive) callbacks.current.onLeft?.()
