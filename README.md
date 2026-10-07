@@ -27,9 +27,12 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   4. Kembalian: susun kembalian dari laci uang, atau pilih "Tidak perlu kembalian" kalau uangnya pas.
 - **Delapan tokoh pembeli:** R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, dan Kapitan Pattimura. Masing-masing punya dua fun fact dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
 - **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser. Game tetap jalan kalau penyimpanan browser tidak tersedia.
-- **Layar hasil** menampilkan skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya. Dari sini anak bisa main lagi atau kembali ke beranda.
+- **Layar hasil** menampilkan skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya. Kalau ada level berikutnya, tombol utamanya "Lanjut ke" level itu; anak juga bisa main lagi atau kembali ke beranda.
+- **Keluar di tengah permainan.** Tombol ← dan tombol kembali browser membuka dialog "Tutup warung sekarang?" (skor level itu belum tersimpan), dengan pilihan "Lanjut main" dan "Tutup warung".
 - **Suasana warung di layar main:**
-  - Pembeli digambar setengah badan, berdiri tepat di belakang meja kasir. Ia berjalan masuk dan keluar dengan tampak samping.
+  - Pembeli digambar setengah badan, berdiri tepat di belakang meja kasir dengan kedua tangan bertumpu di tepi meja. Lengannya melengkung dengan siku, manset, dan tangan bersarung bulat dengan jempol.
+  - Pembeli berjalan masuk dan keluar dengan tampak samping, lalu berputar menghadap depan (berganti tampak dengan crossfade). Tombol "Mulai melayani" baru muncul setelah ia diam menghadap depan.
+  - Setelah kembalian benar, bungkusan belanja dan uang kembalian berpindah dari meja ke tangan pembeli, lalu poin (misalnya "+10") muncul sebentar di dekat skor. Pembeli membawa bungkusan itu saat pergi.
   - Keranjang buah, kantong belanja, nota, laci uang, nampan kembalian, dan mesin kasir ada di atas meja.
   - Tiap level punya latar sendiri: warung kayu, warung ramai, dan los pasar.
   - Layar mesin kasir menampilkan total belanja (di level 2 dan 3 setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian.
@@ -45,7 +48,8 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   - Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar.
   - Target sentuh minimal 48 px.
   - Animasi mengikuti pengaturan "kurangi gerakan".
-  - Di HP, tombol aksi selalu terlihat di bawah layar.
+  - Di HP, tombol aksi selalu terlihat di bawah layar, dan tombol "Buka warung" di beranda terlihat tanpa menggeser layar (360×640).
+  - Di layar lebar (1024 px ke atas) tata letaknya dua kolom: pembeli dan balon bicara di kiri, area kerja dan tombol di kanan.
 - **Ilustrasi buatan sendiri.** Semua ilustrasi (buah, uang, tokoh) adalah SVG buatan sendiri. Desain uang tidak meniru uang rupiah asli.
 
 ## Menjalankan di komputer sendiri
@@ -81,7 +85,7 @@ npm run preview  # coba hasil build di komputer sendiri
 ## Keterbatasan yang diketahui
 
 - Di layar HP, isi meja kasir perlu digeser di beberapa keadaan, misalnya kantong berisi banyak jenis buah atau nampan berisi banyak uang. Saat itu muncul tanda "Geser ke bawah".
-- Di layar laptop yang pendek (tinggi jendela di bawah sekitar 800 px), isi meja juga bisa perlu digeser.
+- Di layar laptop yang pendek (tinggi jendela di bawah sekitar 800 px), pembeli digambar lebih kecil supaya balon bicara tidak menimpa kepala, dan isi meja bisa perlu digeser di keadaan yang ramai (misalnya kantong berisi semua jenis buah).
 - Uji di HP asli belum tercatat di repo. Pengecekan dilakukan di browser dengan ukuran layar HP.
 
 ## Dokumen
