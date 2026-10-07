@@ -12,7 +12,9 @@ const PRAISE = {
   1: 'Kamu sudah melayani semua pembeli. Ayo main lagi supaya makin lancar!',
 }
 
-function ResultScreen({ summary, isNewBest, onPlayAgain, onHome }) {
+// nextLevel: level berikutnya (kalau ada). Tombol utamanya "Lanjut ke ...",
+// dan "Main lagi" menjadi tombol kedua.
+function ResultScreen({ summary, isNewBest, nextLevel, onNextLevel, onPlayAgain, onHome }) {
   const level = getLevel(summary.levelId)
   const headingRef = useRef(null)
   useEffect(() => {
@@ -55,10 +57,24 @@ function ResultScreen({ summary, isNewBest, onPlayAgain, onHome }) {
             <p className="max-w-md text-lg">{PRAISE[summary.stars]}</p>
           </div>
           <div className="flex w-full max-w-xs flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center">
-            <Button onClick={onPlayAgain}>Main lagi</Button>
-            <Button variant="secondary" onClick={onHome}>
-              Kembali ke beranda
-            </Button>
+            {nextLevel ? (
+              <>
+                <Button onClick={onNextLevel}>Lanjut ke {nextLevel.name}</Button>
+                <Button variant="secondary" onClick={onPlayAgain}>
+                  Main lagi
+                </Button>
+                <Button variant="quiet" onClick={onHome}>
+                  Kembali ke beranda
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={onPlayAgain}>Main lagi</Button>
+                <Button variant="secondary" onClick={onHome}>
+                  Kembali ke beranda
+                </Button>
+              </>
+            )}
           </div>
         </header>
 

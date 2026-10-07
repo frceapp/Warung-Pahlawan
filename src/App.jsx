@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import OpeningGate from './components/OpeningGate.jsx'
-import { getLevel } from './data/levels.js'
+import { getLevel, LEVELS } from './data/levels.js'
 import { getBrowserStorage, loadBestStars, recordStars, saveBestStars } from './game/progress.js'
 import HomeScreen from './screens/HomeScreen.jsx'
 import { getLoadedPlayScreen, preparePlayScreen } from './screens/loadPlayScreen.js'
@@ -38,10 +38,31 @@ function App() {
 
   // Tombol kembali di browser atau HP membawa ke beranda, bukan keluar dari
   // situs. Semua layar selain beranda memakai satu entri riwayat yang sama.
+  // Selama permainan berjalan, tombol kembali membuka dialog "Tutup warung"
+  // (sama dengan tombol ← di layar main): entri riwayatnya dipasang lagi dan
+  // layar main diberi tanda lewat backSignal.
+  const backGuard = useRef(false)
+  const leaving = useRef(false)
+  const [backSignal, setBackSignal] = useState(0)
+  const setBackGuard = useCallback((active) => {
+    backGuard.current = active
+  }, [])
   useEffect(() => {
-    const backToHome = () => setScreen({ name: 'home' })
-    window.addEventListener('popstate', backToHome)
-    return () => window.removeEventListener('popstate', backToHome)
+    const onBack = () => {
+      if (backGuard.current && !leaving.current) {
+        try {
+          window.history.pushState({ [IN_APP_STATE]: true }, '')
+        } catch {
+          // Riwayat tidak tersedia; dialog tetap muncul.
+        }
+        setBackSignal((count) => count + 1)
+        return
+      }
+      leaving.current = false
+      setScreen({ name: 'home' })
+    }
+    window.addEventListener('popstate', onBack)
+    return () => window.removeEventListener('popstate', onBack)
   }, [])
 
   function leaveHome(next) {
@@ -63,6 +84,7 @@ function App() {
 
   function goHome() {
     if (window.history.state?.[IN_APP_STATE]) {
+      leaving.current = true
       window.history.back() // memicu popstate, lalu kembali ke beranda
     } else {
       setScreen({ name: 'home' })
@@ -109,7 +131,15 @@ function App() {
         {(opened) => {
           const PlayScreen = getLoadedPlayScreen()
           return (
-            <PlayScreen level={level} rng={Math.random} opened={opened} onExit={goHome} onFinish={finishLevel} />
+            <PlayScreen
+              level={level}
+              rng={Math.random}
+              opened={opened}
+              onExit={goHome}
+              onFinish={finishLevel}
+              backSignal={backSignal}
+              onBackGuard={setBackGuard}
+            />
           )
         }}
       </OpeningGate>
@@ -117,6 +147,7 @@ function App() {
   }
 
   if (screen.name === 'result') {
+    const nextLevel = LEVELS.find((level) => level.id === screen.summary.levelId + 1)
     return (
       <OpeningGate
         key={screen.resultId}
@@ -132,6 +163,8 @@ function App() {
             <ResultScreen
               summary={screen.summary}
               isNewBest={screen.isNewBest}
+              nextLevel={nextLevel}
+              onNextLevel={() => startLevel(nextLevel.id)}
               onPlayAgain={() => startLevel(screen.summary.levelId)}
               onHome={goHome}
             />
