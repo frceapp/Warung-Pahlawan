@@ -21,8 +21,8 @@ function OrderList({ order }) {
           data-quantity={quantity}
           className="flex items-center gap-1 rounded-lg border-2 border-tinta bg-kapur py-0.5 pr-2 pl-0.5 md:gap-1.5 md:rounded-xl md:border-4 md:py-1 md:pr-3 md:pl-1"
         >
-          <FruitImage fruitId={fruitId} size={44} decorative className="h-7 w-7 md:h-11 md:w-11" />
-          <span className="font-heading text-xl md:text-2xl">{quantity}</span>
+          <FruitImage fruitId={fruitId} size={44} decorative className="h-7 w-7 md:h-11 md:w-11 lg:h-9 lg:w-9" />
+          <span className="font-heading text-xl md:text-2xl lg:text-xl">{quantity}</span>
           <span className="sr-only md:not-sr-only md:text-base">{getFruit(fruitId).name}</span>
         </m.li>
       ))}
