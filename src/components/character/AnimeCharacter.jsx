@@ -1,20 +1,28 @@
 import { useAnimationControls, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { CHARACTER_LOOKS } from './characterLooks.js'
 import {
+  ARM_JOINTS,
   cloth,
+  COUNTER_Y,
+  forearm,
   FACE_PATH,
+  FRONT_ARM,
   faceAccessories,
   hairBack,
   hairFront,
   headwear,
   headwearBack,
+  hand,
   JOINTS,
   legColor,
   paint,
   shoulderDrape,
+  SIDE_ARM,
+  sideForearm,
+  sideHand,
   SIDE_JOINTS,
   sideFaceAccessories,
   sideFacePath,
@@ -26,10 +34,12 @@ import {
   sideHeadwearTails,
   sideShoulderDrape,
   sideTorso,
-  sleeveColor,
+  sideUpperArm,
   torso,
+  upperArm,
   VIEW_BOX,
 } from './characterParts.jsx'
+import { shoppingBag } from './shoppingBag.jsx'
 
 const BLINK_MS = 160
 const REACTION_MS = 900
@@ -44,10 +54,13 @@ function pivot([x, y]) {
   return { transformBox: 'view-box', originX: `${x - VIEW_BOX.x}px`, originY: `${y - VIEW_BOX.y}px` }
 }
 
-// Berputar antara tampak samping dan tampak depan dalam sekitar 200 ms:
-// badan menyempit, tampak diganti saat paling sempit, lalu melebar lagi.
-const TURN_HALF_S = 0.1
-const TURN_NARROW = 0.06
+// Berputar antara tampak samping dan tampak depan dalam sekitar 180 ms:
+// badan menyempit paling jauh sampai 60% lalu melebar lagi, sementara tampak
+// lama memudar dan tampak baru muncul (crossfade).
+const TURN_S = 0.18
+const TURN_NARROW = 0.6
+
+const INSTANT_T = { duration: 0 }
 
 // Tiga langkah dalam 1,2 s; langkah terakhir lebih lambat dan kecil.
 const WALK_TIMES = [0, 0.075, 0.15, 0.225, 0.3, 0.38, 0.458, 0.537, 0.617, 0.71, 0.808, 0.905, 1]
@@ -78,15 +91,84 @@ function sideArm(swing) {
   }
 }
 
-const WAVE = {
-  rotate: [0, -150, -126, -152, -140, 0],
-  times: [0, 0.25, 0.45, 0.65, 0.8, 1],
+// Melambai: lengan atas terangkat di bahu, lengan bawah tegak dan
+// berayun di siku.
+const WAVE_TIMES = [0, 0.25, 0.45, 0.65, 0.8, 1]
+const WAVE_UPPER = [0, -90, -90, -90, -90, 0]
+const WAVE_FORE = [0, -126, -106, -136, -114, 0]
+function wave(delay) {
+  return {
+    upper: { rotate: WAVE_UPPER, transition: { duration: 0.8, times: WAVE_TIMES, ease: 'easeInOut', delay } },
+    fore: { rotate: WAVE_FORE, transition: { duration: 0.8, times: WAVE_TIMES, ease: 'easeInOut', delay } },
+  }
 }
+const GREET_WAVE = wave(0.05)
+const FAREWELL_WAVE = wave(0.15)
+
+// Menerima bungkusan: kedua tangan terangkat ke depan dada. Setelah
+// diterima, lengan kiri gambar memegang bungkusan dan lengan kanan kembali
+// bertumpu (lalu melambai).
+const REACH = { upper: -6, fore: 42 }
+const HOLD = { upper: -6, fore: 64 }
+const ARM_MOVE = { duration: 0.32, ease: 'easeOut' }
+
+function frontArmVariants(isFront) {
+  const upper = {
+    rest: { rotate: 0, transition: ARM_MOVE },
+    reach: { rotate: REACH.upper, transition: ARM_MOVE },
+    hold: { rotate: isFront ? 0 : HOLD.upper, transition: ARM_MOVE },
+  }
+  const fore = {
+    rest: { rotate: 0, transition: ARM_MOVE },
+    reach: { rotate: REACH.fore, transition: ARM_MOVE },
+    hold: { rotate: isFront ? 0 : HOLD.fore, transition: ARM_MOVE },
+  }
+  if (isFront) {
+    upper.wavePeak = { rotate: WAVE_UPPER[1] }
+    fore.wavePeak = { rotate: WAVE_FORE[1] }
+    upper.greet = GREET_WAVE.upper
+    upper.farewell = FAREWELL_WAVE.upper
+    fore.greet = GREET_WAVE.fore
+    fore.farewell = FAREWELL_WAVE.fore
+  }
+  return { upper, fore }
+}
+const ARM_FRONT = frontArmVariants(true)
+const ARM_BACK = frontArmVariants(false)
+
+// Bungkusan selalu menggantung tegak: diputar balik sebesar putaran lengan.
+const BAG_GRIP = FRONT_ARM.hand
+const BAG_HANG = {
+  rest: { rotate: 0, transition: ARM_MOVE },
+  reach: { rotate: -(REACH.upper + REACH.fore), transition: ARM_MOVE },
+  hold: { rotate: -(HOLD.upper + HOLD.fore), transition: ARM_MOVE },
+}
+const CLIP_TOP = -40
+
+// Tampak samping saat pergi sambil membawa bungkusan: lengan depan menekuk,
+// tangan di depan dada.
+const CARRY = { upper: -14, fore: -76 }
+const SIDE_GRIP = SIDE_ARM.hand
 
 const VARIANTS = {
   turn: {
-    squeeze: { scaleX: TURN_NARROW, transition: { duration: TURN_HALF_S, ease: 'easeIn' } },
-    unsqueeze: { scaleX: 1, transition: { duration: TURN_HALF_S, ease: 'easeOut' } },
+    toFront: { scaleX: [1, TURN_NARROW, 1], transition: { duration: TURN_S, times: [0, 0.5, 1], ease: 'easeInOut' } },
+    toSide: { scaleX: [1, TURN_NARROW, 1], transition: { duration: TURN_S, times: [0, 0.5, 1], ease: 'easeInOut' } },
+  },
+  // Crossfade tampak depan dan samping saat berputar.
+  front: {
+    hidden: { opacity: 0 },
+    still: { opacity: 1, transition: INSTANT_T },
+    appear: { opacity: 1, transition: INSTANT_T },
+    toFront: { opacity: 1, transition: { duration: TURN_S, ease: 'linear' } },
+    toSide: { opacity: 0, transition: { duration: TURN_S, ease: 'linear' } },
+  },
+  side: {
+    hidden: { opacity: 1 },
+    still: { opacity: 0, transition: INSTANT_T },
+    appear: { opacity: 0, transition: INSTANT_T },
+    toFront: { opacity: 0, transition: { duration: TURN_S, ease: 'linear' } },
+    toSide: { opacity: 1, transition: { duration: TURN_S, ease: 'linear' } },
   },
   walkBob: {
     walk: { y: WALK_BOB, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'linear' } },
@@ -102,10 +184,6 @@ const VARIANTS = {
   },
   sideArmB: sideArm(ARM_SWING),
   sideArmF: sideArm(negate(ARM_SWING)),
-  armF: {
-    greet: { rotate: WAVE.rotate, transition: { duration: 0.8, times: WAVE.times, ease: 'easeInOut', delay: 0.05 } },
-    farewell: { rotate: WAVE.rotate, transition: { duration: 0.8, times: WAVE.times, ease: 'easeInOut', delay: 0.4 } },
-  },
   // Rambut belakang (tampak depan) bergoyang pelan saat diam. Rambut yang
   // menempel di kepala tidak diputar, supaya tidak tampak lepas dari kepala.
   hair: {
@@ -167,12 +245,48 @@ function Leg({ x, look }) {
   )
 }
 
-function Arm({ x, look }) {
+// Lengan tampak depan: lengan atas berputar di bahu, lengan bawah (dengan
+// manset dan tangan) berputar di siku. Lengan kiri gambar adalah cerminan
+// lengan kanan. Bungkusan menggantung di tangan lengan kiri gambar.
+function FrontArm({ look, variants, bag = false, target = false }) {
   return (
-    <>
-      <rect x={x - 4} y="73" width="8" height="23" rx="4" fill={sleeveColor(look)} />
-      <circle cx={x} cy="97.5" r="4.6" fill={paint(look.skin)} />
-    </>
+    <m.g variants={variants.upper} style={pivot(ARM_JOINTS.shoulder)}>
+      {upperArm(look)}
+      <m.g variants={variants.fore} style={pivot(ARM_JOINTS.elbow)}>
+        {forearm(look)}
+        {target && <circle data-hand-target="" cx={BAG_GRIP[0]} cy={BAG_GRIP[1]} r="0.1" fill="none" stroke="none" />}
+        {bag && (
+          <m.g variants={BAG_HANG} style={pivot(BAG_GRIP)}>
+            <g transform={`translate(${BAG_GRIP[0]} ${BAG_GRIP[1]})`} data-bag="">
+              {shoppingBag()}
+            </g>
+          </m.g>
+        )}
+        {hand(look)}
+      </m.g>
+    </m.g>
+  )
+}
+
+// Lengan tampak samping. Lengan depan yang membawa bungkusan menekuk ke depan
+// dada dan tidak berayun.
+function SideArm({ look, variants, carry = false }) {
+  return (
+    <m.g
+      variants={carry ? undefined : variants}
+      style={carry ? { ...pivot(ARM_JOINTS.sideShoulder), rotate: CARRY.upper } : pivot(ARM_JOINTS.sideShoulder)}
+    >
+      {sideUpperArm(look)}
+      <g transform={carry ? `rotate(${CARRY.fore} ${ARM_JOINTS.sideElbow[0]} ${ARM_JOINTS.sideElbow[1]})` : undefined}>
+        {sideForearm(look)}
+        {carry && (
+          <g transform={`rotate(${-(CARRY.upper + CARRY.fore)} ${SIDE_GRIP[0]} ${SIDE_GRIP[1]}) translate(${SIDE_GRIP[0]} ${SIDE_GRIP[1]})`} data-bag="">
+            {shoppingBag()}
+          </g>
+        )}
+        {sideHand(look)}
+      </g>
+    </m.g>
   )
 }
 
@@ -215,12 +329,18 @@ const INSTANT = { duration: 0 }
 // - talkKey/talkMs: mulut bergerak selama kalimat baru tampil
 // - reaction: { id, tone } dari umpan balik; 'success' melompat dan senyum,
 //   'error' menggeleng, alis turun, dan mulut cemberut
-// - farewell: melambai setelah selesai dilayani
+// - handover: 'reach' (kedua tangan terangkat menyambut bungkusan) lalu
+//   'hold' (memegang bungkusan); bungkusan ikut dibawa saat pergi
+// - farewell: melambai setelah selesai dilayani (setelah bungkusan dipegang)
 // - leaving + onLeft: berputar ke samping lalu berjalan keluar ke kanan
+// - behindCounter: berdiri di belakang meja kasir; badan dipotong di tepi
+//   meja (COUNTER_Y), lengan dan tangan tampak depan tetap di depan meja
 // - facing ('depan' atau 'samping') dan mirrored: memaksa satu tampak diam,
-//   misalnya untuk galeri ilustrasi
+//   misalnya untuk galeri ilustrasi; pose ('rest', 'wave', 'reach', 'hold')
+//   memaksa pose lengan diam
 // Dengan kurangi gerakan: tanpa berjalan dan berputar; hanya tampak depan
-// yang memudar 150 ms, tanpa gerak diam, kedip, bicara, atau reaksi.
+// yang memudar 150 ms, tanpa gerak diam, kedip, bicara, reaksi, atau gerak
+// lengan (bungkusan langsung tampak di tangan).
 // Ilustrasi ini dekoratif (aria-hidden).
 function AnimeCharacter({
   characterId,
@@ -228,11 +348,14 @@ function AnimeCharacter({
   talkKey,
   talkMs = 1500,
   reaction,
+  handover,
   farewell = false,
   leaving = false,
+  behindCounter = false,
   onArrived,
   onLeft,
   facing,
+  pose,
   mirrored = false,
   rng = Math.random,
   className = '',
@@ -262,15 +385,15 @@ function AnimeCharacter({
     [rig],
   )
 
-  // Berputar: menyempit, ganti tampak tepat saat paling sempit (dalam satu
-  // commit, jadi tidak ada frame kosong atau dua tampak sekaligus), lalu
-  // melebar lagi.
+  // Berputar: kedua tampak digambar selama putaran (tampak lama memudar,
+  // tampak baru muncul, badan menyempit sampai 60% lalu melebar lagi), lalu
+  // hanya tampak baru yang tersisa.
   const turnTo = useCallback(
     async (next, isAlive) => {
-      await rig.start('squeeze')
+      flushSync(() => setView('putar'))
+      await rig.start(next === 'depan' ? 'toFront' : 'toSide')
       if (!isAlive()) return
-      flushSync(() => setView(next))
-      await rig.start('unsqueeze')
+      setView(next)
     },
     [rig],
   )
@@ -326,11 +449,26 @@ function AnimeCharacter({
     }
   }, [leaving, reduce, rig, turnTo])
 
-  // Melambai setelah selesai dilayani.
+  // Menerima bungkusan: tangan terangkat, lalu memegang bungkusan. Setelah
+  // itu melambai (kalau sudah selesai dilayani).
+  const holding = handover === 'hold' || pose === 'hold'
+  useEffect(() => {
+    if (!handover) return
+    if (reduce) rig.set(handover)
+    else rig.start(handover)
+  }, [handover, reduce, rig])
+
   useEffect(() => {
     if (!farewell || reduce || phaseRef.current !== 'idle') return
+    if (handover && handover !== 'hold') return
     rig.start('farewell')
-  }, [farewell, reduce, rig])
+  }, [farewell, handover, reduce, rig])
+
+  // Pose diam untuk galeri.
+  useEffect(() => {
+    if (!pose) return
+    rig.set(pose === 'wave' ? 'wavePeak' : pose)
+  }, [pose, rig])
 
   // Gerak diam berhenti saat tab tidak aktif (varian 'rest' menggantikan
   // perulangannya), lalu lanjut lagi saat tab aktif.
@@ -405,6 +543,23 @@ function AnimeCharacter({
   const covered = look.accessories.includes('selendang')
   const show = (on) => ({ opacity: on ? 1 : 0 })
   const shownView = facing ?? view
+  const showFront = shownView === 'depan' || shownView === 'putar'
+  const showSide = shownView === 'samping' || shownView === 'putar'
+  // Tanpa facing, opacity tampak diatur varian (crossfade saat berputar).
+  const viewVariants = (variants) => (facing ? undefined : variants)
+  const clipId = `badan-${useId().replace(/:/g, '')}`
+
+  // Rantai transform bersama (putar, lompat, naik turun saat berjalan).
+  // Dipakai dua kali: untuk lapisan badan (dipotong di tepi meja) dan untuk
+  // lapisan lengan tampak depan (di depan meja); keduanya digerakkan varian
+  // yang sama sehingga selalu bergerak bersama.
+  const chain = (children) => (
+    <m.g data-turn="" variants={VARIANTS.turn} style={pivot(JOINTS.neck)}>
+      <m.g variants={VARIANTS.jump}>
+        <m.g variants={VARIANTS.walkBob}>{children}</m.g>
+      </m.g>
+    </m.g>
+  )
 
   return (
     <m.div
@@ -416,18 +571,31 @@ function AnimeCharacter({
       data-view={shownView}
       data-mouth={mouth}
       data-blink={blink ? '' : undefined}
+      data-holding={holding ? '' : undefined}
       aria-hidden="true"
     >
       <svg
         viewBox={`${VIEW_BOX.x} ${VIEW_BOX.y} ${VIEW_BOX.width} ${VIEW_BOX.height}`}
         className="block h-full w-full overflow-visible"
       >
+        {behindCounter && (
+          <defs>
+            <clipPath id={clipId}>
+              <rect x="-60" y={CLIP_TOP} width="220" height={COUNTER_Y - CLIP_TOP} />
+            </clipPath>
+          </defs>
+        )}
         <g stroke={paint('tinta')} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
-          <m.g variants={VARIANTS.turn} style={pivot(JOINTS.neck)}>
-            <m.g variants={VARIANTS.jump}>
-              <m.g variants={VARIANTS.walkBob}>
+          {/* Lapisan badan: di belakang meja kasir, dipotong di tepi meja. */}
+          <g clipPath={behindCounter ? `url(#${clipId})` : undefined}>
+            {chain(
+              <>
                 {/* Tampak depan: saat sampai di warung dan selama melayani. */}
-                <g data-figure="depan" display={shownView === 'depan' ? undefined : 'none'}>
+                <m.g
+                  data-figure="depan"
+                  variants={viewVariants(VARIANTS.front)}
+                  display={showFront ? undefined : 'none'}
+                >
                   <m.g variants={VARIANTS.up}>
                     <m.g variants={VARIANTS.shake} style={pivot(JOINTS.neck)}>
                       <m.g variants={VARIANTS.hair} style={pivot(JOINTS.hairTop)}>
@@ -438,7 +606,6 @@ function AnimeCharacter({
                   </m.g>
                   <Leg x={JOINTS.hipBack[0]} look={look} />
                   <m.g variants={VARIANTS.up}>
-                    <Arm x={JOINTS.shoulderBack[0]} look={look} />
                     <g>{torso(look)}</g>
                   </m.g>
                   <Leg x={JOINTS.hipFront[0]} look={look} />
@@ -518,15 +685,17 @@ function AnimeCharacter({
                       {hairFront(look)}
                       {headwear(look)}
                     </m.g>
-                    <m.g variants={VARIANTS.armF} style={pivot(JOINTS.shoulderFront)}>
-                      <Arm x={JOINTS.shoulderFront[0]} look={look} />
-                    </m.g>
                   </m.g>
-                </g>
+                </m.g>
 
                 {/* Tampak samping (menghadap kanan): saat berjalan masuk dan
-                    keluar. mirrored mencerminkannya untuk arah kiri. */}
-                <g data-figure="samping" display={shownView === 'samping' ? undefined : 'none'}>
+                    keluar. mirrored mencerminkannya untuk arah kiri. Lengan
+                    tampak samping ikut di lapisan ini (di belakang meja). */}
+                <m.g
+                  data-figure="samping"
+                  variants={viewVariants(VARIANTS.side)}
+                  display={showSide ? undefined : 'none'}
+                >
                   <g transform={mirrored ? 'translate(100 0) scale(-1 1)' : undefined}>
                     <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.veil)}>
                       {sideHeadwearBack(look)}
@@ -540,9 +709,7 @@ function AnimeCharacter({
                     <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.tails)}>
                       {sideHeadwearTails(look)}
                     </m.g>
-                    <m.g variants={VARIANTS.sideArmB} style={pivot(SIDE_JOINTS.shoulder)}>
-                      <Arm x={SIDE_JOINTS.shoulder[0]} look={look} />
-                    </m.g>
+                    <SideArm look={look} variants={VARIANTS.sideArmB} />
                     <g>{sideTorso(look)}</g>
                     {sideShoulderDrape(look)}
                     <path d={sideFacePath(look)} fill={paint(look.skin)} />
@@ -569,14 +736,29 @@ function AnimeCharacter({
                     )}
                     {sideFaceAccessories(look)}
                     {sideHeadwear(look)}
-                    <m.g variants={VARIANTS.sideArmF} style={pivot(SIDE_JOINTS.shoulder)}>
-                      <Arm x={SIDE_JOINTS.shoulder[0]} look={look} />
-                    </m.g>
+                    <SideArm look={look} variants={VARIANTS.sideArmF} carry={holding} />
                   </g>
+                </m.g>
+              </>,
+            )}
+          </g>
+
+          {/* Lapisan lengan tampak depan: di depan meja kasir, jadi tangan
+              yang bertumpu di tepi meja tidak terpotong. */}
+          {chain(
+            <m.g
+              data-figure-arms=""
+              variants={viewVariants(VARIANTS.front)}
+              display={showFront ? undefined : 'none'}
+            >
+              <m.g variants={VARIANTS.up}>
+                <g transform="translate(100 0) scale(-1 1)">
+                  <FrontArm look={look} variants={ARM_BACK} bag={holding} target />
                 </g>
+                <FrontArm look={look} variants={ARM_FRONT} />
               </m.g>
-            </m.g>
-          </m.g>
+            </m.g>,
+          )}
         </g>
       </svg>
     </m.div>
