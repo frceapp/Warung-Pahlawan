@@ -1426,3 +1426,67 @@ Commit terkait:
 - `a500644` docs: describe the new cash register in README
 - `0482663` chore: add cash register screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P25, 7 Oktober 2026, 09.18 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: efek suara dari rekaman CC0 (Tugas 9, fitur tambahan suara)
+Prompt:
+
+````text
+Ganti efek suara buatan Web Audio dengan rekaman berlisensi CC0. Kerjakan di satu PR.
+
+Sumber
+- Hanya berkas berlisensi CC0. Utamakan paket Kenney (RPG Audio, Interface Sounds, Casino Audio). Untuk bunyi yang tidak ada di sana, ambil dari Freesound atau OpenGameArt dengan filter CC0.
+- Kalau kamu tidak punya akses internet untuk mengunduh, berhenti dan beri saya daftar berkas yang harus saya taruh di `public/sfx/`.
+
+Bunyi yang dibutuhkan
+- Rolling door naik saat warung dibuka.
+- Lonceng pintu saat pembeli datang.
+- Langkah kaki saat pembeli berjalan masuk dan keluar, selaras dengan ayunan langkah.
+- Ambil buah ke kantong, dan keluarkan buah.
+- Bungkus pesanan (kertas atau kantong).
+- Tombol mesin kasir saat total muncul.
+- Laci mesin kasir terbuka ("ka-ching") di langkah Kembalian.
+- Uang kertas dan koin saat menyusun kembalian.
+- Jawaban benar, jawaban salah (lembut, bukan buzzer), dan fanfare di layar hasil.
+
+Pengolahan
+- Konversi ke MP3 mono 96 kbps, karena OGG tidak selalu bisa diputar di Safari iPhone. Potong hening di awal dan akhir, samakan kekerasannya.
+- Tiap berkas maksimal 1,5 detik dan 30 kB. Total semua berkas maksimal 300 kB.
+- Muat setelah sentuhan pertama anak, bukan saat halaman dibuka. Putar lewat Web Audio (decodeAudioData) supaya tidak ada jeda.
+- Bila berkas gagal dimuat, pakai bunyi Web Audio yang lama sebagai cadangan.
+
+Halaman uji
+- Buat halaman tersembunyi `/?sfx` berisi daftar semua bunyi dengan tombol putar, nama berkas, dan sumbernya, supaya saya bisa mendengarkan dan meminta ganti.
+
+Kredit
+- Buat `docs/kredit-aset.md`: nama berkas, judul asli, pembuat, tautan sumber, dan lisensi. Tambahkan bagian "Kredit aset" di README yang menaut ke berkas itu.
+
+Aturan
+- Tombol Suara, mati saat tab tersembunyi, dan umpan balik visual tetap seperti sekarang.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Laporkan ukuran total berkas suara dan pengaruhnya ke waktu muat.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Akses internet tersedia, jadi berkas diunduh langsung. Dipakai lima paket Kenney berlisensi CC0: RPG Audio, Interface Sounds, Casino Audio, Impact Sounds, dan Music Jingles; tiap paket berisi `License.txt` "Creative Commons Zero, CC0". Tiga bunyi yang tidak ada di Kenney diambil dari Freesound dengan filter CC0, dan lisensinya dicek di halaman tiap bunyi: rolling door ("Rolling shutter" oleh Areti18), lonceng pintu ("Ryuuzan_shop_door_bell00.wav" oleh ryuuzan), dan laci "ka-ching" ("Cash Register Fake.wav" oleh CapsLok). "Cash Register Purchase" oleh Zott820 sengaja tidak dipakai: berkas itu CC0, tetapi menurut deskripsinya memakai bunyi lain berlisensi CC BY 4.0. Dari Freesound diambil berkas pratinjau MP3 128 kbps yang tersedia tanpa akun. OpenGameArt tidak dipakai.
+- Pengolahan dengan ffmpeg dan skrip Python kecil (tidak ikut repo): mono, hening di awal dan akhir dipotong, kekerasan disamakan (RMS bagian yang berbunyi -18 dBFS, puncak paling tinggi -1 dBFS, limiter untuk bunyi berpuncak tajam), lalu MP3 mono 96 kbps. Hasilnya 15 berkas di `public/sfx/`, 0,05 sampai 1,49 detik dan 1,0 sampai 17,8 kB per berkas, total 112,4 kB (115.274 byte). Pilihan bunyi Kenney berdasarkan ukuran dan karakter bunyi (durasi, kekerasan, kecerahan), bukan didengarkan; halaman `/?sfx` disediakan supaya pemilik proyek bisa mendengarkan dan meminta ganti.
+- Daftar berkas beserta asalnya ada di `src/lib/sfxFiles.js`, dengan tes: berkas ada, paling besar 30 kB, total paling besar 300 kB, berlisensi CC0, dan bersumber.
+- Pemutaran (`src/lib/sfx.js`): berkas baru dimuat setelah sentuhan atau tombol keyboard pertama (sekali saja, dan tidak dimuat kalau suara dimatikan), lalu di-decode dengan `decodeAudioData` (juga bentuk callback untuk Safari lama) dan diputar lewat `AudioBufferSourceNode`. Selama berkas belum siap atau kalau gagal dimuat, bunyi Web Audio lama dipakai sebagai cadangan. Bunyi baru yang belum punya versi lama diberi cadangan sintetis sederhana. Tombol Suara dan berhenti saat tab tersembunyi tetap seperti sebelumnya.
+- Bunyi yang dipasang: pintu gulung saat pintu mulai naik (layar loading, juga sebelum layar hasil); lonceng pintu saat pembeli mulai masuk (sebelumnya saat pembeli sampai); langkah kaki bergantian dua rekaman, dijadwalkan pada titik kaki menapak (enam tapak saat masuk, empat saat keluar) dari irama jalan yang kini ada di `src/components/character/walkCycle.js` (dengan tes). Selanjutnya: buah masuk dan keluar kantong, bungkus saat pesanan benar dibungkus, tombol mesin kasir 0,2 detik kemudian (bersamaan dengan kedip tombolnya), dan "ka-ching" laci 0,35 detik setelah masuk langkah Kembalian. Lalu uang kertas atau koin (di bawah Rp1.000) saat menyusun kembalian, jawaban benar, jawaban salah yang lembut (`bong_001` dari Interface Sounds), fanfare di layar hasil, dan klik tombol.
+- Dicek di Chromium (build produksi, 360x640): 0 permintaan `/sfx` sebelum sentuhan pertama, 15 permintaan setelah ketuk kartu level, semua 15 berkas berhasil di-decode, 0 nada cadangan, dan konsol bersih. Urutan bunyi tercatat sesuai aksi selama satu pembeli dilayani dan pembeli berikutnya datang. Dengan semua `/sfx/*` diblokir, 52 nada cadangan berbunyi dan permainan tetap jalan. Dengan "kurangi gerakan" tidak ada langkah kaki (pembeli tidak berjalan), lonceng tetap berbunyi.
+- Pengaruh ke waktu muat (Slow 4G, cache kosong, 360x640, tiga kali): beranda tetap selesai dimuat sekitar 1,72 detik dan tanpa berkas suara; unduhan beranda naik 2,4 kB (kode pemuat dan daftar berkas). Dari ketuk level sampai pembeli mulai berjalan tetap sekitar 1,29 detik (sebelum: 1,28 sampai 1,30; sesudah: 1,27 sampai 1,30). Ke-15 berkas (115 kB) selesai dimuat di latar belakang 2,2 detik setelah ketuk; di koneksi cepat 0,12 sampai 0,13 detik. Pada Slow 4G, bunyi pintu gulung pertama masih memakai cadangan karena berkasnya belum selesai.
+- Halaman tersembunyi `/?sfx` (`src/screens/SfxScreen.jsx`, dimuat terpisah 1,1 kB gzip, ikut build produksi): daftar ke-15 bunyi dengan tombol "Putar", tombol "Cadangan" (bunyi Web Audio lama), nama berkas, status pemuatan, judul asli, pembuat, tautan sumber, dan lisensi. Dicek di 360x640 dan 1280x800: semua berstatus siap setelah tombol pertama, axe-core tanpa pelanggaran, konsol bersih.
+- Kredit: `docs/kredit-aset.md` baru (nama berkas, kegunaan, judul asli, pembuat, tautan sumber, lisensi, hasil olahan, dan cara pengolahan), bagian "Kredit aset" di README, dan AGENTS.md diperbarui (struktur folder, aturan berkas `docs/kredit-aset.md`, status fitur suara). `vercel.json`: berkas `/sfx/` di-cache satu hari (`stale-while-revalidate` satu minggu), supaya berkas yang diganti dengan nama sama tetap cepat sampai.
+- Dicek juga: ketiga level dimainkan sampai hasil di 360x640 dan 1280x800 (skor 36/40, 44/50, 54/60); axe-core tanpa pelanggaran di semua layar dan langkah. `src/game` dan `src/data` tidak diubah. Tidak ada dependency npm baru.
+- `npm test` (20 berkas, 145 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Bunyi tidak didengarkan oleh AI (tidak dapat diverifikasi); uji di HP asli, termasuk Safari iPhone: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `b978062` feat: add CC0 sound recordings with their sources
+- `40c8d18` feat: play recorded sounds through Web Audio with the old tones as fallback
+- `adfb670` feat: add hidden sound test page at /?sfx
+- `ec5a6ed` docs: credit the sound recordings and describe the new sounds
+- `c2e17e3` chore: add sound test page screenshot for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
