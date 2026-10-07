@@ -20,6 +20,10 @@ const OgImageScreen = import.meta.env.DEV
   ? lazy(() => import('./screens/OgImageScreen.jsx'))
   : null
 
+// Halaman uji efek suara (/?sfx): tersembunyi, tetapi ikut build supaya
+// bisa didengarkan di situs.
+const SfxScreen = lazy(() => import('./screens/SfxScreen.jsx'))
+
 const storage = getBrowserStorage()
 
 // Penanda entri riwayat browser untuk layar selain beranda.
@@ -99,6 +103,14 @@ function App() {
     }
     openCount.current += 1
     setScreen({ name: 'result', resultId: openCount.current, summary, isNewBest: updated !== bestStars })
+  }
+
+  if (new URLSearchParams(window.location.search).has('sfx')) {
+    return (
+      <Suspense fallback={null}>
+        <SfxScreen />
+      </Suspense>
+    )
   }
 
   if (GalleryScreen && new URLSearchParams(window.location.search).has('galeri')) {
