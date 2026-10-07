@@ -477,7 +477,7 @@ function AnimeCharacter({
   }, [pose, rig])
 
   // Gerak diam berhenti saat tab tidak aktif (varian 'rest' menggantikan
-  // perulangannya), lalu lanjut lagi saat tab aktif.
+  // gerak berulangnya), lalu lanjut lagi saat tab aktif.
   useEffect(() => {
     if (reduce) return undefined
     const update = () => {

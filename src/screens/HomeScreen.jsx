@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react'
 import Awning from '../components/Awning.jsx'
 import FruitImage from '../components/FruitImage.jsx'
 import LevelCard from '../components/LevelCard.jsx'
+import PracticeIcon from '../components/PracticeIcon.jsx'
 import SoundToggle from '../components/SoundToggle.jsx'
 import { preparePlayScreen } from './loadPlayScreen.js'
-import { CODING_CONCEPTS, HOW_TO_PLAY } from '../data/guide.js'
+import { HOW_TO_PLAY, PRACTICE } from '../data/guide.js'
 import { LEVELS } from '../data/levels.js'
 
 // Kegagalan di sini diabaikan; layar loading memuat ulang dan menampilkan
@@ -55,8 +56,8 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
             Warung Pahlawan
           </h1>
           <p className="max-w-xl rounded-2xl border-4 border-tinta bg-kapur px-4 py-2 text-base leading-snug sm:px-8 sm:py-4 sm:text-xl sm:leading-relaxed">
-            Jadi penjaga warung buah, layani para pahlawan Indonesia, dan belajar berpikir runtut
-            seperti programmer.
+            Jadi penjaga warung buah, layani para pahlawan Indonesia, sambil berlatih berhitung dan
+            mengenal sejarah.
           </p>
         </header>
 
@@ -106,39 +107,21 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
           </p>
         </section>
 
-        <section aria-labelledby="coding-title">
-          <h2 id="coding-title" className="mb-2 font-heading text-3xl">
-            Belajar coding di warung
+        <section aria-labelledby="practice-title">
+          <h2 id="practice-title" className="mb-4 font-heading text-3xl">
+            Yang kamu latih
           </h2>
-          <p className="mb-4 text-base">
-            Saat menjaga warung, kamu memakai cara berpikir yang sama dengan programmer.
-          </p>
-          <div className="overflow-hidden rounded-2xl border-4 border-tinta bg-kapur">
-            <table className="w-full border-collapse text-left">
-              <caption className="sr-only">Konsep coding dan wujudnya di warung</caption>
-              <thead className="bg-terpal-tua text-kapur">
-                <tr>
-                  <th scope="col" className="w-1/3 px-3 py-2 font-heading text-lg">
-                    Konsep coding
-                  </th>
-                  <th scope="col" className="px-3 py-2 font-heading text-lg">
-                    Di warung
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {CODING_CONCEPTS.map((concept) => (
-                  <tr key={concept.name} className="border-t-4 border-tinta align-top">
-                    <th scope="row" className="px-3 py-3">
-                      <span className="block font-heading text-xl">{concept.name}</span>
-                      <span className="text-sm font-normal">({concept.term})</span>
-                    </th>
-                    <td className="px-3 py-3 text-base">{concept.text}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {PRACTICE.map((item) => (
+              <li key={item.title} className="flex items-start gap-3 rounded-2xl border-4 border-tinta bg-kapur p-3">
+                <PracticeIcon name={item.icon} className="h-10 w-10 shrink-0" />
+                <span>
+                  <span className="block font-heading text-xl">{item.title}</span>
+                  <span className="text-base">{item.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
       </main>
 

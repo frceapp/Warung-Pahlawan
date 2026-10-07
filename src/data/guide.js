@@ -1,5 +1,5 @@
 // Teks panduan di beranda. Lihat AGENTS.md bagian 3, "Alur game" dan
-// "Hubungan dengan konsep coding".
+// "Yang dilatih".
 
 export const HOW_TO_PLAY = [
   { title: 'Sapa', text: 'Baca cerita tokoh yang datang ke warungmu.' },
@@ -8,27 +8,13 @@ export const HOW_TO_PLAY = [
   { title: 'Kembalian', text: 'Susun kembalian dari laci uang.' },
 ]
 
-export const CODING_CONCEPTS = [
-  {
-    name: 'Urutan',
-    term: 'sequence',
-    text: 'Kamu melayani pembeli dengan empat langkah yang urutannya selalu sama. Program komputer juga berjalan langkah demi langkah.',
-  },
-  {
-    name: 'Perulangan',
-    term: 'loop',
-    text: 'Pembeli pesan 3 apel? Kamu mengulang "ambil apel" sebanyak 3 kali.',
-  },
-  {
-    name: 'Percabangan',
-    term: 'if/else',
-    text: 'Jika uang pembeli pas, tidak perlu kembalian. Jika lebih, kamu menghitung kembaliannya.',
-  },
-  {
-    name: 'Variabel',
-    term: 'variable',
-    text: 'Total dan kembalian berubah untuk tiap pembeli, seperti kotak yang isinya bisa diganti.',
-  },
+// Bagian "Yang kamu latih" di beranda. `icon` menunjuk gambar di
+// components/PracticeIcon.jsx.
+export const PRACTICE = [
+  { icon: 'count', title: 'Berhitung', text: 'Menjumlah dan mengalikan harga buah.' },
+  { icon: 'money', title: 'Uang rupiah', text: 'Menghitung kembalian.' },
+  { icon: 'steps', title: 'Teliti dan runtut', text: 'Melayani pembeli langkah demi langkah.' },
+  { icon: 'hero', title: 'Kenal pahlawan', text: 'Cerita singkat dari tiap tokoh.' },
 ]
 
 const TOTAL_HELP = {

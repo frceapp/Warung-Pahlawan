@@ -1490,3 +1490,54 @@ Commit terkait:
 - `ec5a6ed` docs: credit the sound recordings and describe the new sounds
 - `c2e17e3` chore: add sound test page screenshot for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P26, 7 Oktober 2026, 09.27 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: hapus konteks belajar coding dari aplikasi dan dokumen (di luar daftar tugas bagian 4; terkait Tugas 7 dan 11)
+Prompt:
+
+````text
+Hilangkan konteks "belajar coding / berpikir seperti programmer" dari seluruh aplikasi karena terasa dipaksakan. Kerjakan di satu PR.
+
+Yang dihapus
+- Bagian "Belajar coding di warung" di beranda, termasuk tabel konsep coding (urutan, perulangan, percabangan, variabel).
+- Kata "programmer" dan "coding" di tagline beranda, meta description, og:description, twitter:description, teks alt og:image, dan README.
+- Sisa referensi lain di src. Cari kata: coding, programmer, sequence, loop, if/else, variable, variabel, perulangan, percabangan.
+
+Yang menggantikan
+- Tagline beranda: "Jadi penjaga warung buah, layani para pahlawan Indonesia, sambil berlatih berhitung dan mengenal sejarah."
+- Ganti bagian yang dihapus dengan bagian pendek "Yang kamu latih" berisi empat butir dengan ikon SVG kecil:
+  - Berhitung: menjumlah dan mengalikan harga buah.
+  - Uang rupiah: menghitung kembalian.
+  - Teliti dan runtut: melayani pembeli langkah demi langkah.
+  - Kenal pahlawan: cerita singkat dari tiap tokoh.
+- Meta description: "Game web untuk anak SD: jaga warung buah, layani tokoh pahlawan Indonesia, sambil berlatih berhitung, menghitung kembalian, dan mengenal sejarah."
+
+Dokumen
+- Sesuaikan bagian Tujuan dan tabel pemetaan konsep di AGENTS.md supaya tidak lagi menyebut coding.
+- Jangan ubah `docs/prompt-log.md` dan entri lama di `docs/jurnal-prompt.md`.
+- Bila og-image memuat tulisan tentang coding, buat ulang gambarnya.
+
+Aturan
+- Empat langkah permainan (Sapa, Ambil buah, Hitung, Kembalian) dan bagian "Cara main" tetap.
+- Beranda di 360x640 tetap menampilkan tombol main tanpa scroll.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Sebelum mengubah apa pun, AI bertanya dua hal karena ada pertentangan dengan AGENTS.md. Pertama: teks konsep coding (`CODING_CONCEPTS`) ada di `src/data/guide.js`, padahal prompt melarang mengubah `src/data`. Pemilik proyek memilih "Boleh ubah guide.js": `CODING_CONCEPTS` dihapus dan daftar "Yang kamu latih" (`PRACTICE`) ditambahkan di sana; `HOW_TO_PLAY` dan `describeLevel` tidak diubah, `src/game` tidak disentuh. Kedua: baris subtema di header AGENTS.md menyebut "coding for kids". Pemilik proyek memilih "Hapus coding for kids", jadi baris itu kini "Subtema: Web Education for Kids (untuk anak SD)".
+- Beranda (`src/screens/HomeScreen.jsx`): bagian "Belajar coding di warung" beserta tabel konsep coding dihapus. Tagline diganti "Jadi penjaga warung buah, layani para pahlawan Indonesia, sambil berlatih berhitung dan mengenal sejarah." Bagian baru "Yang kamu latih" berisi empat butir dengan ikon SVG kecil buatan sendiri (`src/components/PracticeIcon.jsx`, aria-hidden): Berhitung (papan hitung dengan tanda tambah dan kali), Uang rupiah (uang kertas), Teliti dan runtut (daftar langkah dengan centang), Kenal pahlawan (bintang dengan pita). Bagian "Cara main" dan empat langkah permainan tidak berubah.
+- `index.html`: meta description, og:description, dan twitter:description diganti dengan teks dari prompt. Teks alt og:image dan twitter:image tidak menyebut coding, jadi tidak diubah. og-image.png bertuliskan "Layani para pahlawan, hitung uang, dan berpikir runtut" (tanpa kata coding atau programmer), jadi tidak dibuat ulang.
+- Pencarian kata coding, programmer, sequence, loop, if/else, variable, variabel, perulangan, dan percabangan di `src`, `index.html`, dan `public`: sisa satu kata "perulangannya" di komentar kode animasi (`AnimeCharacter.jsx`, tentang gerak diam yang berulang) diganti "gerak berulangnya". Setelahnya tidak ada lagi kecocokan di `src` dan `index.html`. Satu-satunya kecocokan di `public` adalah kata "encoding" di `sitemap.xml`, bukan sisa konteks coding.
+- AGENTS.md: bagian Tujuan dan tantangan pendidikan ditulis ulang tanpa coding (berhitung, uang dan kembalian, teliti langkah demi langkah, tokoh sejarah), kata "(algoritma)" di alur game dihapus, dan tabel "Hubungan dengan konsep coding" diganti tabel "Yang dilatih" (Berhitung, Uang rupiah, Teliti dan runtut, Kenal pahlawan). Aturan kode "Nama variabel dan fungsi dalam bahasa Inggris" tetap karena itu aturan kerja, bukan isi aplikasi. README: deskripsi dan butir fitur Beranda tidak lagi menyebut programmer atau konsep coding, dan screenshot beranda di `.github/readme/beranda.jpg` (yang memuat tagline lama) diambil ulang. Nama lomba "M-ONE Telkomsel Coding Competition 2026" di AGENTS.md dan README tetap karena itu nama resmi lomba. `docs/prompt-log.md` (selain entri ini) dan entri lama `docs/jurnal-prompt.md` tidak diubah.
+- Dicek di build produksi: di 360x640 kartu level 1 dan tombol "Buka warung" tetap terlihat tanpa scroll (kartu berakhir di y 593, sama seperti sebelumnya); tinggi halaman beranda turun dari 2.688 menjadi 2.356 px di 360x640 dan dari 1.698 menjadi 1.426 px di 1280x800. axe-core tanpa pelanggaran di beranda dan semua layar permainan (360x640 dan 1280x800).
+- `npm test` (20 berkas, 145 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `1c5d248` feat: replace the coding section on home with what kids practice
+- `7fc48e3` fix: describe counting, change, and heroes in the page description
+- `bf74165` docs: drop the coding framing from AGENTS.md and README
+- `a249d05` chore: add home screen screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

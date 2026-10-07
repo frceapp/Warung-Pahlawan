@@ -5,17 +5,17 @@ Dokumen ini adalah acuan untuk setiap AI Agent yang mengerjakan proyek ini. Baca
 - Disusun: 5 Oktober 2026, setelah garis start lomba (09.30 WIB)
 - Lomba: M-ONE Telkomsel Coding Competition 2026, Kategori Umum
 - Tema: Innovating Education Through Technology
-- Subtema: Web Education for Kids (untuk anak SD), coding for kids
+- Subtema: Web Education for Kids (untuk anak SD)
 - Batas pengumpulan: 15 Oktober 2026, 15.30 WIB
 
 ## 1. Tujuan
 
-Warung Pahlawan adalah game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah tokoh sejarah Indonesia. Lewat melayani pembeli, anak berlatih berpikir runtut seperti programmer (logika dan berhitung) sambil mengenal tokoh sejarah.
+Warung Pahlawan adalah game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah tokoh sejarah Indonesia. Sambil melayani pembeli, anak berlatih berhitung, menghitung kembalian, dan bekerja teliti langkah demi langkah, sekaligus mengenal tokoh sejarah.
 
 Tantangan pendidikan yang dijawab:
 
-1. Konsep dasar coding (urutan, perulangan, percabangan, variabel) terasa abstrak bagi anak SD. Game ini menaruhnya dalam kegiatan yang sudah mereka kenal: jual beli di warung.
-2. Latihan berhitung uang dan kembalian sering berupa soal di kertas. Di sini anak mempraktikkannya langsung.
+1. Latihan berhitung (menjumlah dan mengalikan) sering berupa soal di kertas. Di sini anak mempraktikkannya dalam kegiatan yang sudah mereka kenal: jual beli di warung.
+2. Menghitung uang dan kembalian jarang dilatih langsung. Di sini anak menyusun kembalian sendiri dari laci uang.
 3. Tokoh sejarah biasanya dihafal. Di sini tokohnya datang sendiri dan bercerita singkat.
 
 ## 2. Pengguna
@@ -26,7 +26,7 @@ Tantangan pendidikan yang dijawab:
 
 ## 3. Alur game
 
-Satu pembeli dilayani dalam empat langkah yang urutannya tetap. Urutan ini ditampilkan ke anak sebagai "urutan langkah" (algoritma), dengan penanda langkah mana yang sedang dikerjakan.
+Satu pembeli dilayani dalam empat langkah yang urutannya tetap. Urutan ini ditampilkan ke anak sebagai urutan langkah, dengan penanda langkah mana yang sedang dikerjakan.
 
 1. **Sapa.** Pembeli datang dan menampilkan satu fun fact tentang dirinya. Anak menekan tombol untuk mulai melayani.
 2. **Ambil buah.** Pembeli menampilkan pesanan berupa gambar buah dan angka. Anak mengambil buah dari keranjang ke kantong belanja, bisa mengeluarkannya lagi, lalu membungkus pesanan. Kalau isi kantong tidak sama dengan pesanan, game memberi tahu buah mana yang kurang atau lebih.
@@ -35,16 +35,16 @@ Satu pembeli dilayani dalam empat langkah yang urutannya tetap. Urutan ini ditam
 
 Setelah semua pembeli dalam satu level dilayani, layar hasil menampilkan skor, bintang, dan daftar tokoh yang tadi dilayani beserta fun fact-nya.
 
-### Hubungan dengan konsep coding
+### Yang dilatih
 
-Beranda menjelaskan hubungan ini dengan bahasa anak.
+Beranda menampilkannya sebagai bagian "Yang kamu latih", dengan ikon kecil dan bahasa anak (teksnya di `src/data/guide.js`).
 
-| Konsep | Wujudnya di game |
+| Yang dilatih | Wujudnya di game |
 | --- | --- |
-| Urutan (sequence) | Empat langkah harus dikerjakan berurutan |
-| Perulangan (loop) | "Ambil apel" diulang sebanyak angka di pesanan |
-| Percabangan (if/else) | Jika uang pas, tidak ada kembalian; jika lebih, hitung kembalian |
-| Variabel | Total dan kembalian berubah untuk tiap pembeli |
+| Berhitung | Menjumlah dan mengalikan harga buah di langkah Hitung |
+| Uang rupiah | Menghitung dan menyusun kembalian dari laci uang |
+| Teliti dan runtut | Empat langkah melayani dikerjakan berurutan, pesanan dicocokkan dengan kantong |
+| Kenal pahlawan | Tiap tokoh pembeli bercerita singkat (fun fact) |
 
 ### Level
 
