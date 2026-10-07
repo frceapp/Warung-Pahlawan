@@ -39,26 +39,29 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
     <div className="flex min-h-dvh flex-col">
       <Awning />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 pt-3 pb-12">
-        <header className="flex flex-col items-center gap-5 text-center">
-          <div className="flex w-full justify-end">
+      {/* Di HP bagian judul dibuat ringkas (tombol Suara sebaris dengan
+          judul, deskripsi lebih rapat) supaya kartu level pertama dan tombol
+          "Buka warung" terlihat tanpa scroll di layar 360×640. */}
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-3 pb-12 sm:gap-10">
+        <header className="relative flex flex-col items-start gap-3 text-center sm:items-center sm:gap-5">
+          <div className="absolute top-0 right-0 sm:static sm:flex sm:w-full sm:justify-end">
             <SoundToggle />
           </div>
           <h1
             ref={headingRef}
             tabIndex={-1}
-            className="-rotate-1 rounded-2xl border-4 border-tinta bg-terpal px-6 py-3 font-heading text-4xl leading-tight text-kapur shadow-[0_6px_0_var(--color-tinta)] sm:px-10 sm:py-5 sm:text-6xl"
+            className="-rotate-1 rounded-2xl border-4 border-tinta bg-terpal px-4 py-2 font-heading text-3xl leading-tight whitespace-nowrap text-kapur shadow-[0_6px_0_var(--color-tinta)] sm:px-10 sm:py-5 sm:text-6xl"
           >
             Warung Pahlawan
           </h1>
-          <p className="max-w-xl rounded-2xl border-4 border-tinta bg-kapur px-5 py-4 text-lg leading-relaxed sm:px-8 sm:text-xl">
+          <p className="max-w-xl rounded-2xl border-4 border-tinta bg-kapur px-4 py-2 text-base leading-snug sm:px-8 sm:py-4 sm:text-xl sm:leading-relaxed">
             Jadi penjaga warung buah, layani para pahlawan Indonesia, dan belajar berpikir runtut
             seperti programmer.
           </p>
         </header>
 
         <section aria-labelledby="levels-title">
-          <h2 id="levels-title" className="mb-4 font-heading text-3xl">
+          <h2 id="levels-title" className="mb-3 font-heading text-2xl sm:mb-4 sm:text-3xl">
             Pilih warungmu
           </h2>
           <ul className="grid gap-5 md:grid-cols-3">

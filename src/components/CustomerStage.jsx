@@ -1,6 +1,6 @@
 import { usePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { createElement, lazy, Suspense, useEffect, useState } from 'react'
+import { createElement, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { playCustomerBell } from '../lib/sfx.js'
 import { getLoadedAnimeCharacter, loadAnimeCharacter } from './character/loadAnimeCharacter.js'
 import SpeechBubble from './SpeechBubble.jsx'
@@ -17,33 +17,44 @@ function PreloadedCharacter(props) {
 }
 
 // Kamera dekat: pembeli berdiri tepat di belakang meja kasir. Kotak gambar
-// diletakkan sehingga pinggang (73,5% tinggi gambar) tepat di tepi bawah
-// panggung, yaitu tepi atas meja; meja menutupi badan bagian bawah. Ukuran
-// berubah halus antarlangkah (scale dengan titik putar di pinggang, jadi
-// pinggang tetap menempel di meja).
-// - HP: kotak 260×342 px di langkah Sapa (sekitar 220 px terlihat), skala
-//   0,7 di langkah lain (sekitar 154 px terlihat, lebar sekitar setengah
-//   layar).
-// - Layar lebar: kotak 460×606 px di langkah Sapa (sekitar 390 px terlihat),
-//   skala 0,84 di langkah lain (sekitar 329 px terlihat).
+// diletakkan sehingga garis meja di gambar (COUNTER_Y, setinggi perut; 68,2%
+// tinggi gambar) tepat di tepi bawah panggung, yaitu tepi atas meja. Badan di
+// bawah garis itu dipotong (di belakang meja); lengan dan tangan yang
+// bertumpu di tepi meja digambar di depan meja, jadi kotak gambar berada di
+// atas meja (z-20) dan tidak menerima klik. Ukuran berubah halus antarlangkah
+// (scale dengan titik putar di garis meja, jadi pembeli tetap menempel di
+// meja).
+// - HP: kotak 260×342 px di langkah Sapa, skala 0,7 di langkah lain.
+// - Tablet (768 px ke atas): kotak 460×606 px di langkah Sapa, skala 0,84 di
+//   langkah lain.
+// - Layar lebar (1024 px ke atas): dua kolom; pembeli di tengah kolom kiri.
+//   Kotak 460×606 px, atau lebih kecil kalau panggung pendek (figure-fit di
+//   index.css), supaya balon di atas kepala tidak menimpa kepala.
 const FIGURE =
-  'absolute bottom-[-91px] h-[342px] w-[260px] origin-[50%_251px] transition-[left,scale] duration-500 ease-out md:bottom-[-161px] md:h-[606px] md:w-[460px] md:origin-[50%_445px]'
+  'pointer-events-none absolute z-20 bottom-[-108.8px] h-[342px] w-[260px] origin-[50%_233.2px] transition-[left,scale] duration-500 ease-out md:bottom-[-192.8px] md:h-[606px] md:w-[460px] md:origin-[50%_413.2px] lg:figure-fit'
 // Layar HP yang pendek (misalnya 320×568): karakter Sapa sedikit diperkecil
 // supaya balon fun fact tetap muat di atas kepala.
-const FIGURE_LARGE = 'left-[calc(50%-130px)] [@media(max-height:620px)]:scale-[0.8] md:left-0 md:[@media(max-height:620px)]:scale-100'
+const FIGURE_LARGE =
+  'left-[calc(50%-130px)] [@media(max-height:620px)]:scale-[0.8] md:left-0 md:[@media(max-height:620px)]:scale-100'
 const FIGURE_COMPACT = '-left-[39px] scale-[0.7] md:-left-[37px] md:scale-[0.84]'
 
 // Balon bicara menempel di kepala: di HP di atas kepala saat langkah Sapa
-// (teks fun fact panjang) dan di samping kepala di langkah lain; di layar
-// lebar selalu di samping kepala.
+// (teks fun fact panjang) dan di samping kepala di langkah lain; di tablet
+// selalu di samping kepala; di layar lebar (kolom kiri) selalu di atas
+// kepala.
 const BUBBLE_LARGE =
-  'inset-x-2 bottom-[234px] [@media(max-height:620px)]:bottom-[190px] md:inset-x-auto md:right-0 md:bottom-auto md:left-[350px] md:top-[max(8px,calc(100%-382px))] md:[@media(max-height:620px)]:bottom-auto'
-const BUBBLE_COMPACT = 'top-1 right-2 left-[156px] md:right-0 md:left-[296px] md:top-2'
+  'inset-x-2 bottom-[240px] [@media(max-height:620px)]:bottom-[192px] md:inset-x-auto md:right-0 md:bottom-auto md:left-[350px] md:top-[max(8px,calc(100%-350px))] md:[@media(max-height:620px)]:bottom-auto lg:inset-x-3 lg:top-3'
+const BUBBLE_COMPACT = 'top-1 right-2 left-[156px] md:right-0 md:left-[296px] md:top-2 lg:inset-x-3 lg:top-3'
 
-// Papan nama: di langkah Sapa di depan meja (di bawah pembeli), di langkah
-// lain kecil di tepi bawah panggung, di depan badan pembeli.
-const PLAQUE_LARGE = 'top-[calc(100%+10px)] left-1/2 -translate-x-1/2 md:left-[230px]'
-const PLAQUE_COMPACT = 'bottom-1 left-[91px] -translate-x-1/2 md:left-[193px]'
+// Papan nama tidak boleh menutupi tangan yang bertumpu di tepi meja: di
+// langkah Sapa di depan meja, di bawah tangan; di langkah lain kecil di tepi
+// bawah panggung, di samping siku pembeli (di layar lebar di bawah tangan).
+// Di layar lebar papan nama Sapa sedikit lebih kecil supaya muat di
+// sepotong meja di bawah tangan (h-28) tanpa terpotong.
+const PLAQUE_LARGE =
+  'top-[calc(100%+30px)] left-1/2 -translate-x-1/2 md:top-[calc(100%+50px)] md:left-[230px] lg:left-1/2 lg:gap-0.5'
+const PLAQUE_COMPACT =
+  'bottom-1 left-[146px] max-w-[114px] md:left-[300px] md:max-w-none lg:bottom-auto lg:top-[calc(100%+44px)] lg:left-1/2 lg:-translate-x-1/2'
 
 // Cadangan kalau berkas karakter belum dimuat: balon tetap muncul dan
 // panggung tetap bisa pergi.
@@ -73,8 +84,20 @@ const FADE = {
 // - large: tampilan langkah Sapa (karakter besar, papan nama, fun fact)
 // - stepKey/talkMs: kalimat baru dan lama mulut bergerak
 // - reaction: umpan balik terakhir, untuk reaksi senang atau sedih
+// - handover: bungkusan diserahkan ('reach', lalu 'hold'; lihat AnimeCharacter)
 // - farewell: pembeli sudah dilayani dan melambai
-function CustomerStage({ character, large = false, stepKey, talkMs, reaction, farewell = false, children }) {
+// - onArrived: pembeli sudah diam menghadap depan
+function CustomerStage({
+  character,
+  large = false,
+  stepKey,
+  talkMs,
+  reaction,
+  handover,
+  farewell = false,
+  onArrived,
+  children,
+}) {
   const [isPresent, safeToRemove] = usePresence()
   const [arrived, setArrived] = useState(false)
   const [isPreloaded] = useState(() => getLoadedAnimeCharacter() !== null)
@@ -85,9 +108,16 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
   }, [])
 
   // Lonceng warung saat pembeli sampai (bersamaan dengan papan nama dan
-  // balon bicara yang muncul).
+  // balon bicara yang muncul). Layar main juga diberi tahu, supaya tombol
+  // "Mulai melayani" baru muncul saat pembeli diam menghadap depan.
+  const arrivedRef = useRef(onArrived)
   useEffect(() => {
-    if (arrived) playCustomerBell()
+    arrivedRef.current = onArrived
+  })
+  useEffect(() => {
+    if (!arrived) return
+    playCustomerBell()
+    arrivedRef.current?.()
   }, [arrived])
 
   useEffect(() => {
@@ -101,8 +131,10 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
     talkKey: stepKey,
     talkMs,
     reaction,
+    handover,
     farewell,
     leaving: !isPresent,
+    behindCounter: true,
     onArrived: () => setArrived(true),
     onLeft: () => safeToRemove?.(),
     className: 'h-full w-full',
@@ -128,25 +160,27 @@ function CustomerStage({ character, large = false, stepKey, talkMs, reaction, fa
         {large ? (
           <m.div
             key="plaque-large"
+            data-plaque=""
             variants={FADE}
             initial="hidden"
             animate={showText}
             className={`absolute z-20 flex flex-col items-center gap-1 text-center ${PLAQUE_LARGE}`}
           >
-            <p className="rounded-lg border-4 border-tinta bg-terpal-tua px-3 py-0.5 font-heading text-lg leading-tight whitespace-nowrap text-kapur md:text-2xl">
+            <p className="rounded-lg border-4 border-tinta bg-terpal-tua px-3 py-0.5 font-heading text-lg leading-tight whitespace-nowrap text-kapur md:text-2xl lg:text-xl">
               {character.name}
             </p>
-            <p className="rounded-md bg-kapur/90 px-1.5 text-sm leading-tight whitespace-nowrap md:text-base">
+            <p className="rounded-md bg-kapur/90 px-1.5 text-sm leading-tight whitespace-nowrap md:text-base lg:text-sm">
               {character.origin}
             </p>
           </m.div>
         ) : (
           <m.p
             key="plaque-compact"
+            data-plaque=""
             variants={FADE}
             initial="hidden"
             animate={showText}
-            className={`absolute z-20 w-max max-w-[150px] rounded-md border-2 border-tinta bg-terpal-tua px-1.5 py-px text-center font-heading text-xs leading-tight text-kapur md:max-w-none md:border-4 md:px-2 md:text-base ${PLAQUE_COMPACT}`}
+            className={`absolute z-20 w-max rounded-md border-2 border-tinta bg-terpal-tua px-1.5 py-px text-center font-heading text-xs leading-tight text-kapur md:max-w-none md:border-4 md:px-2 md:text-base ${PLAQUE_COMPACT}`}
           >
             {character.name}
           </m.p>

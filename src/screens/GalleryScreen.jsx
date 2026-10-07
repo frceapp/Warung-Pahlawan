@@ -47,6 +47,59 @@ function GalleryScreen() {
         ),
       })),
     },
+    ...[
+      ['wave', 'melambai'],
+      ['hold', 'memegang bungkusan'],
+    ].map(([pose, label]) => ({
+      title: `Karakter anime, pose ${label}`,
+      items: CHARACTERS.map((character) => ({
+        key: `anime-${pose}-${character.id}`,
+        name: character.name,
+        render: (size) => (
+          <div style={{ height: size * 1.4, width: size }} data-anime-pose={`${pose}-${character.id}`}>
+            <AnimeCharacter characterId={character.id} entrance={false} pose={pose} className="h-full w-full" />
+          </div>
+        ),
+      })),
+    })),
+    {
+      title: 'Karakter anime, tampak samping membawa bungkusan',
+      items: CHARACTERS.map((character) => ({
+        key: `anime-carry-${character.id}`,
+        name: character.name,
+        render: (size) => (
+          <div style={{ height: size * 1.4, width: size }} data-anime-carry={character.id}>
+            <AnimeCharacter
+              characterId={character.id}
+              entrance={false}
+              facing="samping"
+              pose="hold"
+              className="h-full w-full"
+            />
+          </div>
+        ),
+      })),
+    },
+    {
+      title: 'Karakter anime di belakang meja kasir (tangan bertumpu di tepi meja)',
+      items: CHARACTERS.map((character) => ({
+        key: `anime-counter-${character.id}`,
+        name: character.name,
+        render: (size) => (
+          <div
+            style={{ height: size * 1.4, width: size }}
+            className="relative"
+            data-anime-counter={character.id}
+          >
+            <div
+              className="scene-counter absolute inset-x-0 bottom-0 border-t-4 border-tinta"
+              style={{ top: `${((94 - 4) / 132) * 100}%` }}
+            />
+            <AnimeCharacter characterId={character.id} entrance={false} behindCounter className="relative h-full w-full" />
+          </div>
+        ),
+      })),
+    },
     ...[false, true].map((mirrored) => ({
       title: mirrored
         ? 'Karakter anime, tampak samping dicerminkan (menghadap kiri)'

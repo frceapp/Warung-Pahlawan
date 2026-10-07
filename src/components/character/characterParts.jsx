@@ -3,10 +3,9 @@
 // mengembalikan bentuk SVG untuk satu lapisan rangka. Garis tepi (tinta,
 // tebal) diatur sekali di AnimeCharacter.
 
-// Nama token desain menjadi warna CSS; kode hex dipakai apa adanya.
-export function paint(color) {
-  return color.startsWith('#') ? color : `var(--color-${color})`
-}
+import { paint } from './paint.js'
+
+export { paint }
 
 const has = (look, accessory) => look.accessories.includes(accessory)
 
@@ -342,6 +341,152 @@ export function sleeveColor(look) {
 
 export function legColor(look) {
   return paint(look.outfit.bottom)
+}
+
+// --- Lengan dan tangan ------------------------------------------------------
+// Satu bentuk lengan dipakai kedua sisi: lengan kanan gambar (dekat x 68)
+// digambar di sini, lengan kiri adalah cerminannya. Lengan terdiri dari
+// lengan atas (berputar di bahu) dan lengan bawah dengan manset dan tangan
+// (berputar di siku), jadi bisa ditekuk untuk bertumpu di meja, melambai, dan
+// memegang bungkusan. Bentuk yang digambar adalah pose diam di belakang meja:
+// siku menekuk ke luar dan tangan bertumpu di tepi meja kasir (COUNTER_Y).
+
+// Tinggi tepi atas meja kasir dalam koordinat gambar. Di layar main, badan
+// dipotong di garis ini (berada di belakang meja), sedangkan lengan dan tangan
+// tampak depan digambar di depan meja.
+export const COUNTER_Y = 94
+
+const round = (value) => Math.round(value * 10) / 10
+const pt = (x, y) => `${round(x)} ${round(y)}`
+
+// Bentuk lengan dari titik a (jari-jari ra) ke titik b (jari-jari rb): ujung
+// membulat, mengecil ke arah b, dan sisi luarnya sedikit melengkung (bulge).
+function limbPath([ax, ay], ra, [bx, by], rb, bulge) {
+  const length = Math.hypot(bx - ax, by - ay)
+  const ux = (bx - ax) / length
+  const uy = (by - ay) / length
+  const nx = uy
+  const ny = -ux
+  const a1 = [ax + nx * ra, ay + ny * ra]
+  const a2 = [ax - nx * ra, ay - ny * ra]
+  const b1 = [bx + nx * rb, by + ny * rb]
+  const b2 = [bx - nx * rb, by - ny * rb]
+  const mid = [(a1[0] + b1[0]) / 2 + nx * bulge, (a1[1] + b1[1]) / 2 + ny * bulge]
+  return `M${pt(...a2)} A${ra} ${ra} 0 0 1 ${pt(...a1)} Q${pt(...mid)} ${pt(...b1)} A${rb} ${rb} 0 0 1 ${pt(...b2)} Z`
+}
+
+// Manset: pita melintang di pergelangan.
+function cuffPath([wx, wy], [ux, uy], half, length) {
+  const nx = uy
+  const ny = -ux
+  const corners = [
+    [wx - ux * 0.6 + nx * half, wy - uy * 0.6 + ny * half],
+    [wx + ux * length + nx * half, wy + uy * length + ny * half],
+    [wx + ux * length - nx * half, wy + uy * length - ny * half],
+    [wx - ux * 0.6 - nx * half, wy - uy * 0.6 - ny * half],
+  ]
+  return `M${corners.map((c) => pt(...c)).join(' L')} Z`
+}
+
+function armGeometry({ shoulder, elbow, wrist, upper, lower, bulge, cuff }) {
+  const length = Math.hypot(wrist[0] - elbow[0], wrist[1] - elbow[1])
+  const u = [(wrist[0] - elbow[0]) / length, (wrist[1] - elbow[1]) / length]
+  const handAt = [wrist[0] + u[0] * (cuff + 3.6), wrist[1] + u[1] * (cuff + 3.6)]
+  return {
+    shoulder,
+    elbow,
+    upper: limbPath(shoulder, upper[0], elbow, upper[1], bulge),
+    lower: limbPath(elbow, lower[0], wrist, lower[1], bulge * 0.4),
+    cuff: cuffPath(wrist, u, lower[1] + 0.7, cuff),
+    hand: handAt,
+    // Arah jari (derajat; 90 = lurus ke bawah) untuk memutar tangan.
+    handAngle: round((Math.atan2(u[1], u[0]) * 180) / Math.PI - 90),
+    // Garis lipatan kecil di lengan atas, dekat siku.
+    crease: (() => {
+      const lx = elbow[0] - shoulder[0]
+      const ly = elbow[1] - shoulder[1]
+      const len = Math.hypot(lx, ly)
+      const c = [shoulder[0] + (lx / len) * (len - 3.4), shoulder[1] + (ly / len) * (len - 3.4)]
+      const n = [ly / len, -lx / len]
+      return `M${pt(c[0] + n[0] * 1.2, c[1] + n[1] * 1.2)} Q${pt(c[0] + n[0] * 2.6 + (lx / len) * 1, c[1] + n[1] * 2.6 + (ly / len) * 1)} ${pt(c[0] + n[0] * 3.8, c[1] + n[1] * 3.8)}`
+    })(),
+  }
+}
+
+// Tampak depan, lengan kanan gambar: bahu menempel di pundak badan, siku
+// menekuk ke luar, lengan bawah menuju tepi meja.
+export const FRONT_ARM = armGeometry({
+  shoulder: [64.2, 77.2],
+  elbow: [71.6, 87.6],
+  wrist: [65.6, 93],
+  upper: [5, 4.3],
+  lower: [4.2, 3.3],
+  bulge: 1.1,
+  cuff: 2.4,
+})
+
+// Tampak samping (menghadap kanan): lengan menggantung, siku sedikit menekuk
+// ke depan.
+export const SIDE_ARM = armGeometry({
+  shoulder: [51, 76.4],
+  elbow: [52, 88.6],
+  wrist: [56, 97.4],
+  upper: [4.6, 4],
+  lower: [3.8, 3.1],
+  bulge: 0.8,
+  cuff: 2.2,
+})
+
+export const ARM_JOINTS = {
+  shoulder: FRONT_ARM.shoulder,
+  elbow: FRONT_ARM.elbow,
+  sideShoulder: SIDE_ARM.shoulder,
+  sideElbow: SIDE_ARM.elbow,
+}
+
+export function upperArm(look, arm = FRONT_ARM) {
+  return (
+    <>
+      <path fill={sleeveColor(look)} d={arm.upper} />
+      <path d={arm.crease} fill="none" strokeWidth="1.6" />
+    </>
+  )
+}
+
+export function forearm(look, arm = FRONT_ARM) {
+  return (
+    <>
+      <path fill={sleeveColor(look)} d={arm.lower} />
+      <path fill={sleeveColor(look)} d={arm.cuff} strokeWidth="2.4" />
+    </>
+  )
+}
+
+// Tangan seperti sarung tangan sederhana: telapak membulat dan jempol yang
+// terpisah, warnanya sama dengan wajah tokoh. Digambar menghadap ke bawah
+// lalu diputar searah lengan bawah. thumbSide -1: jempol di sisi kiri tangan
+// (ke arah tengah badan untuk lengan kanan gambar), 1: di sisi kanan.
+export function hand(look, arm = FRONT_ARM, thumbSide = -1) {
+  const [hx, hy] = arm.hand
+  return (
+    <g fill={paint(look.skin)} transform={`translate(${hx} ${hy}) rotate(${arm.handAngle}) scale(${thumbSide * -1} 1)`}>
+      <path d="M-3.4 -0.6 C-6.8 -1.6 -8.4 1.6 -6.4 3.6 C-5.6 4.4 -4.2 4.4 -3.2 3.4" />
+      <path d="M-4.4 -2.4 C-5 2.6 -2.8 5.8 0.2 5.8 C3.4 5.8 5.2 2.8 4.4 -2.4 C3.6 -4.4 -3.6 -4.4 -4.4 -2.4 Z" />
+    </g>
+  )
+}
+
+// Tampak samping: jempol di depan (arah wajah).
+export function sideUpperArm(look) {
+  return upperArm(look, SIDE_ARM)
+}
+
+export function sideForearm(look) {
+  return forearm(look, SIDE_ARM)
+}
+
+export function sideHand(look) {
+  return hand(look, SIDE_ARM, 1)
 }
 
 // --- Tampak samping (menghadap kanan) ---------------------------------------

@@ -1253,3 +1253,126 @@ Commit terkait:
 - `6602b77` docs: describe the warung opening screen in README
 - `eaf7af3` chore: add loading screen recordings for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P23, 7 Oktober 2026, 08.05 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: perbaikan hasil uji situs dan lengan karakter (di luar daftar tugas bagian 4; terkait Tugas 5 sampai 8)
+Prompt:
+
+````text
+Perbaiki tujuh hal berikut dari hasil uji situs. Kerjakan di satu PR.
+
+1. Pergantian pembeli
+- Tidak boleh ada frame meja kosong dengan latar terpotong. Tata letak adegan langkah Sapa sudah terpasang sebelum pembeli baru berjalan masuk.
+- Tombol "Mulai melayani", gelembung sapaan, dan papan nama baru muncul setelah pembeli berhenti dan menghadap depan.
+- Putaran badan jangan menyempit sampai jadi garis. Sempitkan paling jauh sampai 60% sambil crossfade antara tampak samping dan depan, sekitar 180 ms.
+
+2. Kepala terpotong
+- Di langkah Ambil buah, Hitung, dan Kembalian, penutup kepala tokoh tidak boleh tertutup bar langkah. Beri jarak minimal 8 px di atas kepala untuk semua tokoh, di 360x640 dan 1280x800.
+
+3. Momen jawaban benar
+- Setelah kembalian benar: bungkusan belanja dan uang kembalian berpindah dari meja ke pembeli, lalu angka poin ("+10") muncul sebentar di dekat skor. Meja tidak boleh kosong melompong.
+
+4. Tata letak desktop
+- Di lebar 1024 px ke atas, pakai dua kolom: pembeli dan gelembung di kiri, area kerja (keranjang, kantong, nota, laci uang) di kanan. Tombol jawaban dan tombol aksi memenuhi lebar area kerja, tinggi minimal 56 px.
+
+5. Tombol kembali
+- Saat permainan sedang berjalan, tombol ← membuka dialog buatan sendiri (bukan window.confirm): "Tutup warung sekarang? Skor level ini belum tersimpan." dengan tombol "Lanjut main" dan "Tutup warung". Fokus terkunci di dialog dan Esc menutupnya. Tombol kembali browser berperilaku sama.
+
+6. Beranda di HP
+- Di 360x640, tombol untuk mulai main harus terlihat tanpa scroll. Ringkas bagian judul dan deskripsi, atau tambahkan tombol "Main sekarang" yang membuka level terakhir yang belum tuntas.
+
+7. Layar hasil
+- Tambahkan tombol utama "Lanjut ke <nama level berikutnya>" bila ada level berikutnya. "Main lagi" jadi tombol kedua.
+
+Lengan karakter sekarang berupa persegi panjang lurus di samping badan dengan lingkaran di ujungnya, sehingga terlihat seperti benda asing, bukan lengan. Gambar ulang lengan dan tangan di rangka karakter bersama. Kerjakan di satu PR.
+
+Lengan
+- Lengan menyambung ke bahu dan menempel pada siluet badan, tidak terpisah seperti batang.
+- Bentuknya melengkung dan mengecil ke arah pergelangan, dengan tekukan siku. Garis tepi warna tinta setebal garis badan.
+- Warna lengan tetap mengikuti baju atasan tokoh. Beri garis lipatan atau manset kecil supaya terbaca sebagai lengan baju.
+
+Tangan
+- Ganti lingkaran polos dengan bentuk sarung tangan sederhana: telapak membulat dan jempol terpisah.
+- Warna tangan sama dengan warna wajah tokoh itu.
+
+Pose di belakang meja
+- Siku menekuk dan kedua tangan bertumpu di atas tepi meja kasir, di depan meja, bukan terpotong di belakangnya.
+- Papan nama tidak boleh menutupi tangan.
+
+Aturan
+- Jangan ubah isi `src/game` dan `src/data`.
+- Hormati `prefers-reduced-motion` untuk semua gerak baru.
+- Cek dengan screenshot tiap butir di 360x640 dan 1280x800. Untuk butir 1, rekam frame demi frame pergantian pembeli.
+- Pastikan lint, tes, dan build lolos.
+- Lengan dan tangan tetap ikut animasi yang ada: berayun saat berjalan, melambai saat datang, menerima bungkusan saat jawaban benar.
+- Terapkan di tampak depan dan tampak samping untuk kedelapan tokoh.
+- Jangan ubah ukuran karakter dan komposisi meja kasir.
+````
+
+Prompt tambahan (dikirim di tengah pengerjaan prompt ini):
+
+````text
+Perbaiki tujuh hal berikut dari hasil uji situs. Kerjakan di satu PR.
+
+1. Pergantian pembeli
+- Tidak boleh ada frame meja kosong dengan latar terpotong. Tata letak adegan langkah Sapa sudah terpasang sebelum pembeli baru berjalan masuk.
+- Tombol "Mulai melayani", gelembung sapaan, dan papan nama baru muncul setelah pembeli berhenti dan menghadap depan.
+- Putaran badan jangan menyempit sampai jadi garis. Sempitkan paling jauh sampai 60% sambil crossfade antara tampak samping dan depan, sekitar 180 ms.
+
+2. Kepala terpotong
+- Di langkah Ambil buah, Hitung, dan Kembalian, penutup kepala tokoh tidak boleh tertutup bar langkah. Beri jarak minimal 8 px di atas kepala untuk semua tokoh, di 360x640 dan 1280x800.
+
+3. Momen jawaban benar
+- Setelah kembalian benar: bungkusan belanja dan uang kembalian berpindah dari meja ke pembeli, lalu angka poin ("+10") muncul sebentar di dekat skor. Meja tidak boleh kosong melompong.
+
+4. Tata letak desktop
+- Di lebar 1024 px ke atas, pakai dua kolom: pembeli dan gelembung di kiri, area kerja (keranjang, kantong, nota, laci uang) di kanan. Tombol jawaban dan tombol aksi memenuhi lebar area kerja, tinggi minimal 56 px.
+
+5. Tombol kembali
+- Saat permainan sedang berjalan, tombol ← membuka dialog buatan sendiri (bukan window.confirm): "Tutup warung sekarang? Skor level ini belum tersimpan." dengan tombol "Lanjut main" dan "Tutup warung". Fokus terkunci di dialog dan Esc menutupnya. Tombol kembali browser berperilaku sama.
+
+6. Beranda di HP
+- Di 360x640, tombol untuk mulai main harus terlihat tanpa scroll. Ringkas bagian judul dan deskripsi, atau tambahkan tombol "Main sekarang" yang membuka level terakhir yang belum tuntas.
+
+7. Layar hasil
+- Tambahkan tombol utama "Lanjut ke <nama level berikutnya>" bila ada level berikutnya. "Main lagi" jadi tombol kedua.
+
+Aturan
+- Jangan ubah isi `src/game` dan `src/data`.
+- Hormati `prefers-reduced-motion` untuk semua gerak baru.
+- Cek dengan screenshot tiap butir di 360x640 dan 1280x800. Untuk butir 1, rekam frame demi frame pergantian pembeli.
+- Pastikan lint, tes, dan build lolos.
+````
+
+````text
+Try again
+````
+
+Hasil AI:
+- Sebelum menulis kode, AI bertanya dua hal dan pemilik proyek memilih: satu PR untuk seluruh pesan ini (tujuh butir dan lengan), dan untuk butir 6 bagian judul beranda diringkas (bukan tombol "Main sekarang").
+- Pada 7 Oktober 2026 sesi sempat terhenti karena batas pemakaian. Pemilik proyek lalu mengirim ulang bagian tujuh butir dari prompt ini dan, setelah menghentikan satu giliran, menulis "Try again". Keduanya dikerjakan sebagai lanjutan prompt yang sama di PR yang sama.
+- Lengan dan tangan (`src/components/character/characterParts.jsx`, dengan tes baru `characterParts.test.js`): lengan atas dan lengan bawah kini bentuk melengkung yang mengecil ke pergelangan, menyambung di bahu, dengan siku menekuk, garis lipatan, dan manset. Warnanya mengikuti baju atasan; garis tepi tinta setebal garis badan. Tangan berupa sarung tangan sederhana (telapak bulat dan jempol terpisah) dengan warna kulit tokoh. Berlaku di tampak depan dan tampak samping untuk kedelapan tokoh. Lengan tetap ikut animasi: berayun saat berjalan, melambai saat datang dan pergi, dan menerima bungkusan.
+- Pose di belakang meja: garis meja di gambar (`COUNTER_Y` = 94, setinggi perut) tepat di tepi atas meja. Badan di bawah garis itu dipotong, sedangkan lengan digambar di lapisan terpisah di depan meja, jadi kedua tangan bertumpu di tepi meja dan tidak terpotong. Ukuran karakter tidak diubah; karakter kini berdiri sekitar 7 satuan lebih rendah terhadap meja. Papan nama dipindah supaya tidak menutupi tangan (dicek untuk kedelapan tokoh di 360x640 dan 1280x800).
+- Butir 1, pergantian pembeli (direkam frame demi frame dengan requestAnimationFrame dan screencast, seed tetap, 360x640 dan 1280x800). Sebelum, di 360x640: 27 frame meja kosong dengan latar terpotong, 27 frame pembeli berjalan saat panggung masih membesar, 89 frame tombol "Mulai melayani" terlihat sebelum pembeli sampai, dan badan menyempit sampai skala 0,06 (216 ms, tanpa crossfade); 1280x800 serupa (26, 26, 89). Sesudah: pembeli lama pergi dulu sementara meja masih menampilkan nota lunas, panggung berubah ke tata letak Sapa, baru pembeli baru masuk. Hasil: 0 frame meja kosong, 0 frame berjalan saat panggung membesar, 0 frame tombol, balon, atau papan nama sebelum pembeli diam menghadap depan; putaran menyempit paling jauh ke skala 0,60 dengan crossfade tampak samping dan depan sekitar 183 ms (19 sampai 20 frame berisi dua tampak). Dengan "kurangi gerakan": tanpa jalan dan putar, hasil yang sama 0 frame.
+- Butir 2, ruang kepala di langkah Ambil buah, Hitung, dan Kembalian (jarak puncak penutup kepala ke tepi atas panggung). 360x640 sebelum: -20,5 px (Diponegoro) sampai 3,9 px; sesudah: 8,4 px (Diponegoro, terkecil) sampai 32,6 px. 1280x800 sebelum: -51,2 sampai 0,7 px; sesudah: 191,5 sampai 242,9 px. Untuk itu panggung langkah kerja di HP 17 px lebih tinggi (161 menjadi 178 px) dan di tablet 335 menjadi 372 px.
+- Butir 3, momen jawaban benar: nota tetap di meja dengan cap "Lunas", bungkusan belanja dan uang kembalian terbang dari meja ke tangan pembeli (`HandoverFlight.jsx`, sekitar 1,2 detik), lalu "+10" muncul sebentar di dekat skor. Tempat barang lalu berisi "Sudah diterima pembeli.", jadi meja tidak kosong. Pembeli memegang bungkusan, melambai, dan membawanya saat pergi. Dengan "kurangi gerakan" barang tidak terbang dan langsung diterima (sekitar 200 ms).
+- Butir 4, layar 1024 px ke atas: dua kolom. Kiri: pembeli, balon, dan sepotong meja kasir; kanan: urutan langkah, area kerja, dan bar aksi. Tombol jawaban dan tombol aksi memenuhi lebar area kerja dengan tinggi 56 px (diukur di 1024x768, 1280x800, dan 1440x900; misalnya "Bungkus pesanan" 570x56 px di 1280x800). Di kolom kanan langkah Sapa ada petunjuk singkat supaya tidak kosong. Ditemukan saat uji: di layar laptop yang pendek (misalnya 1280x720, 1366x650) balon bicara menimpa kepala sampai 151 px. Diperbaiki dengan utilitas `figure-fit` (`src/index.css`): tinggi gambar pembeli mengikuti tinggi panggung, jadi ukurannya tetap di 1280x800 ke atas dan mengecil di layar yang lebih pendek. Sesudahnya tidak ada balon yang menimpa kepala di 1024x768, 1280x720, 1366x768, 1366x650, 1536x730, 1920x950, dan 1024x600 (paling dekat: ujung ekor balon menyentuh puncak sorban Diponegoro).
+- Butir 5: tombol ← saat permainan berjalan membuka dialog buatan sendiri (`ExitDialog.jsx`, elemen `<dialog>`, bukan `window.confirm`) "Tutup warung sekarang?" / "Skor level ini belum tersimpan." dengan tombol "Lanjut main" dan "Tutup warung". Fokus mulai di "Lanjut main" dan terkunci di dialog (Tab dan Shift+Tab berputar di dua tombol), Esc menutup dialog dan fokus kembali ke tombol ←. Tombol kembali browser membuka dialog yang sama; "Tutup warung" membuka beranda.
+- Butir 6: judul dan deskripsi beranda diringkas di layar HP. Di 360x640 bagian bawah tombol "Buka warung" level 1 ada di y 573 (sebelum y 801, perlu scroll).
+- Butir 7: layar hasil punya tombol utama "Lanjut ke <nama level berikutnya>" kalau ada level berikutnya, lalu "Main lagi" sebagai tombol kedua dan "Kembali ke beranda". Di level 3 tetap "Main lagi" dan "Kembali ke beranda". "Lanjut ke Warung Ramai" membuka pintu warung level 2.
+- Dicek di build produksi: axe-core tanpa pelanggaran di semua layar dan langkah, dialog, serta momen serah terima (360x640 dan 1280x800); ketiga level dimainkan sampai hasil di 360x640 dan 1280x800 (skor 36/40, 44/50, 54/60, konsol bersih); isi meja kerja tidak perlu digeser di 1024x768, 1280x800, dan 1366x768.
+- Yang menjadi lebih buruk: di 360x640 meja kerja 17 px lebih pendek (213 menjadi 196 px), jadi pada keadaan yang memang perlu digeser, isi meja perlu digeser 19 px lebih jauh (diukur dengan seed tetap di build sebelum dan sesudah; misalnya level 2 dengan pesan salah 78 menjadi 97 px, dan level 1 dengan pesan salah 6 menjadi 25 px).
+- Ukuran bundle gzip: JS dan CSS awal 93,72 menjadi 94,67 kB; `PlayScreen` 15,66 menjadi 18,01 kB; berkas karakter 10,23 menjadi 12,21 kB (lengan baru dan bungkusan); total semua chunk 141,97 menjadi 147,32 kB. Tidak ada dependency baru. README diperbarui. `src/game` dan `src/data` tidak diubah.
+- `npm test` (18 berkas, 125 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Uji di HP asli: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `88350b7` feat: redraw character arms with elbows, cuffs, and mitten hands resting on the counter
+- `8faba29` feat: hand the bag and change to the customer after a correct answer
+- `9e1ea3c` feat: sequence customer switch and use two columns on wide screens
+- `df09960` feat: confirm before closing the warung and offer the next level
+- `c44b513` style: compact the home header so the start button fits on phones
+- `d573b2c` docs: describe arms, handover, exit dialog, and desktop layout in README
+- `c7f146f` chore: add before and after screenshots for site test fixes
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

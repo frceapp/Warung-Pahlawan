@@ -6,7 +6,7 @@ import MoneyDrawer from './MoneyDrawer.jsx'
 // kembalian" dan "Tidak perlu kembalian" ada di bar aksi.
 function ChangeStep({ level, givenChange, onAdd, onRemove, onClear }) {
   return (
-    <div className="grid gap-1.5 md:grid-cols-[5fr_4fr] md:gap-4">
+    <div className="grid gap-1.5 md:grid-cols-[5fr_4fr] md:gap-4 lg:grid-cols-1 lg:gap-3">
       <section
         aria-labelledby="drawer-title"
         className="counter-drawer rounded-2xl border-4 border-tinta p-1 md:p-2"
