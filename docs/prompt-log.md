@@ -1541,3 +1541,58 @@ Commit terkait:
 - `bf74165` docs: drop the coding framing from AGENTS.md and README
 - `a249d05` chore: add home screen screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P27, 7 Oktober 2026, 13.13 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: perbaiki animasi lambaian saat menyapa dan pamit (di luar daftar tugas bagian 4; terkait Tugas 4 dan 8)
+Prompt:
+
+````text
+Animasi lambaian tangan saat pembeli menyapa (dan saat pamit) rusak sejak lengan digambar ulang. Di pose puncak, tangan menempel di pipi, menutupi wajah, dan telapak tangan terputar jadi garis tipis. Perbaiki. Kerjakan di satu PR.
+
+Penyebab yang saya lihat
+- Sudut lambaian (lengan atas -90, lengan bawah -126 sampai -136) dibuat untuk lengan lama yang lurus. Dengan pose istirahat baru yang sikunya menekuk, sudut itu melipat lengan ke wajah.
+- Tangan tidak punya varian "greet" dan "farewell", jadi ikut terputar bersama lengan bawah.
+
+Pose yang benar
+- Di puncak lambaian, tangan berada di samping kepala, setinggi telinga sampai ubun-ubun, dan di luar siluet kepala. Beri jarak minimal 4 unit viewBox dari kepala, penutup kepala, dan kacamata.
+- Lengan atas terangkat ke samping luar, siku kira-kira setinggi bahu, lengan bawah mengarah ke atas.
+- Telapak tangan tetap tegak menghadap depan selama melambai. Tambahkan putaran penyeimbang pada tangan untuk varian greet dan farewell.
+- Gerak lambaian: lengan bawah berayun kiri dan kanan sekitar 15 derajat dari posisi tegak, 2 sampai 3 ayunan, total sekitar 0,8 detik, lalu kembali bertumpu di meja dengan halus.
+- Tangan yang satunya tetap di atas meja.
+- Hitung sudut dari posisi sendi di pose istirahat yang sekarang, bukan dari angka lama.
+
+Berlaku untuk semua tokoh
+- Periksa tokoh dengan penutup kepala lebar (sorban Diponegoro, kerudung Cut Nyak Dhien, blangkon) dan yang berkacamata (Hatta, Ki Hajar). Tangan tidak boleh menimpa penutup kepala.
+- Perbaiki juga lambaian pamit sebelum pembeli berjalan keluar.
+
+Aturan
+- Jangan ubah bentuk lengan, ukuran karakter, dan komposisi meja kasir.
+- `prefers-reduced-motion`: tanpa lambaian.
+- Cek dengan menangkap frame pose puncak (bekukan animasi di tengah) untuk Hatta, Diponegoro, dan Cut Nyak Dhien di 360x640 dan 1280x800, lalu lampirkan di PR.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Prompt tambahan (dikirim di tengah pengerjaan prompt ini):
+
+````text
+I hit my usage limit while you were working, but it has reset now. Please continue from where you left off.
+````
+
+Hasil AI:
+- Sebelum mengubah kode, AI menghitung jangkauan lengan dari sendi pose istirahat (bahu, siku, dan tangan di `FRONT_ARM`; jarak bahu ke tangan paling jauh 26,8 satuan viewBox) dan menyimpulkan tangan tidak bisa sampai setinggi telinga dengan jarak 4 satuan dari kepala. AI lalu bertanya dua hal. Pemilik proyek memilih "Samping rahang (Recommended)" (di puncak, tangan di samping rahang, di luar siluet kepala) dan "Boleh di depan juntaian (Recommended)" (untuk Cut Nyak Dhien dan Pattimura, tangan boleh berada di depan kerudung atau ikat kepala yang menjuntai di bawah telinga, tetapi tetap berjarak dari wajah dan dari penutup kepala di atas telinga).
+- Saat mengukur di browser, AI menemukan dua hal. Pertama, siluet kepala yang dipakai untuk pertanyaan tadi terukur 4 satuan terlalu rendah. Kedua, penyebab utama lambaian rusak: fungsi `pivot()` di `AnimeCharacter.jsx` mengurangi titik putar dengan `VIEW_BOX.y` (4), padahal Chromium 141 mengukur transform-origin `transform-box: view-box` dari titik (0, 0). Akibatnya semua sendi berputar pada titik 4 satuan di atas sendinya, sehingga putaran besar seperti lambaian melempar tangan ke wajah. Setelah keduanya dikoreksi, hitungan diulang: dengan jarak minimal 4 satuan sepanjang ayunan, ujung atas tangan paling tinggi sekitar y 60, sedangkan garis mata y 50. Jadi tinggi telinga tetap tidak terjangkau, dan pose samping rahang dipertahankan.
+- Perbaikan titik putar: viewBox svg tokoh kini dimulai di (0, 0) (`0 0 100 132`) dan gambar digeser 4 satuan ke atas, sehingga titik putar sama di browser yang mengukur dari (0, 0) maupun dari pojok viewBox. Tampilan diam tidak berubah. Pose lain dicek di galeri dengan "kurangi gerakan": pose memegang bungkusan sedikit berubah (bungkusan sedikit lebih rendah, tangan di pegangan), pose tampak samping membawa bungkusan praktis sama.
+- Lambaian baru dihitung di `src/components/character/wavePose.js` dari sendi pose istirahat yang sekarang (dengan tes di `wavePose.test.js`). Lengan atas berputar -62 derajat, sehingga siku keluar ke samping di (76,9; 75,5), 1,7 satuan di atas bahu. Lengan bawah condong ke atas dan ke luar, 50 derajat dari tegak, lalu berayun 15 derajat ke luar dan ke dalam. Tangan mendapat putaran penyeimbang (-50, -35, dan -65 derajat) di varian greet dan farewell, sehingga telapak tetap tegak dengan jari ke atas. Urutan: naik 0,3 detik, dua kali ayunan luar-dalam 0,8 detik, lalu turun bertumpu di meja 0,35 detik (total 1,45 detik; jeda 0,05 detik saat menyapa dan 0,15 detik saat pamit, seperti sebelumnya). Tangan yang satunya tetap di meja (saat pamit memegang bungkusan). Bentuk lengan, ukuran karakter, dan meja kasir tidak diubah. Dengan `prefers-reduced-motion`, lengan tidak bergerak saat menyapa maupun saat pamit (dicek di permainan).
+- Jarak tangan dan lengan bawah ke kepala diukur di browser dari galeri (pose lambaian, gerak diam dimatikan, 6,4 px per satuan, tepi garis ke tepi garis, terhadap kepala, rambut, penutup kepala, dan kacamata di atas y 70). Hasil untuk ayun dalam / puncak / ayun luar: Kartini, Soekarno, Hatta, Ki Hajar Dewantara, Diponegoro, dan Sudirman 4,2 / 5,4 / 5,4 satuan; Cut Nyak Dhien 5,1 / 8,4 / 12,0; Pattimura 5,6 / 9,0 / 12,7 (juntaian kerudung dan ikat kepala di bawah y 52 dan di kanan wajah tidak dihitung, sesuai jawaban pemilik proyek). Ujung atas tangan di y 59,2. Tangan tidak menimpa sorban Diponegoro, blangkon Sudirman, peci, maupun kacamata Hatta dan Ki Hajar.
+- Frame pose puncak dibekukan dengan jam palsu Playwright (lengan atas -62, lengan bawah -116, tangan -50 derajat) untuk Hatta, Diponegoro, dan Cut Nyak Dhien di 360x640 dan 1280x800, saat menyapa dan saat pamit, ditambah perbandingan sebelum dan sesudah untuk Hatta dan galeri kedelapan tokoh. Semuanya di `.github/pr-assets/lambaian/`.
+- Yang belum beres dan tidak diubah, karena prompt melarang mengubah komposisi meja kasir. Di 1280x800, mesin kasir (di depan pembeli) menutupi separuh bawah tangan yang melambai; telapak dan jari tetap terlihat di atas mesin kasir. Di 360x640 saat pamit, papan nama menutupi sebagian lengan bawah. Tangan tidak bisa dinaikkan lagi tanpa mendekati kepala.
+- Dicek juga: ketiga level dimainkan sampai hasil di 360x640 dan 1280x800 (skor 36/40, 44/50, 54/60), dan lambaian pamit tetap berjalan sebelum pembeli berbalik dan keluar. Di server dev muncul peringatan React "flushSync was called from inside a lifecycle method"; peringatan yang sama juga muncul di commit sebelum PR ini (2492add), jadi bukan dari perubahan ini.
+- `npm test` (21 berkas, 150 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru. `src/game` dan `src/data` tidak diubah. Uji di HP asli dan di Safari/Firefox: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `4f5872f` fix: rotate character joints around the real joint in every browser
+- `ba64e06` fix: wave beside the jaw with the palm kept upright
+- `ff39841` chore: add frozen wave frames for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

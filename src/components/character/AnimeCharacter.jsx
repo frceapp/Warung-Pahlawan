@@ -52,16 +52,21 @@ import {
   WALK_S,
   WALK_TIMES,
 } from './walkCycle.js'
+import { WAVE_KEYFRAMES, WAVE_PEAK, WAVE_S, WAVE_TIMES } from './wavePose.js'
 
 const BLINK_MS = 160
 const REACTION_MS = 900
 const WALK_IN_PX = 240
 
-// Titik putar bagian rangka dalam koordinat viewBox. Untuk transform-box
-// view-box, Chromium mengukur transform-origin dari pojok kiri atas viewBox
-// (minX, minY), jadi koordinat dikurangi VIEW_BOX.y.
+// Titik putar bagian rangka dalam koordinat gambar. Untuk transform-box
+// view-box, browser berbeda dalam mengukur transform-origin: dari titik
+// (0, 0) atau dari pojok kiri atas viewBox (minX, minY). viewBox svg karena
+// itu dimulai di (0, 0) dan gambarnya digeser (SVG_SHIFT), supaya titik putar
+// selalu tepat di sendi.
+const SVG_VIEW_BOX = `0 0 ${VIEW_BOX.width} ${VIEW_BOX.height}`
+const SVG_SHIFT = `translate(${-VIEW_BOX.x} ${-VIEW_BOX.y})`
 function pivot([x, y]) {
-  return { transformBox: 'view-box', originX: `${x - VIEW_BOX.x}px`, originY: `${y - VIEW_BOX.y}px` }
+  return { transformBox: 'view-box', originX: `${x}px`, originY: `${y}px` }
 }
 
 // Berputar antara tampak samping dan tampak depan dalam sekitar 180 ms:
@@ -94,15 +99,15 @@ function sideArm(swing) {
   }
 }
 
-// Melambai: lengan atas terangkat di bahu, lengan bawah tegak dan
-// berayun di siku.
-const WAVE_TIMES = [0, 0.25, 0.45, 0.65, 0.8, 1]
-const WAVE_UPPER = [0, -90, -90, -90, -90, 0]
-const WAVE_FORE = [0, -126, -106, -136, -114, 0]
+// Melambai: siku terangkat ke samping setinggi bahu, lengan bawah condong ke
+// atas dan berayun di siku, telapak tangan tetap tegak (sudutnya dihitung di
+// wavePose.js dari pose istirahat).
 function wave(delay) {
+  const transition = { duration: WAVE_S, times: WAVE_TIMES, ease: 'easeInOut', delay }
   return {
-    upper: { rotate: WAVE_UPPER, transition: { duration: 0.8, times: WAVE_TIMES, ease: 'easeInOut', delay } },
-    fore: { rotate: WAVE_FORE, transition: { duration: 0.8, times: WAVE_TIMES, ease: 'easeInOut', delay } },
+    upper: { rotate: WAVE_KEYFRAMES.upper, transition },
+    fore: { rotate: WAVE_KEYFRAMES.fore, transition },
+    hand: { rotate: WAVE_KEYFRAMES.hand, transition },
   }
 }
 const GREET_WAVE = wave(0.05)
@@ -126,15 +131,23 @@ function frontArmVariants(isFront) {
     reach: { rotate: REACH.fore, transition: ARM_MOVE },
     hold: { rotate: isFront ? 0 : HOLD.fore, transition: ARM_MOVE },
   }
+  const hand = {
+    rest: { rotate: 0, transition: ARM_MOVE },
+    reach: { rotate: 0, transition: ARM_MOVE },
+    hold: { rotate: 0, transition: ARM_MOVE },
+  }
   if (isFront) {
-    upper.wavePeak = { rotate: WAVE_UPPER[1] }
-    fore.wavePeak = { rotate: WAVE_FORE[1] }
+    upper.wavePeak = { rotate: WAVE_PEAK.upper }
+    fore.wavePeak = { rotate: WAVE_PEAK.fore }
+    hand.wavePeak = { rotate: WAVE_PEAK.hand }
     upper.greet = GREET_WAVE.upper
     upper.farewell = FAREWELL_WAVE.upper
     fore.greet = GREET_WAVE.fore
     fore.farewell = FAREWELL_WAVE.fore
+    hand.greet = GREET_WAVE.hand
+    hand.farewell = FAREWELL_WAVE.hand
   }
-  return { upper, fore }
+  return { upper, fore, hand }
 }
 const ARM_FRONT = frontArmVariants(true)
 const ARM_BACK = frontArmVariants(false)
@@ -265,7 +278,9 @@ function FrontArm({ look, variants, bag = false, target = false }) {
             </g>
           </m.g>
         )}
-        {hand(look)}
+        <m.g variants={variants.hand} style={pivot(FRONT_ARM.hand)}>
+          {hand(look)}
+        </m.g>
       </m.g>
     </m.g>
   )
@@ -581,7 +596,7 @@ function AnimeCharacter({
       aria-hidden="true"
     >
       <svg
-        viewBox={`${VIEW_BOX.x} ${VIEW_BOX.y} ${VIEW_BOX.width} ${VIEW_BOX.height}`}
+        viewBox={SVG_VIEW_BOX}
         className="block h-full w-full overflow-visible"
       >
         {behindCounter && (
@@ -591,7 +606,13 @@ function AnimeCharacter({
             </clipPath>
           </defs>
         )}
-        <g stroke={paint('tinta')} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
+        <g
+          transform={SVG_SHIFT}
+          stroke={paint('tinta')}
+          strokeWidth="3"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        >
           {/* Lapisan badan: di belakang meja kasir, dipotong di tepi meja. */}
           <g clipPath={behindCounter ? `url(#${clipId})` : undefined}>
             {chain(
