@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getRegisterScreen } from './registerScreen.js'
+import { getRegisterMotion, getRegisterScreen } from './registerScreen.js'
 
 describe('layar mesin kasir', () => {
   it('belum menampilkan total sebelum langkah Hitung', () => {
@@ -19,5 +19,23 @@ describe('layar mesin kasir', () => {
 
   it('menulis "Tutup" setelah semua pembeli dilayani', () => {
     expect(getRegisterScreen('finished', 'unguided', 17000)).toBe('Tutup')
+  })
+})
+
+describe('gerak mesin kasir', () => {
+  it('diam sebelum pesanan dibungkus', () => {
+    for (const step of ['greet', 'pick']) {
+      expect(getRegisterMotion(step)).toEqual({ ringing: false, paperOut: false, drawerOpen: false })
+    }
+  })
+
+  it('di langkah Hitung tombol berkedip dan kertas nota keluar', () => {
+    expect(getRegisterMotion('count')).toEqual({ ringing: true, paperOut: true, drawerOpen: false })
+  })
+
+  it('laci terbuka di langkah Kembalian dan menutup setelah kembalian benar', () => {
+    expect(getRegisterMotion('change').drawerOpen).toBe(true)
+    expect(getRegisterMotion('served').drawerOpen).toBe(false)
+    expect(getRegisterMotion('finished').drawerOpen).toBe(false)
   })
 })

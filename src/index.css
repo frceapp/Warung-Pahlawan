@@ -198,19 +198,23 @@
   }
 }
 
-/* Kotak gambar pembeli di layar lebar (kolom kiri, CustomerStage.jsx).
-   Tingginya mengikuti tinggi panggung (cqh; panggung menjadi container),
-   supaya balon bicara di atas kepala tidak menimpa kepala di layar yang
-   pendek. Di panggung yang cukup tinggi (1280×800 ke atas) ukurannya tetap
-   460×606 px; garis meja tetap di 68,18% tinggi kotak (tepi bawah panggung).
+/* Panggung pembeli di layar lebar (kolom kiri; CustomerStage.jsx). Dipasang
+   pada kotak panggung pembeli, di dalam panggung yang menjadi container
+   (cqw, cqh). Tinggi gambar pembeli mengikuti tinggi panggung, supaya balon
+   bicara di atas kepala tidak menimpa kepala di layar yang pendek. Di
+   panggung yang cukup tinggi (1280×800 ke atas) ukurannya tetap 460×606 px.
    - 1,436 = 606/422: 422 px adalah puncak kepala tertinggi (sorban) sampai
      garis meja pada skala 1 (langkah Sapa).
    - 1,682 = 606/(0,84 × 429): sama untuk langkah lain (skala 0,84).
    - --room-greet dan --room-order: ruang di atas kepala untuk balon
      terpanjang (fun fact, dan pesanan level 3) beserta ekornya dan jarak
      dari tepi atas panggung. Kolom kiri lebih sempit di bawah 1280 px,
-     jadi fun fact bisa empat baris. */
-@utility figure-fit {
+     jadi fun fact bisa empat baris.
+   - --figure-x: titik tengah pembeli. Di tengah kolom, atau digeser ke kiri
+     secukupnya supaya wajah (setengah lebar wajah = --face-reach × tinggi
+     gambar) tidak tertutup mesin kasir di kanan (--register-w, dari
+     PlayScreen) dengan jarak 8 px. */
+@utility stage-fit {
   --room-greet: 152px;
   --room-order: 187px;
   --figure-h: min(
@@ -218,14 +222,70 @@
     calc((100cqh - var(--room-greet)) * 1.436),
     calc((100cqh - var(--room-order)) * 1.682)
   );
-  height: var(--figure-h);
-  width: calc(var(--figure-h) * 0.759);
-  left: calc(50% - var(--figure-h) * 0.3795);
-  bottom: calc(var(--figure-h) * -0.3182);
-  transform-origin: 50% 68.18%;
+  --figure-x: min(50cqw, calc(100cqw - var(--register-w, 0px) - 20px - var(--face-reach, 0.197) * var(--figure-h)));
 
   @media (width >= 80rem) {
     --room-greet: 126px;
+  }
+}
+
+/* Kotak gambar pembeli di layar lebar (lihat stage-fit): garis meja tetap di
+   68,18% tinggi kotak, yaitu tepi bawah panggung. */
+@utility figure-fit {
+  height: var(--figure-h);
+  width: calc(var(--figure-h) * 0.759);
+  left: calc(var(--figure-x) - var(--figure-h) * 0.3795);
+  bottom: calc(var(--figure-h) * -0.3182);
+  transform-origin: 50% 68.18%;
+}
+
+/* Mesin kasir (CashRegister.jsx): tombol berkedip bergantian sekali di
+   langkah Hitung, kertas nota naik keluar dari atas, dan laci bergeser
+   turun saat terbuka. Kalau "kurangi gerakan" aktif, aturan global di atas
+   membuat semuanya langsung berganti; jeda kertas juga dihapus. */
+@keyframes register-key {
+  0%,
+  100% {
+    fill: var(--color-kapur);
+  }
+  50% {
+    fill: var(--color-pisang);
+  }
+}
+
+@keyframes register-key-total {
+  0%,
+  100% {
+    fill: var(--color-jingga);
+  }
+  50% {
+    fill: var(--color-pisang);
+  }
+}
+
+[data-ringing='true'] .register-key {
+  animation: register-key 240ms ease-in-out var(--delay) both;
+}
+
+[data-ringing='true'] .register-key-total {
+  animation: register-key-total 320ms ease-in-out var(--delay) both;
+}
+
+.register-paper {
+  transition: transform 160ms ease-in;
+}
+
+[data-register-paper='out'] .register-paper {
+  transition: transform 600ms ease-out 900ms;
+}
+
+.register-drawer {
+  transition: transform 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-register-paper='out'] .register-paper {
+    transition-delay: 0s;
   }
 }
 

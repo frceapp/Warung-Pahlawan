@@ -28,8 +28,10 @@ function PreloadedCharacter(props) {
 // - Tablet (768 px ke atas): kotak 460×606 px di langkah Sapa, skala 0,84 di
 //   langkah lain.
 // - Layar lebar (1024 px ke atas): dua kolom; pembeli di tengah kolom kiri.
-//   Kotak 460×606 px, atau lebih kecil kalau panggung pendek (figure-fit di
-//   index.css), supaya balon di atas kepala tidak menimpa kepala.
+//   Kotak 460×606 px, atau lebih kecil kalau panggung pendek (stage-fit dan
+//   figure-fit di index.css), supaya balon di atas kepala tidak menimpa
+//   kepala. Pembeli digeser ke kiri secukupnya supaya wajahnya tidak
+//   tertutup mesin kasir di kanan.
 const FIGURE =
   'pointer-events-none absolute z-20 bottom-[-108.8px] h-[342px] w-[260px] origin-[50%_233.2px] transition-[left,scale] duration-500 ease-out md:bottom-[-192.8px] md:h-[606px] md:w-[460px] md:origin-[50%_413.2px] lg:figure-fit'
 // Layar HP yang pendek (misalnya 320×568): karakter Sapa sedikit diperkecil
@@ -44,17 +46,24 @@ const FIGURE_COMPACT = '-left-[39px] scale-[0.7] md:-left-[37px] md:scale-[0.84]
 // kepala.
 const BUBBLE_LARGE =
   'inset-x-2 bottom-[240px] [@media(max-height:620px)]:bottom-[192px] md:inset-x-auto md:right-0 md:bottom-auto md:left-[350px] md:top-[max(8px,calc(100%-350px))] md:[@media(max-height:620px)]:bottom-auto lg:inset-x-3 lg:top-3'
-const BUBBLE_COMPACT = 'top-1 right-2 left-[156px] md:right-0 md:left-[296px] md:top-2 lg:inset-x-3 lg:top-3'
+const BUBBLE_COMPACT = 'top-1 right-2 left-[150px] md:right-0 md:left-[296px] md:top-2 lg:inset-x-3 lg:top-3'
 
 // Papan nama tidak boleh menutupi tangan yang bertumpu di tepi meja: di
 // langkah Sapa di depan meja, di bawah tangan; di langkah lain kecil di tepi
 // bawah panggung, di samping siku pembeli (di layar lebar di bawah tangan).
 // Di layar lebar papan nama Sapa sedikit lebih kecil supaya muat di
 // sepotong meja di bawah tangan (h-28) tanpa terpotong.
+// Di HP papan nama langkah lain cukup sempit (nama boleh dua baris) supaya
+// tidak tertutup mesin kasir di kanan; di layar lebar papan nama ada di
+// bawah pembeli (--figure-x).
 const PLAQUE_LARGE =
-  'top-[calc(100%+30px)] left-1/2 -translate-x-1/2 md:top-[calc(100%+50px)] md:left-[230px] lg:left-1/2 lg:gap-0.5'
+  'top-[calc(100%+30px)] left-1/2 -translate-x-1/2 md:top-[calc(100%+50px)] md:left-[230px] lg:left-(--figure-x) lg:gap-0.5'
 const PLAQUE_COMPACT =
-  'bottom-1 left-[146px] max-w-[114px] md:left-[300px] md:max-w-none lg:bottom-auto lg:top-[calc(100%+44px)] lg:left-1/2 lg:-translate-x-1/2'
+  'bottom-1 left-[146px] max-w-[82px] md:left-[300px] md:max-w-none lg:bottom-auto lg:top-[calc(100%+44px)] lg:left-(--figure-x) lg:-translate-x-1/2'
+// Setengah lebar wajah dibanding tinggi gambar (26 satuan dari 100, lebar
+// gambar 0,759 × tingginya), di langkah Sapa dan di langkah lain (skala 0,84).
+const FACE_REACH_LARGE = 'lg:[--face-reach:0.197]'
+const FACE_REACH_COMPACT = 'lg:[--face-reach:0.166]'
 
 // Cadangan kalau berkas karakter belum dimuat: balon tetap muncul dan
 // panggung tetap bisa pergi.
@@ -143,7 +152,7 @@ function CustomerStage({
 
   return (
     <section aria-label="Pembeli" className="absolute inset-0">
-      <div className="relative mx-auto h-full w-full max-w-5xl">
+      <div className={`relative mx-auto h-full w-full max-w-5xl lg:stage-fit ${large ? FACE_REACH_LARGE : FACE_REACH_COMPACT}`}>
         <div
           data-customer-figure
           className={`${FIGURE} ${large ? FIGURE_LARGE : FIGURE_COMPACT}`}

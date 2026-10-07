@@ -1,64 +1,17 @@
+import CashRegister from './CashRegister.jsx'
+
 // Barang di atas meja kasir: mesin kasir, kalkulator, timbangan, dan kucing
 // warung yang duduk diam. Diletakkan tepat di atas area kerja (meja kasir),
 // di bawah balon bicara. Hanya hiasan untuk pembaca layar (aria-hidden):
-// total belanja juga tertulis di nota atau balon bicara.
-// - screen: teks di layar mesin kasir
-// - drawerOpen: laci mesin kasir sedang terbuka (sebentar, setelah anak
-//   menekan "Berikan kembalian")
+// total belanja juga tertulis di nota atau balon bicara. Di layar lebar
+// mesin kasir ada di panggung pembeli (PlayScreen), jadi bagian ini hanya
+// untuk HP dan tablet.
+// - register: props untuk CashRegister (screen, ringing, paperOut,
+//   drawerOpen)
 
 const INK = 'var(--color-tinta)'
 const LINE = { stroke: INK, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }
 const THIN = { ...LINE, strokeWidth: 1.5 }
-
-// Mesin kasir pendek dan lebar supaya layarnya muat di bawah balon bicara
-// di HP: layar di atas, badan dengan tombol, lalu laci di bawah.
-function registerArt(screen, drawerOpen) {
-  return (
-    <>
-      {/* Laci digambar di belakang badan mesin; saat terbuka bergeser ke bawah
-          dan isinya (uang) terlihat. */}
-      <g
-        style={{
-          transform: drawerOpen ? 'translateY(12px)' : 'none',
-          transition: 'transform 160ms ease-out',
-        }}
-      >
-        <rect x={10} y={30} width={80} height={10} fill="var(--color-tinta)" />
-        <rect x={18} y={31} width={18} height={7} fill="var(--color-daun)" {...THIN} />
-        <circle cx={48} cy={35} r={3.5} fill="var(--color-pisang)" {...THIN} />
-        <circle cx={58} cy={35} r={3.5} fill="var(--color-pisang)" {...THIN} />
-        <rect x={6} y={38} width={88} height={10} rx={2} fill="var(--color-kayu)" {...LINE} />
-        <path d="M44 43H56" {...LINE} />
-      </g>
-      <path d="M6 40L10 22H90L94 40Z" fill="var(--color-terpal)" {...LINE} />
-      {[0, 1, 2, 3, 4, 5].map((index) => (
-        <rect
-          key={index}
-          x={20 + index * 10}
-          y={28}
-          width={7}
-          height={5}
-          rx={1}
-          fill="var(--color-kapur)"
-          {...THIN}
-        />
-      ))}
-      <rect x={4} y={2} width={92} height={21} rx={4} fill="var(--color-tinta)" {...LINE} />
-      <text
-        data-register-screen
-        x={50}
-        y={18}
-        textAnchor="middle"
-        fontSize={15}
-        fill="var(--color-pisang)"
-        style={{ fontFamily: 'var(--font-heading)' }}
-        {...(screen.length > 9 ? { textLength: 84, lengthAdjust: 'spacingAndGlyphs' } : {})}
-      >
-        {screen}
-      </text>
-    </>
-  )
-}
 
 const CALCULATOR = (
   <>
@@ -103,11 +56,11 @@ const CAT = (
   </>
 )
 
-function CashCounter({ screen, drawerOpen = false }) {
+function CashCounter({ register }) {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-full z-10 select-none">
       <div className="relative mx-auto h-0 w-full max-w-5xl">
-        <div className="absolute right-3 bottom-0 flex items-end gap-1.5 md:right-4 md:gap-3">
+        <div className="absolute right-2 bottom-0 flex items-end gap-1.5 md:right-4 md:gap-3">
           <svg viewBox="0 0 64 62" className="hidden w-11 md:block" focusable="false">
             {CAT}
           </svg>
@@ -117,14 +70,8 @@ function CashCounter({ screen, drawerOpen = false }) {
           <svg viewBox="0 0 40 52" className="hidden w-7 sm:block md:w-9" focusable="false">
             {CALCULATOR}
           </svg>
-          <svg
-            viewBox="0 0 100 48"
-            className="w-[84px] overflow-visible md:w-24"
-            focusable="false"
-            data-register-drawer={drawerOpen ? 'open' : 'closed'}
-          >
-            {registerArt(screen, drawerOpen)}
-          </svg>
+          {/* HP: 120 px (sepertiga layar 360 px); tablet: 176 px. */}
+          <CashRegister {...register} className="w-[120px] md:w-44" />
         </div>
       </div>
     </div>
