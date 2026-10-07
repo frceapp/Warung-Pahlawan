@@ -35,7 +35,8 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   - Setelah kembalian benar, bungkusan belanja dan uang kembalian berpindah dari meja ke tangan pembeli, lalu poin (misalnya "+10") muncul sebentar di dekat skor. Pembeli membawa bungkusan itu saat pergi.
   - Keranjang buah, kantong belanja, nota, laci uang, nampan kembalian, dan mesin kasir ada di atas meja.
   - Tiap level punya latar sendiri: warung kayu, warung ramai, dan los pasar.
-  - Layar mesin kasir menampilkan total belanja (di level 2 dan 3 setelah anak memilih total yang benar), dan lacinya terbuka sebentar saat anak memberikan kembalian.
+  - Mesin kasir warung model lama berdiri di sisi kanan meja: layar miring, deretan tombol, laci uang, dan gulungan kertas nota di atasnya. Layarnya menulis "Rp ?" sampai total diketahui, lalu total belanja (di level 2 dan 3 setelah anak memilih total yang benar).
+  - Mesin kasir hanya bergerak sebagai jawaban atas aksi anak: setelah pesanan dibungkus tombolnya berkedip bergantian dan kertas nota keluar dari atas, lalu di langkah Kembalian lacinya terbuka memperlihatkan uang dan menutup lagi setelah kembalian benar.
 - **Layar loading "Membuka warung":**
   - Saat level dipilih, pintu gulung warung yang tertutup langsung tampil, dengan papan nama level.
   - Pintu baru naik setelah latar, meja kasir, karakter pembeli, animasi, dan font siap, jadi warung tampil utuh. Setelah itu pembeli pertama berjalan masuk.
