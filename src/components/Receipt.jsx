@@ -4,16 +4,22 @@ import { getOrderLines } from '../game/order.js'
 import FruitImage from './FruitImage.jsx'
 
 // Nota belanja. showSubtotals: hasil kali tiap baris ditampilkan (bantuan).
-// showTotal: total langsung ditampilkan (level 1).
-function Receipt({ order, showSubtotals, showTotal }) {
+// showTotal: total langsung ditampilkan (level 1). paid: belanja sudah
+// dibayar, nota diberi cap "Lunas".
+function Receipt({ order, showSubtotals, showTotal, paid = false }) {
   const lines = getOrderLines(order)
   const total = lines.reduce((sum, line) => sum + line.subtotal, 0)
 
   return (
     <div
       data-region="receipt"
-      className="rounded-xl border-4 border-tinta bg-kapur px-3 py-1 md:px-4 md:py-1"
+      className="relative rounded-xl border-4 border-tinta bg-kapur px-3 py-1 md:px-4 md:py-1"
     >
+      {paid && (
+        <p className="absolute top-1 right-2 -rotate-6 rounded-md border-[3px] border-daun bg-kapur px-1.5 font-heading text-sm leading-tight text-tinta md:text-base">
+          Lunas
+        </p>
+      )}
       <p className="border-b-2 border-dashed border-tinta pb-0.5 text-center font-heading text-sm md:text-lg">
         Nota Warung
       </p>
