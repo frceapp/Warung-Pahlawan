@@ -1,6 +1,6 @@
 # Warung Pahlawan
 
-Game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah tokoh sejarah Indonesia. Sambil melayani pembeli, anak berlatih berpikir runtut seperti programmer (urutan, perulangan, percabangan, variabel), berhitung uang dan kembalian, serta mengenal para pahlawan.
+Game web untuk anak SD. Anak menjadi penjaga warung buah, dan pembelinya adalah tokoh sejarah Indonesia. Sambil melayani pembeli, anak berlatih berhitung, menghitung kembalian, dan bekerja teliti langkah demi langkah, serta mengenal para pahlawan.
 
 Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innovating Education Through Technology", subtema Web Education for Kids.
 
@@ -48,7 +48,7 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   - Berkas suara (15 berkas MP3, 112 kB) baru dimuat setelah sentuhan pertama anak, bukan saat halaman dibuka. Kalau berkas belum siap atau gagal dimuat, bunyi buatan Web Audio dipakai sebagai cadangan.
   - Tombol Suara ada di beranda dan layar main. Suara berhenti saat tab tersembunyi, dan setiap bunyi selalu disertai umpan balik di layar.
   - Semua bunyi bisa didengarkan di halaman tersembunyi `/?sfx`.
-- **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
+- **Beranda** menjelaskan cara main dan apa yang dilatih (berhitung, uang rupiah, teliti dan runtut, kenal pahlawan) dalam bahasa anak.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard:**
   - Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar.
   - Target sentuh minimal 48 px.
