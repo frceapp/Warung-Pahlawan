@@ -13,7 +13,7 @@ function SpeechBubble({ children, tail = 'left', compact = false, className = ''
     <div
       className={`relative rounded-2xl border-4 border-tinta bg-kapur ${
         compact
-          ? 'px-3 py-1.5 text-sm leading-snug md:px-5 md:py-3 md:text-lg md:leading-relaxed lg:px-4 lg:py-2 lg:text-base lg:leading-snug'
+          ? 'px-2.5 py-1.5 text-sm leading-snug md:px-5 md:py-3 md:text-lg md:leading-relaxed lg:px-4 lg:py-2 lg:text-base lg:leading-snug'
           : 'px-3 py-2 text-[15px] leading-snug md:px-5 md:py-4 md:text-xl md:leading-relaxed lg:px-4 lg:py-2.5 lg:text-lg lg:leading-snug'
       } ${className}`}
     >

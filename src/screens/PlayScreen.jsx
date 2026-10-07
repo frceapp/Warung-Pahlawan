@@ -5,6 +5,7 @@ import ActionBar from '../components/ActionBar.jsx'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import CashCounter from '../components/CashCounter.jsx'
+import CashRegister from '../components/CashRegister.jsx'
 import ChangeStep from '../components/ChangeStep.jsx'
 import CountStep from '../components/CountStep.jsx'
 import CustomerStage from '../components/CustomerStage.jsx'
@@ -21,7 +22,7 @@ import StepTracker from '../components/StepTracker.jsx'
 import TotalChoices from '../components/TotalChoices.jsx'
 import { getFruit } from '../data/fruits.js'
 import { formatRupiah } from '../game/format.js'
-import { getRegisterScreen } from '../lib/registerScreen.js'
+import { getRegisterMotion, getRegisterScreen } from '../lib/registerScreen.js'
 import { playCoins, playPop } from '../lib/sfx.js'
 import { useFeedbackSound } from '../lib/useFeedbackSound.js'
 import { loadResultScreen } from './loadResultScreen.js'
@@ -36,7 +37,6 @@ import {
 } from '../game/session.js'
 
 // Lama laci mesin kasir terbuka setelah "Berikan kembalian" ditekan.
-const DRAWER_OPEN_MS = 700
 
 // Tombol aksi: selebar layar di HP, di layar lebar memenuhi lebar area kerja
 // dengan tinggi minimal 56 px.
@@ -215,19 +215,15 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
     // Area kerja baru ada setelah langkah Sapa, jadi dipasang ulang saat itu.
   }, [isGreet])
 
-  // Laci mesin kasir terbuka sebentar saat anak menekan "Berikan kembalian",
-  // lalu menutup lagi (tanpa animasi kalau "kurangi gerakan" aktif).
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const drawerTimer = useRef(0)
-  useEffect(() => () => clearTimeout(drawerTimer.current), [])
   function giveChange() {
-    clearTimeout(drawerTimer.current)
-    setDrawerOpen(true)
-    drawerTimer.current = setTimeout(() => setDrawerOpen(false), DRAWER_OPEN_MS)
     dispatch({ type: 'giveChange' })
   }
 
-  const registerScreen = getRegisterScreen(state.step, level.totalMode, customer.total)
+  // Mesin kasir hanya bereaksi pada aksi anak (lihat getRegisterMotion).
+  const register = {
+    screen: getRegisterScreen(state.step, level.totalMode, customer.total),
+    ...getRegisterMotion(state.step),
+  }
 
   // Laporkan hasil sekali saja ketika level selesai.
   const hasReported = useRef(false)
@@ -307,20 +303,23 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
       )
   } else if (state.step === 'change') {
     speech = `Uangku ${formatRupiah(customer.payment.amount)}. Total belanjaku ${formatRupiah(customer.total)}.`
+    // Di HP jumlah uang ditulis langsung setelah "Uangku:" dan gambar uangnya
+    // turun ke baris berikutnya, supaya balon tetap pendek (tidak menimpa
+    // mesin kasir).
     bubble = (
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 md:gap-x-2">
         <span>Uangku:</span>
-        <ul className="flex flex-wrap gap-0.5 md:gap-1" aria-label="Uang dari pembeli">
+        <ul className="flex flex-wrap gap-0.5 max-md:order-1 md:gap-1" aria-label="Uang dari pembeli">
           {customer.payment.notes.map((value, index) => (
             <li key={`${index}-${value}`}>
-              <MoneyImage value={value} size={96} className="h-[29px] w-12 md:h-12 md:w-20" />
+              <MoneyImage value={value} size={96} className="h-6 w-10 md:h-12 md:w-20" />
             </li>
           ))}
         </ul>
         <span className="font-bold" data-paid={customer.payment.amount}>
           {formatRupiah(customer.payment.amount)}
         </span>
-        <span className="basis-full">
+        <span className="basis-full max-md:order-2">
           Total belanjaku{' '}
           <span className="font-bold" data-total={customer.total}>
             {formatRupiah(customer.total)}
@@ -477,7 +476,10 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
               stageLarge ? 'h-[calc(100%-100px)] md:h-[calc(100%-130px)]' : 'h-[178px] md:h-[372px]'
             }`}
           >
-            <div className="relative h-full lg:min-h-0 lg:flex-1 lg:[container-type:size]">
+            {/* Di layar lebar panggung menjadi container (cqw, cqh): ukuran
+                dan posisi pembeli serta mesin kasir mengikuti panggung. Mesin
+                kasir selebar 41% kolom (150 sampai 220 px). */}
+            <div className="relative h-full lg:min-h-0 lg:flex-1 lg:[--register-w:clamp(150px,41cqw,220px)] lg:[container-type:size]">
               {/* Satu panggung per pembeli. Saat pembeli berganti, panggung
                   lama pergi dulu (karakter berjalan keluar), panggung membesar,
                   baru panggung baru masuk. Pembeli pertama baru berjalan masuk
@@ -499,11 +501,15 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
                   </CustomerStage>
                 )}
               </AnimatePresence>
+              {/* Mesin kasir di meja (layar lebar), di sisi kanan, di depan
+                  pembeli. Di HP dan tablet ada di atas meja kerja. */}
+              <CashRegister
+                {...register}
+                className="pointer-events-none absolute right-3 bottom-0 z-30 hidden w-(--register-w) select-none lg:block"
+              />
             </div>
             {/* Sepotong meja kasir di bawah pembeli (layar lebar). */}
-            <div aria-hidden="true" className="scene-counter relative hidden h-28 shrink-0 border-t-4 border-tinta lg:block">
-              <CashCounter screen={registerScreen} drawerOpen={drawerOpen} />
-            </div>
+            <div aria-hidden="true" className="scene-counter relative hidden h-28 shrink-0 border-t-4 border-tinta lg:block" />
           </div>
 
           {/* Meja kasir. Keranjang, kantong, nota, laci, nampan, dan mesin kasir
@@ -537,7 +543,7 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
                   className="relative flex min-h-0 flex-1 flex-col"
                 >
                   <div className="lg:hidden">
-                    <CashCounter screen={registerScreen} drawerOpen={drawerOpen} />
+                    <CashCounter register={register} />
                   </div>
                   <div
                     ref={workRef}
