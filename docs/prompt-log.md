@@ -1376,3 +1376,53 @@ Commit terkait:
 - `d573b2c` docs: describe arms, handover, exit dialog, and desktop layout in README
 - `c7f146f` chore: add before and after screenshots for site test fixes
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P24, 7 Oktober 2026, 08.58 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: gambar ulang mesin kasir (di luar daftar tugas bagian 4; terkait Tugas 4 dan 8)
+Prompt:
+
+````text
+Mesin kasir di meja terlalu kecil dan kurang bagus. Gambar ulang. Kerjakan di satu PR.
+
+Bentuk (SVG, gaya sticker sesuai AGENTS.md)
+- Mesin kasir warung model lama: badan kotak membulat, layar miring di atas, deretan tombol angka, laci uang di bawah, dan gulungan kertas nota di bagian atas.
+- Warna dari token yang ada: badan terpal-tua, layar tinta dengan angka pisang, tombol kapur, laci kayu, aksen jingga.
+
+Ukuran dan posisi
+- Di 360x640 lebar mesin minimal 110 px, kira-kira sepertiga lebar layar. Di 1280x800 minimal 200 px.
+- Berdiri di atas meja kasir di sisi kanan, di depan pembeli, tidak menutupi wajah pembeli, gelembung bicara, atau area kerja.
+- Angka di layar minimal setinggi 14 px dan terbaca jelas.
+
+Interaksi (hanya sebagai respons aksi anak)
+- Layar: "Rp ?" sebelum total diketahui, lalu total belanja di langkah Hitung.
+- Langkah Hitung: tombol mesin berkedip bergantian sebentar dan kertas nota keluar dari atas.
+- Langkah Kembalian: laci terbuka dan memperlihatkan uang di dalamnya, lalu menutup setelah kembalian benar.
+
+Aturan
+- Mesin bersifat dekoratif (`aria-hidden="true"`), karena total sudah ada di teks.
+- Hormati `prefers-reduced-motion`.
+- Di 360x640 tidak boleh muncul scroll halaman, dan ukuran karakter tidak boleh mengecil.
+- Jangan ubah isi `src/game` dan `src/data`.
+- Cek dengan screenshot langkah Ambil buah, Hitung, dan Kembalian di 360x640 dan 1280x800.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Mesin kasir baru (`src/components/CashRegister.jsx`), SVG bergaya stiker dengan token warna yang ada: alas, laci kayu dengan pegangan jingga, badan kotak membulat terpal-tua dengan deretan tombol kapur dan satu tombol jumlah jingga, layar miring (rumah layar terpal-tua, layar tinta dengan angka pisang), dan gulungan kertas nota di atas yang dijepit dua penyangga jingga. Mesin hanya hiasan (`aria-hidden="true"`); total tetap tertulis di nota dan teks. Kalkulator, timbangan, dan kucing warung lama tetap ada di tablet.
+- Ukuran (diukur di build produksi): sebelumnya 84x40 px di 360x640 dan 96x46 px di 1280x800. Sesudah: 120x72 px di 360x640 (sepertiga layar), 202x121 px di 1280x800 (41% lebar kolom kiri, 150 sampai 220 px), 179x107 px di 1024x768, dan 176x106 px di tablet 768x1024. Angka layar memakai font 20 satuan: 20 px di HP, jadi angka setinggi 14,8 px (tinggi angka Lilita One 0,74 em, diukur dengan canvas), dan sekitar 25 px di 1280x800.
+- Posisi: di HP dan tablet mesin berdiri di atas meja kasir di sisi kanan, di atas area kerja. Di layar 1024 px ke atas mesin ada di panggung pembeli, di kanan bawah, di depan pembeli. Supaya wajah tidak tertutup, pembeli di layar lebar digeser ke kiri secukupnya (utilitas `stage-fit` di `src/index.css`, dengan setengah lebar wajah per langkah); ukuran pembeli tidak berubah (460 dan 386 px di 1280x800, 182 dan 260 px di 360x640). Papan nama ikut ke bawah pembeli.
+- Ditemukan saat uji di 360x640: balon bicara menimpa mesin kasir sampai 21 px (pesanan level 3 dua baris, dan balon Kembalian dengan beberapa lembar uang). Diperbaiki tanpa mengubah ukuran karakter atau panggung: di HP chip pesanan dan padding balon sedikit lebih ringkas (tiga jenis buah muat satu baris), di balon Kembalian jumlah uang ditulis langsung setelah "Uangku:" dan gambar uang turun ke baris berikutnya, balon dimulai 6 px lebih kiri (masih tidak menyentuh kepala), dan papan nama langkah kerja lebih sempit (nama boleh dua baris).
+- Hasil pengukuran (12 kombinasi level dan tokoh per langkah, juga setelah jawaban salah): mesin tidak menimpa wajah, tangan, balon, papan nama, atau area kerja di 360x640, 768x1024, 1024x768, 1280x800, dan 1366x650. Jarak terkecil balon ke mesin di 360x640: 27 px (Ambil buah), 14 px (Hitung, dengan kertas nota keluar), 20 px (Kembalian). Tidak ada scroll halaman di 360x640. Jarak kepala, ruang balon, dan papan nama dari PR sebelumnya tetap sama.
+- Interaksi, diturunkan dari langkah lewat fungsi baru `getRegisterMotion` di `src/lib/registerScreen.js` (dengan tes). Layar tetap "Rp ?" sampai total diketahui: di level 1 total tampil di langkah Hitung; di level 2 dan 3 setelah anak memilih total yang benar, supaya jawaban tidak bocor. Setelah pesanan dibungkus (langkah Hitung) tombol berkedip bergantian sekali, satu tombol menyala pada satu waktu, sekitar 0,2 sampai 1,1 detik, lalu kertas nota naik keluar dari atas. Nota itu lalu ada di meja, jadi di langkah Kembalian kertasnya sudah tidak ada. Di langkah Kembalian laci terbuka dan memperlihatkan uang (lembaran berwarna dan koin), tetap terbuka saat jawaban salah, dan menutup setelah kembalian benar. Sebelumnya laci hanya terbuka 700 ms setelah tombol "Berikan kembalian".
+- Direkam frame demi frame di 360x640 dan 1280x800. Dengan "kurangi gerakan": 0 frame tombol menyala, 0 frame kertas atau laci bergerak; keadaan langsung berganti. Konsol bersih.
+- Dicek juga: axe-core tanpa pelanggaran di semua layar dan langkah (360x640 dan 1280x800); ketiga level dimainkan sampai hasil di 360x640 dan 1280x800 (skor 36/40, 44/50, 54/60); isi meja kerja yang perlu digeser di HP sama persis dengan sebelum perubahan (seed tetap). Ukuran bundle gzip: JS dan CSS awal 94,69 menjadi 95,03 kB; `PlayScreen` 18,01 menjadi 18,63 kB; total 147,32 menjadi 148,28 kB. Tidak ada dependency baru. README diperbarui. `src/game` dan `src/data` tidak diubah.
+- `npm test` (18 berkas, 128 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Uji di HP asli: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `8063e6e` style: make phone order chips and bubble padding more compact
+- `59fd1b1` feat: redraw the cash register with blinking keys, a receipt roll, and a money drawer
+- `a500644` docs: describe the new cash register in README
+- `0482663` chore: add cash register screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
