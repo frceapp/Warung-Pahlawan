@@ -43,7 +43,11 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   - Kalau gagal dimuat atau lebih dari 8 detik, muncul pesan ramah dengan tombol "Coba lagi" dan "Kembali".
   - Layar hasil memakai pintu yang sama.
   - Beranda memuat berkas level lebih dulu saat browser senggang dan saat kartu level disentuh atau difokus.
-- **Efek suara sederhana** dibuat dengan Web Audio API, tanpa berkas audio. Ada lonceng pembeli datang, buah masuk kantong, tombol, jawaban benar dan salah, uang, dan fanfare hasil. Tombol Suara ada di beranda dan layar main, dan setiap bunyi selalu disertai umpan balik di layar.
+- **Efek suara** dari rekaman berlisensi CC0 (paket Kenney dan Freesound), diputar lewat Web Audio API:
+  - Ada bunyi pintu gulung naik, lonceng pintu saat pembeli masuk, dan langkah kaki yang selaras dengan ayunan langkah. Ada juga buah masuk dan keluar kantong, pesanan dibungkus, tombol dan laci mesin kasir, uang kertas dan koin, jawaban benar, jawaban salah yang lembut, dan fanfare di layar hasil.
+  - Berkas suara (15 berkas MP3, 112 kB) baru dimuat setelah sentuhan pertama anak, bukan saat halaman dibuka. Kalau berkas belum siap atau gagal dimuat, bunyi buatan Web Audio dipakai sebagai cadangan.
+  - Tombol Suara ada di beranda dan layar main. Suara berhenti saat tab tersembunyi, dan setiap bunyi selalu disertai umpan balik di layar.
+  - Semua bunyi bisa didengarkan di halaman tersembunyi `/?sfx`.
 - **Beranda** menjelaskan cara main dan hubungan game dengan konsep coding dalam bahasa anak.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard:**
   - Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar.
@@ -89,6 +93,10 @@ npm run preview  # coba hasil build di komputer sendiri
 - Di layar laptop yang pendek (tinggi jendela di bawah sekitar 800 px), pembeli digambar lebih kecil supaya balon bicara tidak menimpa kepala, dan isi meja bisa perlu digeser di keadaan yang ramai (misalnya kantong berisi semua jenis buah).
 - Uji di HP asli belum tercatat di repo. Pengecekan dilakukan di browser dengan ukuran layar HP.
 
+## Kredit aset
+
+Semua efek suara adalah rekaman berlisensi CC0 dari Kenney (kenney.nl) dan Freesound. Nama berkas, judul asli, pembuat, tautan sumber, dan lisensinya ada di [docs/kredit-aset.md](docs/kredit-aset.md).
+
 ## Dokumen
 
 - [AGENTS.md](AGENTS.md): docs acuan untuk AI Agent, berisi tujuan, alur game, aturan kerja, desain, dan status tugas.
@@ -96,3 +104,4 @@ npm run preview  # coba hasil build di komputer sendiri
 - [docs/prompt-log.md](docs/prompt-log.md): log prompt mentah dari awal sampai akhir.
 - [docs/sumber-fakta.md](docs/sumber-fakta.md): teks dan sumber tiap fun fact tokoh.
 - [docs/audit.md](docs/audit.md): hasil audit performa, aksesibilitas, dan SEO, sebelum dan sesudah.
+- [docs/kredit-aset.md](docs/kredit-aset.md): asal dan lisensi efek suara.
