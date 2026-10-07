@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { playDoorRoll } from '../lib/sfx.js'
 import Awning from './Awning.jsx'
 import Button from './Button.jsx'
 
@@ -30,6 +31,11 @@ function LoadingScreen({ sign, status, loadingText, errorText, onRetry, onBack, 
     })
     return () => cancelAnimationFrame(frame)
   }, [status])
+
+  // Pintu gulung berbunyi saat mulai naik.
+  useEffect(() => {
+    if (raised) playDoorRoll()
+  }, [raised])
 
   useEffect(() => {
     if (!raised) return undefined

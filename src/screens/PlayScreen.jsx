@@ -23,7 +23,7 @@ import TotalChoices from '../components/TotalChoices.jsx'
 import { getFruit } from '../data/fruits.js'
 import { formatRupiah } from '../game/format.js'
 import { getRegisterMotion, getRegisterScreen } from '../lib/registerScreen.js'
-import { playCoins, playPop } from '../lib/sfx.js'
+import { playDrawer, playFruitIn, playFruitOut, playMoney, playRegisterKeys, playWrap } from '../lib/sfx.js'
 import { useFeedbackSound } from '../lib/useFeedbackSound.js'
 import { loadResultScreen } from './loadResultScreen.js'
 import { getLevelFruits } from '../game/order.js'
@@ -190,6 +190,21 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
   const visibleFeedback = ownFeedback ?? STEP_HINTS[state.step] ?? null
   useFeedbackSound(state.feedback)
 
+  // Bunyi pada pergantian langkah: pesanan dibungkus lalu tombol mesin kasir
+  // ditekan (bersamaan dengan kedipnya), dan laci terbuka ("ka-ching") di
+  // langkah Kembalian, sedikit setelah bunyi jawaban benar.
+  const lastStep = useRef(state.step)
+  useEffect(() => {
+    const previous = lastStep.current
+    lastStep.current = state.step
+    if (previous === 'pick' && state.step === 'count') {
+      playWrap()
+      playRegisterKeys(0.2)
+    } else if (previous === 'count' && state.step === 'change') {
+      playDrawer(0.35)
+    }
+  }, [state.step])
+
   // Tanda "geser ke bawah" saat isi area kerja lebih tinggi dari ruangnya.
   // Selama isinya bisa digeser, area kerja juga bisa difokus supaya bisa
   // digeser dengan keyboard.
@@ -274,10 +289,13 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
         fruits={fruits}
         bag={state.bag}
         onAdd={(fruitId) => {
-          playPop()
+          playFruitIn()
           dispatch({ type: 'addFruit', fruitId })
         }}
-        onRemove={(fruitId) => dispatch({ type: 'removeFruit', fruitId })}
+        onRemove={(fruitId) => {
+          playFruitOut()
+          dispatch({ type: 'removeFruit', fruitId })
+        }}
       />
     )
     actions = (
@@ -333,7 +351,7 @@ function PlayScreen({ level, rng, opened = true, onExit, onFinish, backSignal = 
         level={level}
         givenChange={state.givenChange}
         onAdd={(value) => {
-          playCoins()
+          playMoney(value)
           dispatch({ type: 'addMoney', value })
         }}
         onRemove={(index) => dispatch({ type: 'removeMoney', index })}
