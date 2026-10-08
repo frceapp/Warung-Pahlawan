@@ -144,8 +144,8 @@ Boleh memakai library pihak ketiga dari npm. Jangan menambah dependency tanpa me
 ```
 AGENTS.md              docs acuan ini
 README.md              cara menjalankan dan tautan penting
-.github/readme/        screenshot untuk README
 docs/
+  img/                 screenshot untuk README
   prompt-log.md        log prompt mentah, dari awal sampai akhir
   jurnal-prompt.md     lima prompt terkurasi untuk juri
   sumber-fakta.md      teks dan sumber tiap fun fact tokoh
@@ -176,6 +176,7 @@ src/
   - `docs/prompt-log.md`: AI Agent hanya boleh MENAMBAH entri baru di bagian paling bawah. Entri lama tidak boleh diubah, dihapus, atau dirapikan.
   - `docs/jurnal-prompt.md`: AI Agent boleh mengisinya, hanya dengan fakta yang ada di repo. Bagian "Keputusan saya", "Dugaan saya", dan "Yang saya pelajari" adalah milik pemilik proyek dan tidak diisi AI Agent.
   - `docs/kredit-aset.md`: diperbarui bersama berkas di `public/sfx/` dan `src/lib/sfxFiles.js`. Hanya rekaman berlisensi CC0.
+  - `docs/img/`: screenshot untuk README, diambil dari situs yang berjalan dan dikompresi.
   - Berkas lain di `docs/`, termasuk `sumber-fakta.md`, tetap tidak boleh diubah.
 - Di setiap PR, tambahkan entri untuk prompt yang sedang dikerjakan di bagian paling bawah `docs/prompt-log.md`, memakai format yang ada di berkas itu. Prompt disalin persis apa adanya, termasuk salah ketik, tanpa dirapikan atau diringkas. "Hasil AI" ditulis dari pekerjaan di PR itu. Bagian yang tidak bisa diverifikasi ditulis "(tidak dapat diverifikasi)"; jangan menebak.
 - Jangan memalsukan dokumentasi prompt: jangan menulis prompt yang tidak pernah dikirim pemilik proyek, jangan mengubah urutan, dan jangan menambahkan kalimat ke dalam teks prompt.
