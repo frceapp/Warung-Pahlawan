@@ -80,7 +80,7 @@ Semua level bisa langsung dibuka, tanpa harus menamatkan level sebelumnya.
 - Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan, paling sedikit 4.
 - Bintang level: 3 jika skor minimal 90% dari maksimum, 2 jika minimal 60%, selain itu 1.
 - Bintang terbaik tiap level disimpan di `localStorage`. Game harus tetap jalan kalau `localStorage` tidak tersedia.
-- Riwayat skor disimpan di `localStorage` (`warung-pahlawan:history`): satu entri per permainan yang selesai, paling banyak 50 entri terbaru, hanya data skor (level, skor, bintang, jumlah salah, waktu selesai). Beranda menampilkan lima permainan terakhir, halaman "Semua riwayat" menampilkan semuanya. Menghapus riwayat tidak menghapus bintang terbaik. Logikanya di `src/lib/scoreHistory.js`.
+- Riwayat skor disimpan di `localStorage` (`warung-pahlawan:history`): satu entri per permainan yang selesai, paling banyak 50 entri terbaru, hanya data skor (level, skor, bintang, jumlah salah, waktu selesai). Beranda menampilkan kartu ringkasan (jumlah permainan, skor tertinggi, permainan terakhir); halaman riwayat menampilkan semuanya dengan filter (tingkat kesulitan, tanggal, bintang, urutan), dikelompokkan per tanggal, sepuluh entri sekali. Pilihan filter disimpan di `sessionStorage`. Menghapus riwayat tidak menghapus bintang terbaik. Logikanya di `src/lib/scoreHistory.js` dan `src/lib/historyFilter.js`.
 
 ### Tokoh pembeli
 

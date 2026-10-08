@@ -1,6 +1,6 @@
 # Warung Pahlawan
 
-Game web untuk anak SD: jaga warung buah, layani tokoh pahlawan Indonesia, dan berlatih berhitung serta menghitung kembalian.
+Game web untuk anak SD: jaga warung buah, layani tokoh pahlawan Indonesia, dan berlatih berhitung serta menghitung uang rupiah sambil mengenal para pahlawan.
 
 **Situs: https://wp.itslim.dev**
 
@@ -13,7 +13,7 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
 </p>
 <p>
   <img src="docs/img/layar-main.png" alt="Tampilan HP, langkah Ambil buah: Mohammad Hatta memesan semangka dan mangga, keranjang buah dan kantong belanja ada di meja kasir" width="270">
-  <img src="docs/img/layar-hasil.png" alt="Layar hasil: Warung tutup, tiga bintang, skor 40 dari 40, dan daftar tokoh yang dilayani" width="66%">
+  <img src="docs/img/riwayat.png" alt="Halaman Riwayat main: ringkasan tiap level, panel filter dengan Warung Kecil terpilih, dan daftar permainan per tanggal" width="66%">
 </p>
 
 ## Fitur
@@ -26,7 +26,7 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
 - **Delapan tokoh pembeli** (R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, Kapitan Pattimura), masing-masing dengan dua fun fact bersumber dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
 - **Karakter beranimasi:** pembeli berjalan masuk, berputar menghadap depan, melambai, bernapas dan berkedip saat diam, menerima bungkusan, lalu berjalan keluar.
 - **Efek suara dan tombol Suara:** rekaman berlisensi CC0 untuk pintu, lonceng, langkah kaki, buah, mesin kasir, uang, jawaban, dan fanfare. Tombol Suara ada di beranda dan layar main.
-- **Bintang dan riwayat skor:** skor dan bintang tiap level, bintang terbaik di kartu level, dan riwayat 50 permainan terakhir di browser. Beranda menampilkan lima permainan terakhir, dan halaman "Semua riwayat" menampilkan semuanya beserta ringkasan tiap level. Layar hasil memberi tahu kalau ada skor tertinggi baru.
+- **Bintang dan riwayat skor dengan filter:** skor dan bintang tiap level, bintang terbaik di kartu level, dan riwayat 50 permainan terakhir di browser. Beranda menampilkan kartu "Riwayat main" (jumlah permainan, skor tertinggi, permainan terakhir). Halaman riwayat berisi ringkasan tiap level, filter tingkat kesulitan, tanggal (termasuk rentang sendiri), bintang, dan urutan, lalu daftar per tanggal yang dimuat sepuluh entri sekali. Layar hasil memberi tahu kalau ada skor tertinggi baru.
 - **Layar loading** berupa pintu gulung warung yang baru naik setelah semua bagian layar siap.
 - **Tampilan HP dan desktop:** di HP tombol aksi selalu terlihat di bawah layar; di layar lebar (1024 px ke atas) tampilannya dua kolom.
 - **Bisa dipakai dengan sentuhan, mouse, dan keyboard.** Umpan balik selalu berupa teks dan diumumkan untuk pembaca layar, dan animasi mengikuti pengaturan "kurangi gerakan".
@@ -68,7 +68,7 @@ npm run build   # buat versi siap deploy di folder dist
 ```
 src/data/        isi game: tokoh, buah, uang, level, teks panduan
 src/game/        logika game sebagai fungsi murni beserta tesnya
-src/lib/         modul di luar logika game: efek suara, riwayat skor, mesin kasir
+src/lib/         modul di luar logika game: efek suara, riwayat skor dan filternya, mesin kasir
 src/components/  potongan tampilan, termasuk karakter dan latar warung
 src/screens/     satu berkas per layar
 public/          favicon, gambar pratinjau, efek suara, robots.txt, sitemap.xml
