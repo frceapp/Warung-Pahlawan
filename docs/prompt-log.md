@@ -1676,3 +1676,86 @@ Commit terkait:
 - `4c3d730` docs: describe the score history in AGENTS.md and README
 - `6afe213` chore: add score history screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P30, 8 Oktober 2026, 22.42 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: README sesuai keadaan repo (Tugas 11); perubahan riwayat skor di prompt pertama tidak dikerjakan, diganti prompt tambahan
+Prompt:
+
+````text
+Ubah fitur riwayat skor: di beranda cukup ringkasan kecil, daftar lengkap pindah ke halaman riwayat sendiri dengan filter. Setelah itu perbarui README. Kerjakan di satu PR.
+
+Beranda
+- Ganti daftar 5 permainan terakhir dengan satu kartu "Riwayat main": jumlah permainan, skor tertinggi, dan 1 permainan terakhir. Kartu itu bisa diketuk dan membuka halaman riwayat. Beri tombol "Lihat riwayat" yang jelas.
+- Bila riwayat kosong, tampilkan keadaan kosong yang sudah ada.
+
+Halaman riwayat
+- Pakai mekanisme perpindahan layar yang sudah dipakai aplikasi, termasuk tombol kembali browser dan tombol kembali di header. Hapus riwayat tetap dengan dialog konfirmasi buatan sendiri.
+- Ringkasan di atas: jumlah permainan, skor tertinggi dan bintang terbaik per level.
+- Filter (di HP dibuka lewat tombol "Filter" dalam panel, bukan semua tampil sekaligus):
+  - Tingkat kesulitan: Semua, Warung Kecil, Warung Ramai, Pasar Besar.
+  - Tanggal: Semua, Hari ini, 7 hari terakhir, 30 hari terakhir, dan rentang sendiri (dari dan sampai).
+  - Bintang: Semua, 3, 2, 1, 0.
+  - Urutan: Terbaru, Terlama, Skor tertinggi, Skor terendah.
+- Tampilkan jumlah hasil ("12 permainan") dan tombol "Reset filter". Filter yang aktif ditampilkan sebagai chip yang bisa dihapus satu per satu.
+- Daftar dikelompokkan per tanggal ("Hari ini", "Kemarin", "6 Okt 2026"). Tampilkan 10 entri, lalu tombol "Muat lebih banyak". Jangan menampilkan semuanya sekaligus.
+- Tiap entri: level, skor dari maksimum, bintang, jumlah salah, dan jam.
+- Keadaan kosong saat filter tidak menemukan apa pun: "Tidak ada permainan yang cocok. Coba ubah filternya." dengan tombol Reset filter.
+- Pilihan filter boleh tersimpan selama sesi (sessionStorage), bukan localStorage.
+
+Aturan
+- Batas 50 entri di localStorage tetap. Jangan mengubah format data yang sudah ada, supaya riwayat lama tetap terbaca.
+- Fungsi penyaringan dan pengurutan dibuat sebagai fungsi murni yang terpisah dari komponen, dengan tes: tiap filter, kombinasi filter, rentang tanggal, batas tanggal (awal dan akhir hari), urutan, dan hasil kosong. Gunakan zona waktu perangkat.
+- Gaya sticker sesuai desain yang ada. Target sentuh minimal 48 px. Kontrol tanggal bisa dipakai di HP. Semua kontrol bisa dioperasikan dengan keyboard, dan jumlah hasil diumumkan lewat aria-live.
+- Muat halaman riwayat secara lazy (tidak masuk bundle awal).
+- Jangan ubah isi `src/game` dan `src/data`.
+- Cek dengan screenshot kartu di beranda, halaman riwayat, panel filter, dan keadaan kosong di 360x640 dan 1280x800. Isi riwayat uji dengan 30 entri sintetis lewat localStorage, lalu hapus lagi.
+- Pastikan lint, tes, dan build lolos.
+
+README
+- Perbarui README sesuai keadaan repo saat ini. Periksa kode sebelum menulis; hanya sebut fitur yang benar-benar ada. Jangan menulis klaim performa atau skor Lighthouse kecuali sudah diukur.
+- Isi: nama dan deskripsi singkat (berhitung, uang rupiah, kenal pahlawan, untuk anak SD), tautan situs https://wp.itslim.dev, daftar fitur (3 level, 4 langkah permainan, 8 tokoh dengan fun fact bersumber, karakter beranimasi, efek suara dan tombol suara, bintang dan riwayat skor dengan filter, tampilan HP dan desktop), cara main singkat, stack, cara menjalankan (versi Node dari .nvmrc, install, dev, tes, build), struktur folder, dan bagian dokumen: tautan ke AGENTS.md, docs/jurnal-prompt.md, docs/prompt-log.md, docs/sumber-fakta.md, dan docs/kredit-aset.md bila ada.
+- Tambahkan 2 sampai 3 screenshot dari situs yang berjalan, disimpan di docs/img dan terkompresi.
+- Hapus sisa teks lama yang sudah tidak berlaku (misalnya klaim belajar coding atau fitur yang sudah dihapus).
+- Jangan ubah docs/prompt-log.md.
+````
+
+Prompt tambahan (dikirim di tengah pengerjaan prompt ini):
+
+````text
+Perbarui README.md sesuai keadaan repo saat ini. Kerjakan di satu PR, dan jangan menambah atau mengubah fitur.
+
+Cara kerja
+- Baca kode, package.json, .nvmrc, struktur folder, dan docs/ sebelum menulis. Hanya sebut fitur yang benar-benar ada di kode. Jangan menulis klaim performa atau skor Lighthouse kecuali sudah diukur dan tercatat di repo.
+
+Isi README (urutan ini)
+1. Nama, satu kalimat deskripsi (game web untuk anak SD: jaga warung buah, layani tokoh pahlawan Indonesia, berlatih berhitung dan kembalian), dan tautan situs https://wp.itslim.dev.
+2. Screenshot: 2 sampai 3 gambar dari situs yang berjalan (beranda, layar permainan, layar hasil), disimpan di docs/img dan terkompresi.
+3. Fitur: yang ada saja, misalnya 3 level, 4 langkah permainan (Sapa, Ambil buah, Hitung, Kembalian), 8 tokoh dengan fun fact bersumber, karakter beranimasi, efek suara dan tombol suara, bintang dan riwayat skor, tampilan HP dan desktop, layar loading.
+4. Cara main: empat langkah singkat.
+5. Stack: React, Vite, Tailwind CSS 4, Motion, Vitest, Vercel, dan lainnya yang benar-benar dipakai.
+6. Cara menjalankan: versi Node dari .nvmrc, perintah install, dev, tes, lint, dan build, sesuai package.json.
+7. Struktur folder: ringkas, satu baris per folder utama.
+8. Dokumen proyek, dengan tautan relatif: AGENTS.md, docs/jurnal-prompt.md, docs/prompt-log.md, docs/sumber-fakta.md, dan docs/kredit-aset.md bila ada.
+9. Kredit aset: satu kalimat yang menaut ke docs/kredit-aset.md bila ada aset pihak ketiga (suara, font), lengkap dengan lisensinya.
+
+Aturan
+- Bahasa Indonesia, ringkas, tanpa tanda pisah panjang.
+- Hapus semua teks lama yang sudah tidak berlaku, termasuk klaim belajar coding dan fitur yang sudah dihapus.
+- Jangan ubah docs/prompt-log.md dan docs/jurnal-prompt.md.
+- Pastikan semua tautan di README valid dan semua perintah yang ditulis benar-benar jalan. Jalankan tiap perintah sekali untuk memastikan.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Untuk prompt pertama, sebelum menulis kode AI bertanya tiga hal yang bertentangan dengan AGENTS.md atau logika game. Pemilik proyek memilih: "Tetap tambah entri (Recommended)" untuk `docs/prompt-log.md`; "docs/img (Recommended)" untuk tempat screenshot README, dengan AGENTS.md bagian 7 dan 8 disesuaikan dan screenshot lama di `.github/readme/` dihapus; dan "Hilangkan pilihan 0 (Recommended)" untuk filter bintang, karena logika skor selalu memberi minimal 1 bintang.
+- Prompt tambahan datang sebelum ada kode yang diubah dan bertentangan dengan prompt pertama (README saja, tanpa mengubah fitur). AI bertanya lagi. Pemilik proyek memilih "README saja (Recommended)": prompt tambahan menggantikan prompt pertama, jadi perubahan riwayat skor (kartu beranda, halaman riwayat dengan filter) tidak dikerjakan di PR ini dan kode game tidak diubah. Untuk `docs/prompt-log.md`, pemilik proyek kembali memilih "Tetap tambah entri (Recommended)".
+- `README.md` ditulis ulang sesuai urutan di prompt tambahan: nama dan deskripsi, tautan situs, screenshot, fitur, cara main, stack, cara menjalankan, struktur folder, dokumen proyek, dan kredit aset. Isinya dicocokkan dengan kode: tiga level dari `src/data/levels.js`, empat langkah dan teks cara main dari `src/data/guide.js`, delapan tokoh dengan masing-masing dua fun fact dari `src/data/characters.js`, gerak karakter dari `AnimeCharacter.jsx`, efek suara dari `src/lib/sfxFiles.js`, riwayat skor seperti di kode sekarang (lima permainan terakhir di beranda, halaman "Semua riwayat"), serta script dan versi dari `package.json` dan `.nvmrc`. Teks lama yang dihapus: bagian "Keterbatasan yang diketahui" dan rincian panjang per fitur. Tidak ada klaim performa atau skor Lighthouse; `docs/audit.md` hanya ditautkan. Kredit aset menyebut efek suara CC0 (tautan ke `docs/kredit-aset.md`) dan font Lilita One serta Atkinson Hyperlegible berlisensi SIL Open Font License 1.1 (lisensi `OFL-1.1` di `package.json` paket Fontsource-nya). README tidak memuat tanda pisah panjang.
+- Screenshot README diambil dari situs https://wp.itslim.dev dengan Playwright: beranda (1280x800), layar permainan di HP (langkah Ambil buah, Warung Ramai, 360x640 dengan skala 2 lalu diperkecil ke lebar 540 px), dan layar hasil (1280x800, setelah satu level dimainkan). Ketiganya disimpan sebagai PNG 128 warna di `docs/img/` (26,5 kB, 50,5 kB, dan 29,8 kB). Tiga screenshot lama di `.github/readme/` (371,7 kB) dihapus. AGENTS.md bagian 7 (struktur folder) dan bagian 8 (pengecualian berkas di `docs/`) disesuaikan untuk `docs/img/`.
+- Semua perintah di README dijalankan sekali dengan Node 24.21.0: `nvm install` dan `nvm use` (memasang dan memakai Node 24.21.0 dari `.nvmrc`), `npm install` (tanpa perubahan `package.json` dan `package-lock.json`), `npm run dev` (server menjawab HTTP 200), `npm test` (22 berkas, 170 tes lulus), `npm run lint` (0 peringatan), dan `npm run build` (lulus). Semua tautan relatif di README menunjuk berkas yang ada, dan https://wp.itslim.dev menjawab HTTP 200. Tidak ada dependency baru.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `0f96e4c` docs: keep README screenshots in docs/img
+- `4451346` docs: rewrite README to match the current game
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
