@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Awning from '../components/Awning.jsx'
 import Button from '../components/Button.jsx'
 import CharacterAvatar from '../components/CharacterAvatar.jsx'
 import StarRating from '../components/StarRating.jsx'
 import { getLevel } from '../data/levels.js'
+import { describeComparison } from '../lib/scoreHistory.js'
 import { playFanfare } from '../lib/sfx.js'
 
 const PRAISE = {
@@ -12,9 +13,15 @@ const PRAISE = {
   1: 'Kamu sudah melayani semua pembeli. Ayo main lagi supaya makin lancar!',
 }
 
+// Jeda sebelum kabar skor (lencana dan perbandingan) muncul, supaya
+// diumumkan aria-live setelah layar terbuka.
+const SCORE_NEWS_DELAY_MS = 600
+
 // nextLevel: level berikutnya (kalau ada). Tombol utamanya "Lanjut ke ...",
 // dan "Main lagi" menjadi tombol kedua.
-function ResultScreen({ summary, isNewBest, nextLevel, onNextLevel, onPlayAgain, onHome }) {
+// comparison: perbandingan dengan permainan sebelumnya di level ini
+// (lib/scoreHistory.js, compareWithPrevious).
+function ResultScreen({ summary, isNewBest, comparison, nextLevel, onNextLevel, onPlayAgain, onHome }) {
   const level = getLevel(summary.levelId)
   const headingRef = useRef(null)
   useEffect(() => {
@@ -29,6 +36,16 @@ function ResultScreen({ summary, isNewBest, nextLevel, onNextLevel, onPlayAgain,
     fanfarePlayed.current = true
     playFanfare(summary.stars)
   }, [summary.stars])
+
+  // Kabar skor diisi sesudah layar tampil: isi wilayah aria-live yang muncul
+  // bersamaan dengan wilayahnya tidak diumumkan pembaca layar.
+  const [showNews, setShowNews] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowNews(true), SCORE_NEWS_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [])
+  const isNewRecord = Boolean(comparison?.isNewRecord)
+  const comparisonText = comparison ? describeComparison(comparison) : null
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -49,6 +66,27 @@ function ResultScreen({ summary, isNewBest, nextLevel, onNextLevel, onPlayAgain,
               Skor {summary.score} dari {summary.maxScore}
             </p>
             <p className="text-base font-bold">{summary.stars} dari 3 bintang</p>
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="flex flex-col items-center gap-2 empty:hidden"
+              data-score-news=""
+            >
+              {showNews && isNewRecord && (
+                <p
+                  data-new-record=""
+                  className="rotate-[-2deg] rounded-lg border-4 border-tinta bg-jingga px-3 py-1 font-heading text-xl text-tinta shadow-[0_4px_0_var(--color-tinta)] motion-safe:animate-pop"
+                >
+                  Skor tertinggi baru!
+                </p>
+              )}
+              {showNews && comparisonText && (
+                <p className="text-base font-bold" data-score-change="">
+                  {comparisonText}
+                </p>
+              )}
+            </div>
             {isNewBest && (
               <p className="rounded-lg border-4 border-tinta bg-pisang px-3 py-1 font-bold">
                 Bintang terbaik baru!
