@@ -1596,3 +1596,31 @@ Commit terkait:
 - `ba64e06` fix: wave beside the jaw with the palm kept upright
 - `ff39841` chore: add frozen wave frames for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P28, 8 Oktober 2026, 07.45 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: dokumentasi pembagian peran AI di AGENTS.md (di luar daftar tugas bagian 4; terkait Tugas 11)
+Prompt:
+
+````text
+Tambahkan bagian "Pembagian peran AI" di AGENTS.md. Kerjakan di satu PR.
+
+Isi bagian itu dengan tabel tiga kolom: Alat AI, Dipakai untuk, Contoh hasil.
+(Tulis sesuai kenyataan, jangan mengarang.)
+- (nama alat chat AI): menyusun dokumen acuan, menulis prompt untuk agen coding, dan menguji situs yang sudah tayang.
+- (nama agen coding dan modelnya): menulis kode, tes, dan PR.
+
+Tambahkan satu kalimat: "Semua prompt ke agen coding dicatat apa adanya di docs/prompt-log.md."
+Jangan ubah isi bagian lain, jangan ubah docs/prompt-log.md, dan jangan menambah klaim yang tidak bisa dibuktikan dari riwayat repo.
+````
+
+Hasil AI:
+- Sebelum mengubah apa pun, AI bertanya tiga hal. Pertama, nama alat chat AI: repo tidak mencatatnya; satu-satunya petunjuk adalah `docs/sumber-fakta.md` yang menyebut cek fakta oleh "AI (Claude)". Pemilik proyek memilih "Claude (claude.ai)". Kedua, nama model agen coding: lingkungan kerja AI melarang menulis nama model ke berkas di repo. Pemilik proyek memilih "Claude Code saja (Recommended)", jadi kolom itu berisi "Claude Code (Anthropic)" tanpa nama model. Ketiga, prompt melarang mengubah `docs/prompt-log.md`, padahal AGENTS.md bagian 8 mewajibkan entri prompt di setiap PR. Pemilik proyek memilih "Tetap tambah entri (Recommended)", jadi entri ini ditambahkan di bagian paling bawah tanpa mengubah entri lama.
+- AGENTS.md mendapat bagian baru "10. Pembagian peran AI" di paling akhir, supaya nomor bagian lain tidak bergeser. Isinya tabel Alat AI, Dipakai untuk, Contoh hasil, ditambah kalimat yang diminta. Isi bagian lain tidak diubah.
+- Isi kolom "Dipakai untuk" diambil dari prompt. Isi kolom "Contoh hasil" dicek ke riwayat repo. Untuk Claude (claude.ai): versi pertama `AGENTS.md` ada di commit `6f11e03` (author Lim), prompt P1 sampai P28 ada di `docs/prompt-log.md`, dan prompt P8 serta P23 berisi temuan uji situs. Untuk Claude Code: commit dengan author `Claude <noreply@anthropic.com>` (145 commit di main sebelum PR ini) dan PR #1 sampai #26 dari branch `claude/confident-babbage-bpzr6d`; contohnya, PR #3 menambah logika game dan tesnya di `src/game/`.
+- `npm test` (21 berkas, 150 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru dan tidak ada perubahan kode.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `705f3d1` docs: describe how AI tools were used in AGENTS.md
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
