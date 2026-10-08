@@ -1759,3 +1759,65 @@ Commit terkait:
 - `0f96e4c` docs: keep README screenshots in docs/img
 - `4451346` docs: rewrite README to match the current game
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P31, 8 Oktober 2026, 23.00 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: riwayat skor dengan filter di halaman sendiri, dan README (Tugas 9 dan 11)
+Prompt:
+
+````text
+Ubah fitur riwayat skor: di beranda cukup ringkasan kecil, daftar lengkap pindah ke halaman riwayat sendiri dengan filter. Setelah itu perbarui README. Kerjakan di satu PR.
+
+Beranda
+- Ganti daftar 5 permainan terakhir dengan satu kartu "Riwayat main": jumlah permainan, skor tertinggi, dan 1 permainan terakhir. Kartu itu bisa diketuk dan membuka halaman riwayat. Beri tombol "Lihat riwayat" yang jelas.
+- Bila riwayat kosong, tampilkan keadaan kosong yang sudah ada.
+
+Halaman riwayat
+- Pakai mekanisme perpindahan layar yang sudah dipakai aplikasi, termasuk tombol kembali browser dan tombol kembali di header. Hapus riwayat tetap dengan dialog konfirmasi buatan sendiri.
+- Ringkasan di atas: jumlah permainan, skor tertinggi dan bintang terbaik per level.
+- Filter (di HP dibuka lewat tombol "Filter" dalam panel, bukan semua tampil sekaligus):
+  - Tingkat kesulitan: Semua, Warung Kecil, Warung Ramai, Pasar Besar.
+  - Tanggal: Semua, Hari ini, 7 hari terakhir, 30 hari terakhir, dan rentang sendiri (dari dan sampai).
+  - Bintang: Semua, 3, 2, 1, 0.
+  - Urutan: Terbaru, Terlama, Skor tertinggi, Skor terendah.
+- Tampilkan jumlah hasil ("12 permainan") dan tombol "Reset filter". Filter yang aktif ditampilkan sebagai chip yang bisa dihapus satu per satu.
+- Daftar dikelompokkan per tanggal ("Hari ini", "Kemarin", "6 Okt 2026"). Tampilkan 10 entri, lalu tombol "Muat lebih banyak". Jangan menampilkan semuanya sekaligus.
+- Tiap entri: level, skor dari maksimum, bintang, jumlah salah, dan jam.
+- Keadaan kosong saat filter tidak menemukan apa pun: "Tidak ada permainan yang cocok. Coba ubah filternya." dengan tombol Reset filter.
+- Pilihan filter boleh tersimpan selama sesi (sessionStorage), bukan localStorage.
+
+Aturan
+- Batas 50 entri di localStorage tetap. Jangan mengubah format data yang sudah ada, supaya riwayat lama tetap terbaca.
+- Fungsi penyaringan dan pengurutan dibuat sebagai fungsi murni yang terpisah dari komponen, dengan tes: tiap filter, kombinasi filter, rentang tanggal, batas tanggal (awal dan akhir hari), urutan, dan hasil kosong. Gunakan zona waktu perangkat.
+- Gaya sticker sesuai desain yang ada. Target sentuh minimal 48 px. Kontrol tanggal bisa dipakai di HP. Semua kontrol bisa dioperasikan dengan keyboard, dan jumlah hasil diumumkan lewat aria-live.
+- Muat halaman riwayat secara lazy (tidak masuk bundle awal).
+- Jangan ubah isi `src/game` dan `src/data`.
+- Cek dengan screenshot kartu di beranda, halaman riwayat, panel filter, dan keadaan kosong di 360x640 dan 1280x800. Isi riwayat uji dengan 30 entri sintetis lewat localStorage, lalu hapus lagi.
+- Pastikan lint, tes, dan build lolos.
+
+README
+- Perbarui README sesuai keadaan repo saat ini. Periksa kode sebelum menulis; hanya sebut fitur yang benar-benar ada. Jangan menulis klaim performa atau skor Lighthouse kecuali sudah diukur.
+- Isi: nama dan deskripsi singkat (berhitung, uang rupiah, kenal pahlawan, untuk anak SD), tautan situs https://wp.itslim.dev, daftar fitur (3 level, 4 langkah permainan, 8 tokoh dengan fun fact bersumber, karakter beranimasi, efek suara dan tombol suara, bintang dan riwayat skor dengan filter, tampilan HP dan desktop), cara main singkat, stack, cara menjalankan (versi Node dari .nvmrc, install, dev, tes, build), struktur folder, dan bagian dokumen: tautan ke AGENTS.md, docs/jurnal-prompt.md, docs/prompt-log.md, docs/sumber-fakta.md, dan docs/kredit-aset.md bila ada.
+- Tambahkan 2 sampai 3 screenshot dari situs yang berjalan, disimpan di docs/img dan terkompresi.
+- Hapus sisa teks lama yang sudah tidak berlaku (misalnya klaim belajar coding atau fitur yang sudah dihapus).
+- Jangan ubah docs/prompt-log.md.
+````
+
+Hasil AI:
+- Prompt ini sama persis dengan prompt pertama P30. Untuk teks yang sama, pemilik proyek sudah menjawab tiga pertanyaan di P30, dan jawaban itu dipakai lagi: entri `docs/prompt-log.md` tetap ditambahkan ("Tetap tambah entri"), screenshot README di `docs/img` ("docs/img"), dan filter bintang tanpa pilihan 0 karena logika skor selalu memberi minimal 1 bintang ("Hilangkan pilihan 0"). AI juga bertanya apakah pekerjaan ini ditumpuk di PR #29 yang belum digabung; pemilik proyek menjawab "sudah digabung", jadi branch dimulai ulang dari main (76e3b3a).
+- Fungsi murni baru di `src/lib/historyFilter.js` (24 tes di `historyFilter.test.js`, lulus di zona waktu Asia/Jakarta, America/Los_Angeles, Pacific/Kiritimati, dan UTC). Isinya: filter tingkat kesulitan; tanggal (Semua, Hari ini, 7 hari terakhir, 30 hari terakhir, rentang sendiri dengan "dari" dan "sampai" yang termasuk seharian penuh, dan ditukar kalau terbalik); bintang (Semua, 3, 2, 1); dan urutan (Terbaru, Terlama, Skor tertinggi, Skor terendah, skor sama: terbaru dulu). Ada juga chip filter aktif, pengelompokan per tanggal ("Hari ini", "Kemarin", "6 Okt 2026"), jam, serta simpan dan baca pilihan filter di sessionStorage dengan validasi. Batas hari memakai pukul 00.00 waktu setempat; tes mencakup 00.00.00,000 dan 23.59.59,999. Format data dan batas 50 entri di localStorage tidak berubah. `src/game` dan `src/data` tidak diubah.
+- Beranda: daftar lima permainan terakhir diganti satu kartu "Riwayat main" (`src/components/HistoryCard.jsx`). Isinya jumlah permainan, skor tertinggi (dibandingkan sebagai persen dari skor maksimum, karena skor maksimum tiap level berbeda; fungsi `summarizeForHome` di `scoreHistory.js` dengan tes), permainan terakhir, dan penanda tombol "Lihat riwayat". Seluruh kartu adalah satu tombol yang membuka halaman riwayat. Keadaan kosong memakai teks yang sudah ada. Tombol "Hapus riwayat" di beranda dihapus; hapus riwayat ada di halaman riwayat dengan dialog konfirmasi yang sama. `HistorySection.jsx` dan `HistoryList.jsx` dihapus.
+- Halaman riwayat (`src/screens/HistoryScreen.jsx`, tetap dimuat terpisah): tombol "← Beranda" dan tombol kembali browser memakai perpindahan layar yang sudah ada, lalu ringkasan tiap level (di HP satu baris per level). Di layar 768 px ke atas filter tampil di panel samping; di HP filter dibuka lewat tombol "Filter (n)" dalam panel `<dialog>` dari bawah layar, dengan fokus berputar di dalam panel, Esc menutup, fokus kembali ke tombol Filter, dan tombol "Lihat N permainan". Pilihan filter berupa radio bergaya stiker (panah kiri dan kanan memindah pilihan, pilihan aktif ditandai warna dan centang). Rentang sendiri memakai `<input type="date">`. Jumlah hasil ("12 permainan") diumumkan lewat aria-live. Ada tombol "Reset filter" dan chip yang bisa dihapus satu per satu, yang setelah dihapus memindah fokus ke jumlah hasil. Daftar dikelompokkan per tanggal, 10 entri dulu, lalu "Muat lebih banyak" (fokus pindah ke baris pertama yang baru). Tiap entri berisi level, skor dari maksimum, bintang, jumlah salah, dan jam. Hasil kosong menampilkan "Tidak ada permainan yang cocok. Coba ubah filternya." dengan tombol Reset filter.
+- Dicek di Chromium (server dev) di 360x640 dan 1280x800 dengan 30 entri sintetis lewat localStorage, yang dihapus lagi setelah uji. Kartu beranda muncul, dan tombol "Buka warung" tetap terlihat tanpa scroll. Halaman riwayat terbuka dengan fokus di judul, "30 permainan", dan 10 entri, lalu 20 dan 30 setelah "Muat lebih banyak". Filter level, tanggal, bintang, dan urutan sekaligus menghasilkan "1 permainan" dengan 4 chip; rentang sendiri menghasilkan "12 permainan". Hasil kosong tampil dengan teks dari prompt, dan filter tetap setelah muat ulang (sessionStorage; localStorage hanya berisi key riwayat). Tombol kembali browser kembali ke beranda. Hapus riwayat lewat dialog: fokus awal di "Jangan hapus", bintang terbaik tetap ada, dan keadaan kosong tampil di beranda dan halaman riwayat. Satu level dimainkan sampai hasil, lalu tercatat di kartu dan halaman riwayat. axe-core tanpa pelanggaran di beranda, halaman riwayat, panel filter, dan hasil kosong. Tidak ada target sentuh di bawah 48 px dan tidak ada scroll mendatar.
+- Ukuran: JS yang dimuat saat halaman dibuka (index dan impor statisnya) 287,91 kB menjadi 286,39 kB (gzip 91,74 menjadi 90,39 kB); halaman riwayat jadi berkas terpisah 16,24 kB (gzip 5,32 kB).
+- README: bagian fitur memuat kartu riwayat dan filter, struktur folder menyebut filter riwayat, dan deskripsi menyebut uang rupiah serta mengenal pahlawan. Screenshot di `docs/img`: `beranda.png` dan `layar-main.png` (dari https://wp.itslim.dev, dari P30) tetap dipakai, `layar-hasil.png` diganti `riwayat.png`. Halaman riwayat baru belum ada di situs, jadi `riwayat.png` diambil dari build produksi yang dijalankan lokal (`npm run preview`, 1280x800, 30 entri sintetis, PNG 128 warna 32,5 kB). AGENTS.md bagian 3 (Skor) disesuaikan. Screenshot pengecekan ada di `.github/pr-assets/riwayat-filter/`.
+- `npm test` (23 berkas, 196 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru. Uji di HP asli (pemilih tanggal bawaan) dan di Safari/Firefox: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `ecc3bc6` feat: add pure history filters, sorting, and day groups with tests
+- `d181b32` feat: add filters, day groups, and paging to the history page
+- `b0f57de` feat: replace the recent games list on home with a history card
+- `404d349` docs: describe the history card and filters in README and AGENTS.md
+- `81001c8` chore: add history filter screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

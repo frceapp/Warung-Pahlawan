@@ -256,7 +256,6 @@ function App() {
       onPlay={startLevel}
       onShowHistory={openHistory}
       onPrepareHistory={prepareHistory}
-      onClearHistory={removeHistory}
       focusHeading={!screen.isFirst}
     />
   )

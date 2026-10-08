@@ -176,6 +176,21 @@ export function summarizeHistory(history) {
   }
 }
 
+// Ringkasan kecil untuk kartu "Riwayat main" di beranda: jumlah permainan,
+// skor tertinggi (dibandingkan sebagai persen dari skor maksimum, karena
+// skor maksimum tiap level berbeda; kalau sama, skor yang lebih besar lalu
+// yang terbaru), dan permainan terakhir. null kalau riwayat kosong.
+export function summarizeForHome(history) {
+  if (history.length === 0) return null
+  const best = history.reduce((top, item) => {
+    const difference = item.score * top.maxScore - top.score * item.maxScore
+    if (difference > 0) return item
+    if (difference === 0 && item.score > top.score) return item
+    return top
+  })
+  return { count: history.length, best, last: history[0] }
+}
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 const twoDigits = (value) => String(value).padStart(2, '0')
 

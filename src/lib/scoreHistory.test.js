@@ -14,6 +14,7 @@ import {
   loadHistory,
   readHistory,
   saveHistory,
+  summarizeForHome,
   summarizeHistory,
 } from './scoreHistory.js'
 
@@ -258,5 +259,25 @@ describe('ringkasan dan tanggal', () => {
     expect(formatPlayedAt(new Date(2026, 9, 8, 8, 5).toISOString(), now)).toBe('8 Okt, 08.05')
     expect(formatPlayedAt(new Date(2026, 4, 21, 17, 30).toISOString(), now)).toBe('21 Mei, 17.30')
     expect(formatPlayedAt(new Date(2025, 7, 1, 9, 0).toISOString(), now)).toBe('1 Agu 2025, 09.00')
+  })
+})
+
+describe('ringkasan kartu beranda', () => {
+  it('jumlah permainan, skor tertinggi (persen), dan permainan terakhir', () => {
+    const history = [
+      entry(4, { level: 1, score: 32 }),
+      entry(3, { level: 3, score: 54, maxScore: 60 }),
+      entry(2, { level: 1, score: 40 }),
+      entry(1, { level: 2, score: 50, maxScore: 50 }),
+    ]
+    const summary = summarizeForHome(history)
+    expect(summary.count).toBe(4)
+    expect(summary.last.id).toBe('game-4')
+    // 40/40 dan 50/50 sama-sama penuh; skor yang lebih besar dipilih.
+    expect(summary.best.id).toBe('game-1')
+  })
+
+  it('kosong kalau belum ada riwayat', () => {
+    expect(summarizeForHome([])).toBeNull()
   })
 })
