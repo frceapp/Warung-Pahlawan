@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import Awning from '../components/Awning.jsx'
 import FruitImage from '../components/FruitImage.jsx'
+import HistorySection from '../components/HistorySection.jsx'
 import LevelCard from '../components/LevelCard.jsx'
 import PracticeIcon from '../components/PracticeIcon.jsx'
 import SoundToggle from '../components/SoundToggle.jsx'
@@ -14,7 +15,15 @@ function preloadLevel(levelId) {
   preparePlayScreen(levelId).catch(() => {})
 }
 
-function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
+function HomeScreen({
+  bestStars,
+  history,
+  onPlay,
+  onShowHistory,
+  onPrepareHistory,
+  onClearHistory,
+  focusHeading = false,
+}) {
   const headingRef = useRef(null)
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus()
@@ -78,6 +87,13 @@ function HomeScreen({ bestStars, onPlay, focusHeading = false }) {
             ))}
           </ul>
         </section>
+
+        <HistorySection
+          history={history}
+          onShowHistory={onShowHistory}
+          onPrepareHistory={onPrepareHistory}
+          onClearHistory={onClearHistory}
+        />
 
         <section aria-labelledby="howto-title">
           <h2 id="howto-title" className="mb-4 font-heading text-3xl">

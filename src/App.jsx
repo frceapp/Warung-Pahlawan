@@ -2,7 +2,17 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import OpeningGate from './components/OpeningGate.jsx'
 import { getLevel, LEVELS } from './data/levels.js'
 import { getBrowserStorage, loadBestStars, recordStars, saveBestStars } from './game/progress.js'
+import {
+  addHistoryEntry,
+  clearHistory,
+  compareWithPrevious,
+  createGameId,
+  createHistoryEntry,
+  readHistory,
+  saveHistory,
+} from './lib/scoreHistory.js'
 import HomeScreen from './screens/HomeScreen.jsx'
+import { loadHistoryScreen } from './screens/loadHistoryScreen.js'
 import { getLoadedPlayScreen, preparePlayScreen } from './screens/loadPlayScreen.js'
 import { getLoadedResultScreen, prepareResultScreen } from './screens/loadResultScreen.js'
 
@@ -29,9 +39,18 @@ const storage = getBrowserStorage()
 // Penanda entri riwayat browser untuk layar selain beranda.
 const IN_APP_STATE = 'warungPahlawanScreen'
 
+function newGameId() {
+  return createGameId(Date.now(), Math.random)
+}
+
 function App() {
   const [screen, setScreen] = useState({ name: 'home', isFirst: true })
   const [bestStars, setBestStars] = useState(() => loadBestStars(storage))
+  // Riwayat skor (lib/scoreHistory.js). Kalau localStorage tidak bisa
+  // dipakai, riwayat hanya ada selama halaman terbuka.
+  const [history, setHistory] = useState(() => readHistory(storage).entries)
+  // Halaman "Semua riwayat" setelah berkasnya dimuat.
+  const [HistoryScreen, setHistoryScreen] = useState(null)
   // Nomor unik tiap kali layar permainan atau hasil dibuka, supaya layar dan
   // pintu warungnya dipasang ulang dari awal (misalnya saat "Main lagi").
   const openCount = useRef(0)
@@ -81,9 +100,41 @@ function App() {
   }
 
   // Pintu warung (layar loading) langsung tampil setelah anak memilih level.
+  // Tiap permainan mendapat id unik saat dimulai, supaya satu permainan
+  // hanya tercatat sekali di riwayat.
   function startLevel(levelId) {
     openCount.current += 1
-    leaveHome({ name: 'play', levelId, playId: openCount.current })
+    const gameId = newGameId()
+    leaveHome({ name: 'play', levelId, playId: openCount.current, gameId })
+  }
+
+  function openHistory() {
+    return loadHistoryScreen().then((module) => {
+      setHistoryScreen(() => module.default)
+      leaveHome({ name: 'history' })
+    })
+  }
+
+  function prepareHistory() {
+    loadHistoryScreen().catch(() => {})
+  }
+
+  function removeHistory() {
+    clearHistory(storage)
+    setHistory([])
+  }
+
+  // Dicatat saat layar hasil akan tampil. Riwayat dibaca ulang dari
+  // localStorage (bisa berubah di tab lain); kalau tidak bisa dibaca, dipakai
+  // riwayat yang ada di halaman ini.
+  function recordGame(summary, gameId) {
+    const stored = readHistory(storage)
+    const previous = stored.ok ? stored.entries : history
+    const entry = createHistoryEntry({ id: gameId, summary, finishedAt: new Date() })
+    const updated = addHistoryEntry(previous, entry)
+    if (updated !== previous) saveHistory(storage, updated)
+    setHistory(updated)
+    return compareWithPrevious(previous, entry)
   }
 
   function goHome() {
@@ -101,8 +152,15 @@ function App() {
       setBestStars(updated)
       saveBestStars(storage, updated)
     }
+    const comparison = recordGame(summary, screen.gameId)
     openCount.current += 1
-    setScreen({ name: 'result', resultId: openCount.current, summary, isNewBest: updated !== bestStars })
+    setScreen({
+      name: 'result',
+      resultId: openCount.current,
+      summary,
+      isNewBest: updated !== bestStars,
+      comparison,
+    })
   }
 
   if (new URLSearchParams(window.location.search).has('sfx')) {
@@ -175,6 +233,7 @@ function App() {
             <ResultScreen
               summary={screen.summary}
               isNewBest={screen.isNewBest}
+              comparison={screen.comparison}
               nextLevel={nextLevel}
               onNextLevel={() => startLevel(nextLevel.id)}
               onPlayAgain={() => startLevel(screen.summary.levelId)}
@@ -186,10 +245,18 @@ function App() {
     )
   }
 
+  if (screen.name === 'history' && HistoryScreen) {
+    return <HistoryScreen history={history} onClearHistory={removeHistory} onHome={goHome} />
+  }
+
   return (
     <HomeScreen
       bestStars={bestStars}
+      history={history}
       onPlay={startLevel}
+      onShowHistory={openHistory}
+      onPrepareHistory={prepareHistory}
+      onClearHistory={removeHistory}
       focusHeading={!screen.isFirst}
     />
   )
