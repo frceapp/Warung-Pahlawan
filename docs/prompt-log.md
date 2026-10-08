@@ -1624,3 +1624,55 @@ Yang saya ubah atau tolak:
 Commit terkait:
 - `705f3d1` docs: describe how AI tools were used in AGENTS.md
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P29, 8 Oktober 2026, 08.20 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: riwayat skor di localStorage (Tugas 9, fitur tambahan; di luar daftar bagian 5)
+Prompt:
+
+````text
+Tambahkan riwayat skor yang tersimpan di localStorage. Kerjakan di satu PR.
+
+Penyimpanan
+- Key baru `warung-pahlawan:history`, berisi larik JSON. Key `warung-pahlawan:best-stars` tidak berubah.
+- Satu entri per permainan yang selesai (saat layar hasil tampil): id unik, level, skor, skor maksimum, bintang, jumlah salah, dan waktu selesai (ISO).
+- Simpan maksimal 50 entri terbaru. Yang lebih lama dibuang.
+- Pembungkus baca dan tulis memakai try/catch. Bila localStorage diblokir, data rusak, atau formatnya tidak sesuai, anggap riwayat kosong dan game tetap berjalan. Validasi tiap entri saat dibaca dan abaikan yang tidak valid.
+- Satu permainan hanya tercatat sekali, walau layar hasil dibuka ulang atau dimuat ulang.
+- Hanya data skor. Jangan menyimpan data pribadi atau nama.
+
+Tampilan
+- Beranda: bagian "Riwayat main" setelah daftar level. Tampilkan 5 permainan terakhir dengan level, skor, bintang, dan tanggal (format Indonesia, misalnya "8 Okt, 08.05"). Tambahkan tombol "Lihat semua" bila lebih dari 5.
+- Halaman atau panel "Semua riwayat": daftar lengkap, dengan ringkasan di atas (jumlah permainan, skor tertinggi per level, bintang terbaik per level).
+- Layar hasil: bila skor lebih tinggi dari rekor sebelumnya di level itu, tampilkan lencana "Skor tertinggi baru!" dan bandingkan dengan permainan sebelumnya ("Naik 6 poin dari terakhir kali").
+- Keadaan kosong: "Belum ada riwayat. Buka warung dan mainkan satu level dulu."
+- Tombol "Hapus riwayat" dengan dialog konfirmasi buatan sendiri (bukan window.confirm). Menghapus riwayat tidak menghapus bintang terbaik.
+
+Aturan
+- Gaya sticker sesuai desain yang ada. Daftar bisa dibaca di 360x640, target sentuh minimal 48 px, dan beranda tetap menampilkan tombol main tanpa scroll.
+- Dialog bisa dipakai dengan keyboard (fokus terkunci, Esc menutup). Perubahan skor dan lencana diumumkan lewat aria-live.
+- Hormati `prefers-reduced-motion` untuk animasi lencana.
+- Jangan ubah isi `src/game` dan `src/data`. Perhitungan skor tetap dari logika yang ada.
+- Tambahkan tes untuk fungsi riwayat: tambah entri, batas 50, data rusak, penyimpanan terblokir, dan tidak ada entri ganda.
+- Cek dengan screenshot beranda, daftar lengkap, dan layar hasil di 360x640 dan 1280x800.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Penyimpanan (`src/lib/scoreHistory.js`, dengan 20 tes di `scoreHistory.test.js`): key baru `warung-pahlawan:history` berisi larik JSON, terbaru di depan, paling banyak 50 entri; yang lebih lama dibuang. Tiap entri hanya berisi id, level, skor, skor maksimum, bintang, jumlah salah, dan waktu selesai (ISO); kolom lain dibuang saat disimpan. Baca, tulis, dan hapus memakai try/catch. Kalau localStorage diblokir, JSON rusak, atau isinya bukan larik, riwayat dianggap kosong. Tiap entri divalidasi saat dibaca dan yang tidak valid diabaikan. Key `warung-pahlawan:best-stars` tidak berubah, dan `src/game` serta `src/data` tidak diubah. Logika riwayat ditaruh di `src/lib` karena prompt melarang mengubah `src/game`; jumlah salah dijumlahkan dari `mistakes` tiap pembeli di ringkasan yang sudah ada.
+- Satu permainan tercatat sekali: id unik dibuat saat level dimulai (dari waktu dan angka acak lewat parameter), dan entri dengan id yang sudah ada tidak ditambah lagi. Entri dicatat saat layar hasil akan tampil. Saat mencatat, riwayat dibaca ulang dari localStorage; kalau localStorage tidak bisa dipakai, riwayat hanya ada selama halaman terbuka.
+- Tampilan: bagian "Riwayat main" di beranda setelah daftar level, berisi lima permainan terakhir (level, skor, bintang, tanggal seperti "8 Okt, 08.05"), tombol "Lihat semua" kalau lebih dari lima, dan tombol "Hapus riwayat". Halaman "Semua riwayat" (dimuat terpisah) berisi ringkasan (jumlah permainan, skor tertinggi dan bintang terbaik tiap level, dihitung dari riwayat) lalu daftar lengkap, yang juga menampilkan jumlah salah. Keadaan kosong memakai teks dari prompt. Layar hasil menampilkan lencana "Skor tertinggi baru!" kalau skor melewati rekor sebelumnya di level itu, beserta perbandingan dengan permainan terakhir di level itu ("Naik 2 poin dari terakhir kali."). Kalau tidak naik, kalimatnya "Sama dengan skor terakhir kali." atau "Terakhir kali skormu 30. Ayo coba lagi!". Permainan pertama di suatu level tidak diberi lencana atau perbandingan.
+- Dialog "Hapus riwayat" memakai komponen baru `ConfirmDialog` (elemen `<dialog>` modal, fokus terkunci di dua tombol, Esc menutup, fokus awal di "Jangan hapus"). `ExitDialog` di layar main kini memakai komponen yang sama; perilakunya dicek ulang (judul, fokus awal "Lanjut main", Tab, Esc, dan "Tutup warung" kembali ke beranda). Setelah riwayat dihapus, fokus pindah ke judul dan pesan "Riwayat main sudah dihapus. Bintang terbaik tetap ada." diumumkan lewat aria-live. Lencana dan perbandingan skor diisi 0,6 detik setelah layar hasil tampil di wilayah aria-live, supaya diumumkan pembaca layar. Animasi lencana memakai `motion-safe:` dan tidak ada saat "kurangi gerakan" aktif (dicek: animationName `none`).
+- Dicek di Chromium (server dev) di 360x640 dan 1280x800. Keadaan kosong tampil. Dua kali main level 1 (satu kesalahan, lalu tanpa salah) menghasilkan lencana dan "Naik 2 poin dari terakhir kali.". Muat ulang tidak menambah entri (2 entri, 2 id unik). Dengan 12 entri, beranda menampilkan 5 baris dan halaman lengkap 12 baris. Dialog: urutan Tab "Jangan hapus > Hapus riwayat > Jangan hapus", dan Esc menutup tanpa menghapus. Setelah dihapus, key riwayat hilang, bintang terbaik tetap ada, dan kartu level masih menampilkan bintangnya. Data rusak tetap menampilkan keadaan kosong. Dengan localStorage diblokir, permainan selesai tanpa error dan riwayat tampil selama halaman terbuka. axe-core tanpa pelanggaran di beranda, halaman semua riwayat, dialog, dan layar hasil. Tidak ada scroll mendatar, dan semua tombol di bagian riwayat minimal 48 px. Tombol "Buka warung" level 1 tetap terlihat tanpa scroll di kedua ukuran, pada posisi yang sama dengan main (bawahnya di y 573 dari 640 dan y 798 dari 800). Peringatan React "flushSync was called from inside a lifecycle method" di konsol dev sudah ada sebelum perubahan ini.
+- Ukuran build: bundel awal `index` 271,37 kB menjadi 270,63 kB (gzip 86,25 menjadi 85,97 kB), halaman riwayat jadi berkas terpisah 3,36 kB (gzip 1,26 kB), dan layar hasil 10,61 menjadi 11,35 kB. AGENTS.md (bagian 3, Skor) dan README diberi keterangan riwayat skor. Screenshot ada di `.github/pr-assets/riwayat/`.
+- `npm test` (22 berkas, 170 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru. Uji di HP asli dan di Safari/Firefox: (tidak dapat diverifikasi).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `21f5ed4` feat: keep score history in localStorage with tests
+- `5e7f08d` refactor: share one confirm dialog for exit and clearing history
+- `c29bc0a` feat: show recent games on home and a full history page
+- `7909a92` feat: announce a new high score on the result screen
+- `4c3d730` docs: describe the score history in AGENTS.md and README
+- `6afe213` chore: add score history screenshots for the PR
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
