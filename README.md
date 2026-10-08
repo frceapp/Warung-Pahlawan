@@ -27,7 +27,8 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
   4. Kembalian: susun kembalian dari laci uang, atau pilih "Tidak perlu kembalian" kalau uangnya pas.
 - **Delapan tokoh pembeli:** R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, dan Kapitan Pattimura. Masing-masing punya dua fun fact dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
 - **Skor dan bintang.** Tiap pembeli bernilai 10 poin, dikurangi 2 untuk tiap kesalahan (paling sedikit 4). Bintang terbaik tiap level disimpan di browser. Game tetap jalan kalau penyimpanan browser tidak tersedia.
-- **Layar hasil** menampilkan skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya. Kalau ada level berikutnya, tombol utamanya "Lanjut ke" level itu; anak juga bisa main lagi atau kembali ke beranda.
+- **Riwayat main.** Tiap permainan yang selesai dicatat di browser (paling banyak 50 terakhir, hanya data skor). Beranda menampilkan lima permainan terakhir, dan halaman "Semua riwayat" menampilkan semuanya beserta skor tertinggi dan bintang terbaik tiap level. Riwayat bisa dihapus tanpa menghapus bintang terbaik.
+- **Layar hasil** menampilkan skor, bintang, dan daftar tokoh yang dilayani beserta fun fact-nya. Kalau skornya melewati rekor level itu, muncul lencana "Skor tertinggi baru!" beserta perbandingan dengan permainan sebelumnya. Kalau ada level berikutnya, tombol utamanya "Lanjut ke" level itu; anak juga bisa main lagi atau kembali ke beranda.
 - **Keluar di tengah permainan.** Tombol ← dan tombol kembali browser membuka dialog "Tutup warung sekarang?" (skor level itu belum tersimpan), dengan pilihan "Lanjut main" dan "Tutup warung".
 - **Suasana warung di layar main:**
   - Pembeli digambar setengah badan, berdiri tepat di belakang meja kasir dengan kedua tangan bertumpu di tepi meja. Lengannya melengkung dengan siku, manset, dan tangan bersarung bulat dengan jempol.
