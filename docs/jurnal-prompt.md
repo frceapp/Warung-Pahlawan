@@ -6,11 +6,11 @@ Lima prompt pilihan untuk juri, satu untuk tiap jenis pekerjaan. Teks prompt dis
 
 | No. | Jenis | Prompt di log | Status |
 | --- | --- | --- | --- |
-| 1 | Ide dan PRD | P1 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 2 | Debugging | P6 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 3 | Audit dan optimasi | P20 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 4 | Finishing | P21 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
-| 5 | Bebas | P5 | Konteks, Prompt, Hasil terisi; catatan pemilik belum |
+| 1 | Ide dan PRD | P1 | Konteks, Prompt, Hasil terisi; catatan pemilik terisi |
+| 2 | Debugging | P6 | Konteks, Prompt, Hasil terisi; catatan pemilik terisi |
+| 3 | Audit dan optimasi | P20 | Konteks, Prompt, Hasil terisi; catatan pemilik terisi |
+| 4 | Finishing | P21 | Konteks, Prompt, Hasil terisi; catatan pemilik terisi |
+| 5 | Bebas | P5 | Konteks, Prompt, Hasil terisi; catatan pemilik terisi |
 
 ## 1. Ide dan PRD
 
@@ -53,12 +53,22 @@ jangan menebak.
 
 ### Keputusan saya
 
+- Membatasi prompt ini pada Tugas 1 saja (kerangka proyek), tanpa logika game atau layar lain.
+- Menjadikan `AGENTS.md` satu-satunya acuan dan meminta AI membacanya sampai habis sebelum mengerjakan apa pun.
+- Memilih React + Vite (JavaScript) dengan Tailwind CSS 4 lewat plugin Vite resmi.
+- Menulis kriteria selesai yang bisa diperiksa: `npm run dev` tanpa error, `npm run build` lulus, beranda terbaca di 360 px dan 1280 px.
+- Meminta AI bertanya bila `AGENTS.md` tidak jelas atau bertentangan, bukan menebak.
 
 ### Dugaan saya
 
+- Saya menduga satu prompt pendek sudah cukup untuk kerangka, karena keputusan ide, alur, dan desain sudah tertulis di `AGENTS.md`. Hasil di repo sesuai: build lulus dan beranda terbaca di 360 px dan 1280 px.
+- Saya menduga larangan membuat logika game perlu ditulis terang-terangan supaya kerangka tidak melebar ke tugas berikutnya.
 
 ### Yang saya pelajari
 
+- Dokumen acuan yang ditulis lebih dulu membuat prompt berikutnya bisa pendek dan cukup merujuk ke bagian `AGENTS.md`.
+- Kriteria selesai yang terukur memudahkan saya memeriksa hasil tanpa menebak.
+- Ukuran build awal (JS 220 kB, gzip 69 kB) jadi pembanding untuk tugas berikutnya.
 
 ## 2. Debugging
 
@@ -132,12 +142,22 @@ HP. Jangan menambah fitur baru.
 
 ### Keputusan saya
 
+- Menggabungkan PR sebelumnya dan meminta perbaikan tata letak HP sebagai prompt tersendiri, bukan menambalnya di PR yang sama.
+- Meminta diagnosis dan screenshot sebelum kode diubah, supaya perbaikan berdasarkan ukuran nyata, bukan tebakan.
+- Menerima bagian dekoratif dikecilkan di HP (terpal tipis, tokoh ringkas, fun fact penuh hanya di langkah Sapa) demi tombol aksi yang selalu terlihat.
+- Mempertahankan tata letak desktop dan tablet, serta melarang perubahan pada `src/game` dan `src/data`.
+- Meminta PR dibuat tetapi tidak digabung otomatis.
 
 ### Dugaan saya
 
+- Saya menduga masalahnya ada di satu atau dua elemen besar. Ternyata tinggi halaman datang dari banyak elemen sekaligus: kantong 340 px, keranjang 292 px, nota 286 px, dan daftar kembalian sampai 366 px.
+- Saya menduga anak SD lebih terganggu oleh tombol yang tersembunyi daripada oleh dekorasi yang dikecilkan.
 
 ### Yang saya pelajari
 
+- Mengukur dulu lebih berguna daripada langsung mengubah kode: tinggi halaman turun dari 750 sampai 1429 px menjadi tepat 640 px.
+- Bar aksi tetap di bawah layar membuat tombol utama tidak bergantung pada panjang konten.
+- Layar HP perlu dirancang sebagai satu layar, bukan halaman panjang yang dipotong.
 
 ## 3. Audit dan optimasi
 
@@ -207,12 +227,22 @@ Jangan menambah fitur. Jangan ubah isi `src/game` dan `src/data`. Pastikan lint,
 
 ### Keputusan saya
 
+- Meminta pengukuran "sebelum" disimpan di `docs/audit.md` sebelum ada perubahan, supaya hasilnya bisa dibandingkan.
+- Menetapkan 404 yang ramah hanya untuk berkas yang tidak ada; alamat halaman tetap dialihkan ke beranda (keputusan P16).
+- Menerima CLS 0,020 dan CSS yang memblokir render (sekitar 450 ms) sebagai angka yang tidak membaik, dengan alasan tertulis di `audit.md`, daripada memaksakan perbaikan.
+- Melarang penambahan fitur dan perubahan pada `src/game` dan `src/data` selama audit.
 
 ### Dugaan saya
 
+- Saya menduga memisahkan layar permainan dari bundel awal akan menurunkan TBT di layar permainan. Hasilnya TBT turun dari 219 ms ke 39 ms dan INP dari 326 ms ke 98 ms.
+- Saya menduga pemecahan chunk tidak akan menambah ukuran total. Ternyata total JS naik 3,1 kB, tetapi yang dimuat saat halaman dibuka turun dari 112,96 kB ke 92,96 kB.
 
 ### Yang saya pelajari
 
+- Skor Performance beranda sudah 98 sejak awal, jadi keuntungan terbesar ada di layar permainan, bukan di beranda.
+- Mengurangi yang dimuat di awal bisa menaikkan total ukuran, dan itu wajar.
+- Font latin-ext tidak perlu ikut dibawa untuk situs berbahasa Indonesia.
+- Tidak semua angka bisa diperbaiki, dan mencatat alasannya tetap berguna.
 
 ## 4. Finishing
 
@@ -280,12 +310,22 @@ Kerjakan Tugas 11: finishing. Kerjakan di satu PR. Jangan menambah fitur.
 
 ### Keputusan saya
 
+- Meminta keenam butir Gerbang kelayakan diperiksa satu per satu dengan bukti, bukan hanya dianggap beres.
+- Membiarkan butir 3 berstatus "belum", karena catatan pemilik (bagian ini) memang harus diisi sendiri.
+- Tidak mengubah isi entri lama di log prompt, meski ada hash yang kosong (P7) atau tidak tercatat (commit "docs: log prompt").
+- Memilih pesan umpan balik di samping tombol di layar lebar, supaya meja kasir tidak perlu digeser.
+- Menghapus `@types/react` dan `@types/react-dom` karena proyek tidak memakai TypeScript.
 
 ### Dugaan saya
 
+- Saya menduga bug yang tersisa tinggal sedikit karena sudah ada audit dan 109 tes. Ternyata masih ada dua masalah tata letak di 1280x800: pesan umpan balik memaksa geser 16 sampai 61 px, dan tanda "Geser ke bawah" menutupi nama buah.
+- Saya menduga teks sudah rapi. Ternyata masih ada koma yang kurang dan kata "kelebihan" yang kurang tepat untuk anak.
 
 ### Yang saya pelajari
 
+- Bermain langsung di dua ukuran layar menemukan bug yang tidak tertangkap tes otomatis.
+- Dokumen mudah tertinggal dari kode: README masih menyebut PR yang salah dan istilah "tas" padahal di game namanya kantong.
+- Mencocokkan log prompt dengan riwayat commit menunjukkan bahwa pencatatan hash perlu disiplin sejak awal.
 
 ## 5. Bebas
 
@@ -360,8 +400,18 @@ belum berjalan. Jangan lanjut ke Tugas 9.
 
 ### Keputusan saya
 
+- Mengizinkan Tugas 5 sampai 8 dalam satu prompt dengan satu commit per tugas, bukan satu prompt per tugas.
+- Meminta logika dan ilustrasi yang sudah ada dipakai ulang, bukan ditulis ulang.
+- Meminta satu level dimainkan penuh dan hasilnya dilaporkan apa adanya, termasuk bagian yang belum berjalan.
+- Berhenti di Tugas 8 dan tidak lanjut ke Tugas 9.
 
 ### Dugaan saya
 
+- Saya menduga empat tugas dalam satu prompt cukup aman karena logika dan ilustrasinya sudah teruji (50 tes).
+- Saya menduga tata letak yang bagus di 360, 768, dan 1280 px sudah cukup untuk HP. Ternyata layar HP sebenarnya masih terlalu panjang dan baru diperbaiki di prompt berikutnya (P6).
 
 ### Yang saya pelajari
+
+- Satu prompt besar bisa menghasilkan game yang bisa dimainkan penuh, tetapi masalah penggunaan di HP baru kelihatan setelah diuji di perangkat sungguhan.
+- Pengujian dengan Playwright di build produksi tidak menggantikan mencoba sendiri di HP.
+- Beberapa tugas dalam satu prompt hanya aman kalau logika dan datanya sudah teruji lebih dulu.
