@@ -4,7 +4,7 @@ Log ini mencatat semua prompt dari awal sampai akhir pengerjaan, apa adanya, ter
 
 - Zona waktu: WIB (UTC+7)
 - Garis start lomba: 5 Oktober 2026, 09.30 WIB
-- AI Agent: Claude Code
+- AI Agent: Claude Code (Anthropic)
 
 ## Format entri
 
