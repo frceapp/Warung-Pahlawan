@@ -25,7 +25,7 @@ Dibuat untuk M-ONE Telkomsel Coding Competition 2026, Kategori Umum, tema "Innov
 - **Empat langkah permainan** untuk tiap pembeli: Sapa, Ambil buah, Hitung, dan Kembalian, dengan penanda langkah di atas layar.
 - **Delapan tokoh pembeli** (R.A. Kartini, Ir. Soekarno, Mohammad Hatta, Ki Hajar Dewantara, Cut Nyak Dhien, Pangeran Diponegoro, Jenderal Sudirman, Kapitan Pattimura), masing-masing dengan dua fun fact bersumber dari [docs/sumber-fakta.md](docs/sumber-fakta.md).
 - **Karakter beranimasi:** pembeli berjalan masuk, berputar menghadap depan, melambai, bernapas dan berkedip saat diam, menerima bungkusan, lalu berjalan keluar.
-- **Efek suara dan tombol Suara:** rekaman berlisensi CC0 untuk pintu, lonceng, langkah kaki, buah, mesin kasir, uang, jawaban, dan fanfare. Tombol Suara ada di beranda dan layar main.
+- **Efek suara dan tombol Suara:** rekaman berlisensi CC0 untuk pintu, lonceng, langkah kaki, buah, mesin kasir, uang, dan jawaban salah, ditambah bunyi jawaban benar dan fanfare buatan sendiri (Web Audio, nada mayor yang naik). Kekerasan semua bunyi disamakan, dan volumenya diatur di `src/lib/sfxGain.js`. Tombol Suara ada di beranda dan layar main.
 - **Bintang dan riwayat skor dengan filter:** skor dan bintang tiap level, bintang terbaik di kartu level, dan riwayat 50 permainan terakhir di browser. Beranda menampilkan kartu "Riwayat main" (jumlah permainan, skor tertinggi, permainan terakhir). Halaman riwayat berisi ringkasan tiap level, filter tingkat kesulitan, tanggal (termasuk rentang sendiri), bintang, dan urutan, lalu daftar per tanggal yang dimuat sepuluh entri sekali. Layar hasil memberi tahu kalau ada skor tertinggi baru.
 - **Layar loading** berupa pintu gulung warung yang baru naik setelah semua bagian layar siap.
 - **Tampilan HP dan desktop:** di HP tombol aksi selalu terlihat di bawah layar; di layar lebar (1024 px ke atas) tampilannya dua kolom.
@@ -86,4 +86,4 @@ docs/            dokumen proyek dan screenshot README (docs/img)
 
 ## Kredit aset
 
-Efek suara adalah rekaman berlisensi CC0 dari Kenney dan Freesound (rinciannya di [docs/kredit-aset.md](docs/kredit-aset.md)), dan font Lilita One serta Atkinson Hyperlegible memakai lisensi SIL Open Font License 1.1.
+Efek suara rekaman berlisensi CC0 dari Kenney dan Freesound, sedangkan bunyi jawaban benar dan fanfare dibuat sendiri (rinciannya di [docs/kredit-aset.md](docs/kredit-aset.md)), dan font Lilita One serta Atkinson Hyperlegible memakai lisensi SIL Open Font License 1.1.
