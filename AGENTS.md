@@ -268,7 +268,7 @@ Keenam butir ini wajib terpenuhi saat pengumpulan. Satu saja tidak terpenuhi, ka
 
 | Alat AI | Dipakai untuk | Contoh hasil |
 | --- | --- | --- |
-| Claude (claude.ai) | Menyusun dokumen acuan, menulis prompt untuk agen coding, dan menguji situs yang sudah tayang | Versi pertama `AGENTS.md` (commit `6f11e03`); prompt P1 sampai P28 di `docs/prompt-log.md`; daftar temuan uji situs di prompt P8 dan P23 |
-| Claude Code (Anthropic) | Menulis kode, tes, dan PR | Commit dengan author `Claude <noreply@anthropic.com>` dan PR #1 sampai #26, misalnya logika game beserta tesnya di `src/game/` (PR #3) |
+| Claude (claude.ai) | Menyusun dokumen acuan, menulis prompt untuk agen coding, dan menguji situs yang sudah tayang | Versi pertama `AGENTS.md` (commit `6f11e03`); prompt P1 sampai P34 di `docs/prompt-log.md`; daftar temuan uji situs di prompt P8 dan P23 |
+| Claude Code (Anthropic) | Menulis kode, tes, dan PR | Commit dengan author `Claude <noreply@anthropic.com>` dan PR #1 sampai #33, misalnya logika game beserta tesnya di `src/game/` (PR #3) |
 
 Semua prompt ke agen coding dicatat apa adanya di docs/prompt-log.md.
