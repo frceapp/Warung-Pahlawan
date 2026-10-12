@@ -9,6 +9,19 @@ export { paint }
 
 const has = (look, accessory) => look.accessories.includes(accessory)
 
+// Warna rambut dan aksesori (nama token desain), sama untuk semua tokoh.
+// Dipakai juga untuk menuliskan ciri tokoh di halaman /?tokoh.
+export const HAIR_COLOR = 'tinta'
+export const ACCESSORY_COLORS = {
+  peci: 'tinta',
+  sorban: 'kapur',
+  blangkon: 'tinta',
+  'ikat-kepala': 'cabai',
+  selendang: 'daun',
+  kumis: 'tinta',
+  bros: 'pisang',
+}
+
 // viewBox karakter: sedikit dipotong di atas dan bawah supaya gambar mengisi
 // kotaknya (bagian yang lewat batas tetap tampil, overflow visible).
 export const VIEW_BOX = { x: 0, y: 4, width: 100, height: 132 }
@@ -34,7 +47,7 @@ export const FACE_PATH =
   'M24 46 C24 29 36 21 50 21 C64 21 76 29 76 46 C76 60 66 70 50 70 C34 70 24 60 24 46 Z'
 
 export function hairBack(look) {
-  const fill = paint('tinta')
+  const fill = paint(HAIR_COLOR)
   switch (look.hair) {
     case 'sanggul':
       return (
@@ -58,7 +71,7 @@ export function hairBack(look) {
 }
 
 export function hairFront(look) {
-  const fill = paint('tinta')
+  const fill = paint(HAIR_COLOR)
   switch (look.hair) {
     case 'sanggul':
       return (
@@ -100,7 +113,7 @@ export function headwearBack(look) {
   if (has(look, 'selendang')) {
     return (
       <path
-        fill={paint('daun')}
+        fill={paint(ACCESSORY_COLORS.selendang)}
         d="M20 48 C17 23 35 12 50 12 C65 12 83 23 80 48 L84 94 C68 98 32 98 16 94 Z"
       />
     )
@@ -113,7 +126,7 @@ export function headwear(look) {
   if (has(look, 'peci')) {
     return (
       <path
-        fill={paint('tinta')}
+        fill={paint(ACCESSORY_COLORS.peci)}
         d="M26 31 L28 13 C37 8 63 8 72 13 L74 31 C61 27 39 27 26 31 Z"
       />
     )
@@ -122,7 +135,7 @@ export function headwear(look) {
     return (
       <>
         <path
-          fill={paint('kapur')}
+          fill={paint(ACCESSORY_COLORS.sorban)}
           d="M21 36 C16 13 36 4 50 4 C64 4 84 13 79 36 C66 29 34 29 21 36 Z"
         />
         <g fill="none" strokeWidth="2">
@@ -135,9 +148,9 @@ export function headwear(look) {
   if (has(look, 'blangkon')) {
     return (
       <>
-        <circle cx="75" cy="38" r="6" fill={paint('tinta')} />
+        <circle cx="75" cy="38" r="6" fill={paint(ACCESSORY_COLORS.blangkon)} />
         <path
-          fill={paint('tinta')}
+          fill={paint(ACCESSORY_COLORS.blangkon)}
           d="M22 38 C20 18 36 10 50 10 C64 10 80 18 78 38 C66 31 34 31 22 38 Z"
         />
         <g fill={paint('kayu')} stroke="none">
@@ -153,10 +166,10 @@ export function headwear(look) {
   if (has(look, 'ikat-kepala')) {
     return (
       <>
-        <path fill={paint('cabai')} d="M76 32 L88 28 L85 37 Z" strokeWidth="2.4" />
-        <path fill={paint('cabai')} d="M76 34 L87 42 L79 44 Z" strokeWidth="2.4" />
+        <path fill={paint(ACCESSORY_COLORS['ikat-kepala'])} d="M76 32 L88 28 L85 37 Z" strokeWidth="2.4" />
+        <path fill={paint(ACCESSORY_COLORS['ikat-kepala'])} d="M76 34 L87 42 L79 44 Z" strokeWidth="2.4" />
         <path
-          fill={paint('cabai')}
+          fill={paint(ACCESSORY_COLORS['ikat-kepala'])}
           d="M22 33 C36 25 64 25 78 33 L78 40 C64 32 36 32 22 40 Z"
         />
       </>
@@ -165,7 +178,7 @@ export function headwear(look) {
   if (has(look, 'selendang')) {
     return (
       <path
-        fill={paint('daun')}
+        fill={paint(ACCESSORY_COLORS.selendang)}
         d="M23 48 C21 27 35 17 50 17 C65 17 79 27 77 48 C73 35 63 28 50 28 C37 28 27 35 23 48 Z"
       />
     )
@@ -179,7 +192,7 @@ export function faceAccessories(look) {
     <>
       {has(look, 'kumis') && (
         <path
-          fill={paint('tinta')}
+          fill={paint(ACCESSORY_COLORS.kumis)}
           d="M42 57 C45 53 48 53 50 55 C52 53 55 53 58 57 C54 58 52 58 50 57 C48 58 46 58 42 57 Z"
           strokeWidth="1.5"
         />
@@ -211,7 +224,7 @@ export function torso(look) {
           <path d="M34 80 C34 73 41 71 50 71 C59 71 66 73 66 80 L69 108 C60 104 40 104 31 108 Z" fill={paint(top)} />
           <path d="M44 72 L50 88 L56 72 Z" fill={paint(accent)} strokeWidth="2.2" />
           {has(look, 'bros') && (
-            <g fill={paint('pisang')} strokeWidth="1.6">
+            <g fill={paint(ACCESSORY_COLORS.bros)} strokeWidth="1.6">
               <circle cx="50" cy="92" r="2.6" />
               <circle cx="50" cy="99" r="2" />
             </g>
@@ -292,7 +305,7 @@ export function shoulderDrape(look) {
   if (!has(look, 'selendang')) return null
   return (
     <path
-      fill={paint('daun')}
+      fill={paint(ACCESSORY_COLORS.selendang)}
       d="M29 74 C35 66 65 66 71 74 L74 90 C63 82 37 82 26 90 Z"
     />
   )
@@ -512,7 +525,7 @@ export function sideFacePath(look) {
 // Rambut yang menjuntai di belakang kepala (konde). Bagian
 // rambut yang menempel di kepala ada di sideHairFront dan tidak bergoyang.
 export function sideHairBack(look) {
-  const fill = paint('tinta')
+  const fill = paint(HAIR_COLOR)
   switch (look.side.hair) {
     case 'sanggul':
       return <circle cx="33" cy="20" r="9" fill={fill} />
@@ -523,7 +536,7 @@ export function sideHairBack(look) {
 
 // Rambut di atas kepala dan bagian belakang kepala; wajah (kanan) terbuka.
 export function sideHairFront(look) {
-  const fill = paint('tinta')
+  const fill = paint(HAIR_COLOR)
   switch (look.side.hair) {
     case 'tertutup':
       return null
@@ -566,18 +579,18 @@ export function sideEarCovered(look) {
 // Kain kerudung yang menjuntai di belakang punggung (di belakang badan).
 export function sideHeadwearBack(look) {
   if (look.side.headwear !== 'kerudung') return null
-  return <path fill={paint('daun')} d="M24 46 C22 30 30 22 40 20 L42 96 C34 98 26 96 20 92 Z" />
+  return <path fill={paint(ACCESSORY_COLORS.selendang)} d="M24 46 C22 30 30 22 40 20 L42 96 C34 98 26 96 20 92 Z" />
 }
 
 export function sideHeadwear(look) {
   switch (look.side.headwear) {
     case 'peci':
-      return <path fill={paint('tinta')} d="M30 30 L32 13 C44 9 60 9 70 13 L72 30 C59 27 43 27 30 30 Z" />
+      return <path fill={paint(ACCESSORY_COLORS.peci)} d="M30 30 L32 13 C44 9 60 9 70 13 L72 30 C59 27 43 27 30 30 Z" />
     case 'sorban':
       return (
         <>
           <path
-            fill={paint('kapur')}
+            fill={paint(ACCESSORY_COLORS.sorban)}
             d="M23 40 C19 14 37 4 52 4 C66 4 82 13 79 36 C70 31 61 30 55 31 C51 38 48 47 47 58 C36 61 25 53 23 40 Z"
           />
           <g fill="none" strokeWidth="2">
@@ -590,8 +603,8 @@ export function sideHeadwear(look) {
     case 'blangkon':
       return (
         <>
-          <circle cx="24" cy="37" r="7" fill={paint('tinta')} />
-          <path fill={paint('tinta')} d="M24 39 C22 18 38 10 52 10 C66 10 80 18 78 36 C66 30 36 31 24 39 Z" />
+          <circle cx="24" cy="37" r="7" fill={paint(ACCESSORY_COLORS.blangkon)} />
+          <path fill={paint(ACCESSORY_COLORS.blangkon)} d="M24 39 C22 18 38 10 52 10 C66 10 80 18 78 36 C66 30 36 31 24 39 Z" />
           <g fill={paint('kayu')} stroke="none">
             <circle cx="40" cy="22" r="1.8" />
             <circle cx="52" cy="17" r="1.8" />
@@ -602,11 +615,11 @@ export function sideHeadwear(look) {
         </>
       )
     case 'ikat-kepala':
-      return <path fill={paint('cabai')} d="M25 34 C40 28 62 28 77 32 L77 39 C62 35 40 35 25 41 Z" />
+      return <path fill={paint(ACCESSORY_COLORS['ikat-kepala'])} d="M25 34 C40 28 62 28 77 32 L77 39 C62 35 40 35 25 41 Z" />
     case 'kerudung':
       return (
         <path
-          fill={paint('daun')}
+          fill={paint(ACCESSORY_COLORS.selendang)}
           d="M24 50 C22 27 36 17 52 17 C66 17 77 26 78 39 C71 33 63 31 58 31 C56 40 55 52 57 66 C46 71 31 66 24 50 Z"
         />
       )
@@ -620,8 +633,8 @@ export function sideHeadwearTails(look) {
   if (look.side.headwear !== 'ikat-kepala') return null
   return (
     <>
-      <path fill={paint('cabai')} d="M28 34 L14 30 L17 39 Z" strokeWidth="2.4" />
-      <path fill={paint('cabai')} d="M28 37 L15 46 L23 47 Z" strokeWidth="2.4" />
+      <path fill={paint(ACCESSORY_COLORS['ikat-kepala'])} d="M28 34 L14 30 L17 39 Z" strokeWidth="2.4" />
+      <path fill={paint(ACCESSORY_COLORS['ikat-kepala'])} d="M28 37 L15 46 L23 47 Z" strokeWidth="2.4" />
     </>
   )
 }
@@ -632,7 +645,7 @@ export function sideFaceAccessories(look) {
     <>
       {has(look, 'kumis') && (
         <path
-          fill={paint('tinta')}
+          fill={paint(ACCESSORY_COLORS.kumis)}
           d="M66 56.5 C69 54.5 73 54.5 75.5 56.5 C72 57.8 69 57.8 66 56.5 Z"
           strokeWidth="1.5"
         />
@@ -660,7 +673,7 @@ export function sideTorso(look) {
           {neck}
           <path d="M41 80 C41 74 45 71 51 71 C57 71 61 74 61 80 L63 108 C56 105 45 105 38 108 Z" fill={paint(top)} />
           <path d="M55 72 L60 90 L62 89 L61 75 Z" fill={paint(accent)} strokeWidth="2" />
-          {has(look, 'bros') && <circle cx="60" cy="94" r="2.4" fill={paint('pisang')} strokeWidth="1.6" />}
+          {has(look, 'bros') && <circle cx="60" cy="94" r="2.4" fill={paint(ACCESSORY_COLORS.bros)} strokeWidth="1.6" />}
         </>
       )
     case 'jas':
@@ -728,5 +741,5 @@ export function sideTorso(look) {
 // Selendang di pundak dari samping.
 export function sideShoulderDrape(look) {
   if (!has(look, 'selendang')) return null
-  return <path fill={paint('daun')} d="M38 74 C44 66 58 66 63 74 L64 90 C56 84 46 84 37 90 Z" />
+  return <path fill={paint(ACCESSORY_COLORS.selendang)} d="M38 74 C44 66 58 66 63 74 L64 90 C56 84 46 84 37 90 Z" />
 }
