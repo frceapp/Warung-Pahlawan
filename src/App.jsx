@@ -34,6 +34,9 @@ const OgImageScreen = import.meta.env.DEV
 // bisa didengarkan di situs.
 const SfxScreen = lazy(() => import('./screens/SfxScreen.jsx'))
 
+// Lembar perbandingan tokoh (/?tokoh): tersembunyi, juga ikut build.
+const CharacterSheetScreen = lazy(() => import('./screens/CharacterSheetScreen.jsx'))
+
 const storage = getBrowserStorage()
 
 // Penanda entri riwayat browser untuk layar selain beranda.
@@ -167,6 +170,14 @@ function App() {
     return (
       <Suspense fallback={null}>
         <SfxScreen />
+      </Suspense>
+    )
+  }
+
+  if (new URLSearchParams(window.location.search).has('tokoh')) {
+    return (
+      <Suspense fallback={null}>
+        <CharacterSheetScreen />
       </Suspense>
     )
   }
