@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { LEVEL, MASTER_GAIN, SFX_GAIN } from './sfxGain.js'
 import { SFX_FILES } from './sfxFiles.js'
 
 // AudioContext palsu: mencatat nada yang dijadwalkan, tanpa bunyi sungguhan.
@@ -24,6 +25,7 @@ class FakeAudioContext {
     this.oscillators = []
     this.sources = []
     this.decoded = []
+    this.gains = []
     this.resumeCalls = 0
     this.suspendCalls = 0
     FakeAudioContext.created.push(this)
@@ -37,7 +39,11 @@ class FakeAudioContext {
     this.state = 'suspended'
   }
   createGain() {
-    return { gain: new FakeParam(), connect() {} }
+    const node = { gain: new FakeParam(), connect(target) {
+      node.target = target
+    } }
+    this.gains.push(node)
+    return node
   }
   createBufferSource() {
     const source = {
@@ -128,7 +134,6 @@ const SOUNDS = [
   'playRegisterKeys',
   'playDrawer',
   'playClick',
-  'playCorrect',
   'playWrong',
 ]
 
@@ -157,19 +162,62 @@ describe('efek suara', () => {
     expect(FakeAudioContext.created).toHaveLength(1)
   })
 
-  it.each([...SOUNDS, 'playFanfare', 'playMoney'])('cadangan %s pendek (di bawah 400 ms) dan pelan', async (name) => {
+  it.each([...SOUNDS, 'playMoney'])('cadangan %s pendek (di bawah 400 ms)', async (name) => {
     const { sfx } = await loadSfx()
     sfx.unlockAudio()
     const audio = FakeAudioContext.created[0]
-    const plays = name === 'playFanfare' ? [1, 2, 3] : name === 'playMoney' ? [500, 5000] : [undefined]
-    for (const stars of plays) {
+    const plays = name === 'playMoney' ? [500, 5000] : [undefined]
+    for (const value of plays) {
       audio.oscillators = []
-      expect(sfx[name](stars)).toBe(true)
+      expect(sfx[name](value)).toBe(true)
       expect(audio.oscillators.length).toBeGreaterThan(0)
       const end = Math.max(...audio.oscillators.map((o) => o.stopAt)) - audio.currentTime
-      expect(end).toBeLessThan(sfx.MAX_SOUND_S)
+      expect(end).toBeLessThan(sfx.MAX_FALLBACK_S)
     }
-    expect(sfx.MASTER_VOLUME).toBeLessThanOrEqual(0.25)
+  })
+
+  it('volume utama 0,7 dari volume sebelumnya, di ujung rantai bunyi', async () => {
+    const { sfx } = await loadSfx()
+    sfx.unlockAudio()
+    const audio = FakeAudioContext.created[0]
+    const [output, bus] = audio.gains
+    expect(MASTER_GAIN).toBe(0.7)
+    expect(output.gain.value).toBe(MASTER_GAIN)
+    expect(output.target).toBe(audio.destination)
+    expect(bus.gain.value).toBe(LEVEL)
+    expect(bus.target).toBe(output)
+  })
+
+  it('jawaban benar dan fanfare selalu bunyi buatan sendiri, dengan panjang yang pas', async () => {
+    const { sfx } = await loadSfx({ fetch: fakeFetch() })
+    sfx.unlockAudio()
+    await sfx.loadSamples()
+    const audio = FakeAudioContext.created[0]
+    const length = () => Math.max(...audio.oscillators.map((o) => o.stopAt)) - audio.currentTime
+    expect(sfx.playCorrect()).toBe(true)
+    expect(audio.sources).toHaveLength(0)
+    expect(length()).toBeLessThanOrEqual(0.6)
+    for (const stars of [1, 2, 3]) {
+      audio.oscillators = []
+      expect(sfx.playFanfare(stars)).toBe(true)
+      expect(length()).toBeGreaterThanOrEqual(1)
+      expect(length()).toBeLessThanOrEqual(1.55)
+    }
+    expect(audio.sources).toHaveLength(0)
+  })
+
+  it('gain tiap bunyi dari sfxGain.js, pintu gulung lebih pelan dari lonceng', async () => {
+    const { sfx } = await loadSfx({ fetch: fakeFetch() })
+    sfx.unlockAudio()
+    await sfx.loadSamples()
+    const audio = FakeAudioContext.created[0]
+    sfx.playDoorRoll()
+    const door = audio.gains.at(-1).gain.value
+    sfx.playCustomerBell()
+    const bell = audio.gains.at(-1).gain.value
+    expect(door).toBeCloseTo(SFX_GAIN.doorRoll, 6)
+    expect(bell).toBeCloseTo(SFX_GAIN.doorBell, 6)
+    expect(door).toBeLessThan(bell)
   })
 
   it('fanfare 3 bintang lebih meriah daripada 1 bintang', async () => {
@@ -255,9 +303,9 @@ describe('efek suara', () => {
     sfx.unlockAudio()
     await sfx.loadSamples()
     const audio = FakeAudioContext.created[0]
-    expect(sfx.playCorrect()).toBe(true)
+    expect(sfx.playWrong()).toBe(true)
     expect(audio.sources).toHaveLength(1)
-    expect(audio.sources[0].buffer).toEqual({ id: 'benar.mp3' })
+    expect(audio.sources[0].buffer).toEqual({ id: 'salah.mp3' })
     expect(audio.oscillators).toHaveLength(0)
     sfx.playMoney(500)
     sfx.playMoney(2000)

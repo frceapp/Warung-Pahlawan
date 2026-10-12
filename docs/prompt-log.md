@@ -1821,3 +1821,54 @@ Commit terkait:
 - `404d349` docs: describe the history card and filters in README and AGENTS.md
 - `81001c8` chore: add history filter screenshots for the PR
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P32, 12 Oktober 2026, 07.40 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: keseimbangan volume efek suara dan bunyi menang yang riang (Tugas 9, fitur tambahan suara)
+Prompt:
+
+````text
+Dua masalah efek suara: bunyi menang terdengar sedih, dan bunyi membuka toko (rolling door) terlalu keras. Perbaiki. Kerjakan di satu PR.
+
+Langkah 1: ukur dulu
+- Ukur kekerasan tiap berkas di public/sfx dan tiap bunyi Web Audio (LUFS atau RMS, dan puncak). Tulis tabelnya di deskripsi PR sebagai "sebelum".
+- Tentukan dari tabel itu bunyi mana yang paling menonjol. Selain rolling door, cek bunyi lain yang mencolok.
+
+Langkah 2: keseimbangan volume
+- Semua bunyi dinormalkan ke kekerasan yang sama (sekitar -20 LUFS untuk bunyi singkat, puncak maksimal -3 dB).
+- Beri nilai gain per bunyi di satu berkas konfigurasi (misalnya src/lib/sfxGain.ts), supaya mudah diatur tanpa mengolah ulang berkas.
+- Rolling door: gain 40 sampai 50% dari bunyi lain, potong jadi maksimal 0,8 detik dengan fade in 40 ms dan fade out 150 ms, dan saring frekuensi tinggi yang tajam. Bunyinya tidak boleh lebih keras dari lonceng pintu.
+- Tambahkan volume utama (master gain) sebesar 0,7 dari volume sekarang. Jangan menambah slider di UI.
+
+Langkah 3: bunyi menang
+- Jawaban benar dan layar hasil harus terdengar riang. Pakai nada naik dalam tangga nada mayor, tempo cepat, dan nada atas yang cerah, misalnya arpeggio do-mi-sol-do tinggi. Hindari nada turun, interval minor, dan akhir yang menggantung.
+- Fanfare hasil: durasi 1 sampai 1,5 detik. Untuk 3 bintang tambahkan lapisan dentingan. Untuk 0 sampai 1 bintang tetap hangat dan menyemangati, tidak sedih.
+- Bila berkas yang sekarang terdengar sedih, ganti dengan salah satu kandidat lain di docs/kredit-aset.md atau di public/sfx/kandidat. Bila tidak ada yang cocok, buat sendiri lewat Web Audio dengan aturan di atas dan tulis di kredit bahwa bunyi itu dibuat sendiri.
+- Perbarui halaman uji /?sfx supaya menampilkan kekerasan tiap bunyi dan memutar bunyi menang dan salah berdampingan.
+
+Aturan
+- Hanya mengubah bunyi dan gain. Jangan mengubah tombol Suara, pemicu bunyi, atau tampilan.
+- Perbarui docs/kredit-aset.md bila ada berkas yang diganti. Jangan menambah berkas dari sumber yang bukan CC0 atau yang belum tercatat.
+- Total ukuran berkas suara tetap maksimal 300 kB.
+- Jangan ubah isi src/game dan src/data.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Langkah 1 (ukur): kekerasan diukur dengan pengukur baru `src/lib/loudness.js`, yaitu BS.1770 K-weighting untuk sample rate apa pun, ditambah RMS dan puncak. Tesnya mencakup titik acuan sinus 997 Hz 0 dBFS = -3,0 LUFS. Karena banyak bunyi lebih pendek dari 400 ms, kekerasan diukur tanpa gating sepanjang bunyi. True peak berkas diukur dengan ffmpeg ebur128. Bunyi Web Audio dirender dengan OfflineAudioContext. Tabel "sebelum" ada di deskripsi PR. Yang paling menonjol di game: lonceng pintu (-19,0 LUFS) dan pintu gulung (-19,3 LUFS, 1,45 detik dengan bunyi gemerincing yang tajam), disusul koin (-20,2). Bunyi lain yang mencolok: tombol mesin kasir (-35,9) dan uang kertas (-29,3) jauh lebih pelan, dan semua bunyi cadangan Web Audio sekitar -38 sampai -53 LUFS, kira-kira 18 dB lebih pelan dari rekaman.
+- Bunyi menang: analisis nada (FFT per 40 ms) menunjukkan melodi `fanfare.mp3` (jingles_PIZZI01, Kenney) turun A#4, G#4, F#4, E4, D4, C4, dan `benar.mp3` naik di register rendah (G3, D4, G4) tanpa terts mayor. `public/sfx/kandidat` tidak ada, dan `docs/kredit-aset.md` hanya mencatat berkas yang dipakai, jadi tidak ada kandidat lain. Keduanya diganti bunyi buatan sendiri lewat Web Audio (`src/lib/sfxTunes.js`, 21 tes). Jawaban benar: do-mi-sol-do tinggi yang naik, 0,51 detik. Fanfare: arpeggio naik lalu akor do mayor yang dipetik naik, 1,35 detik (3 bintang, dengan lapisan dentingan naik C7-E7-G7-C8), 1,24 detik (2 bintang), dan 1,13 detik (1 bintang, suara sinus yang hangat). Tes memastikan hanya nada do, mi, dan sol, melodi selalu naik, berakhir di do, dan panjang fanfare 1 sampai 1,5 detik. Analisis nada hasil render: C5-E5-G5-C6 (benar dan fanfare 3 serta 2 bintang, lalu akor do) dan G4-C5-E5-G5 lalu akor do (1 bintang). `benar.mp3` dan `fanfare.mp3` dihapus.
+- Langkah 2 (keseimbangan): ke-13 rekaman diolah ulang dari berkas aslinya (P25) ke -20 LUFS dengan true peak paling tinggi -3 dB. Bunyi berpuncak tajam diredam limiter sampai 16 dB. Tombol mesin kasir dan uang kertas tetap sekitar -25,5 LUFS karena puncaknya sangat tajam; selisihnya diimbangi lewat `SAMPLE_TRIM_DB` di `src/lib/sfxGain.js`. Pintu gulung dipotong menjadi 0,74 detik (0,78 detik termasuk padding MP3), diberi fade in 40 ms dan fade out 150 ms, dan frekuensi di atas sekitar 4 kHz disaring. Bunyi Web Audio disamakan ke -20 LUFS lewat faktor `SYNTH_NORMALIZE` di `sfx.js`; untuk fanfare, akor dipetik dan ditahan sebentar supaya bisa mencapai -20 LUFS dengan puncak di bawah -3 dB.
+- Gain per bunyi ada di `src/lib/sfxGain.js` (prompt menyebut `sfxGain.ts`; proyek ini JavaScript tanpa TypeScript, jadi `.js`). Volume per panggilan yang sebelumnya tersebar di `sfx.js` dipindah ke sana. Pintu gulung 0,45 dari bunyi lain, dan di game -33,1 LUFS, di bawah lonceng pintu (-27,1). Volume utama (`MASTER_GAIN`) 0,7 dipasang di ujung rantai, setelah level bersama 0,7 (sama dengan `SAMPLE_VOLUME` lama). Tidak ada slider baru. Tombol Suara, pemicu bunyi, dan tampilan game tidak diubah. Dicek dengan skrip probe P25: urutan bunyi saat melayani satu pembeli sama dengan sebelumnya.
+- Halaman `/?sfx` menampilkan kekerasan tiap bunyi (LUFS dan puncak berkas atau bunyi Web Audio, serta LUFS di game), gain tiap bunyi, dan tombol "Benar", "Salah", serta fanfare 3, 2, dan 1 bintang yang berdampingan. axe-core tanpa pelanggaran di 360x640 dan 1280x800, dan tidak ada tombol di bawah 48 px.
+- `docs/kredit-aset.md` diperbarui: baris `benar.mp3` dan `fanfare.mp3` dihapus, ada bagian baru "Bunyi buatan sendiri", ukuran dan durasi baru, serta cara pengolahan baru. Paket Music Jingles dihapus dari daftar paket karena tidak dipakai lagi. Tidak ada berkas dari sumber baru. Total berkas suara 112,4 kB menjadi 87,5 kB (13 berkas). README disesuaikan. `src/game` dan `src/data` tidak diubah.
+- `npm test` (26 berkas, 230 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru. Bunyi tidak didengarkan oleh AI; penilaian riang atau sedih dan keras atau pelan berdasarkan pengukuran dan analisis nada (tidak dapat diverifikasi dengan telinga).
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `22d0a91` feat: measure sound loudness with BS.1770 LUFS and peaks
+- `33b0c7d` feat: add self-made major win tunes for correct answers and results
+- `6b046b2` fix: balance sound volumes with per-sound gains and a 0.7 master
+- `5256cb9` fix: normalize sound files to -20 LUFS and soften the rolling door
+- `11d2c70` feat: show loudness and compare win and wrong sounds on /?sfx
+- `433ee99` docs: describe the self-made win sounds in README
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.

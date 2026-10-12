@@ -2,7 +2,8 @@
 // berlisensi CC0 (domain publik). Dipakai oleh pemuat suara (sfx.js),
 // halaman uji /?sfx, dan dicatat juga di docs/kredit-aset.md.
 // Semua berkas: MP3 mono 96 kbps, hening di awal dan akhir dipotong,
-// kekerasannya disamakan, paling panjang 1,5 detik.
+// kekerasannya disamakan (sekitar -20 LUFS, true peak paling tinggi -3 dB),
+// paling panjang 1,5 detik. Volume tiap bunyi diatur di sfxGain.js.
 
 const KENNEY = 'Kenney (kenney.nl)'
 const CC0 = 'CC0 1.0'
@@ -28,7 +29,7 @@ export const SFX_FILES = [
     id: 'doorRoll',
     file: 'pintu-gulung.mp3',
     label: 'Pintu gulung naik saat warung dibuka',
-    ...freesound('Areti18', 394947, 'Rolling shutter (potongan 0,4 sampai 1,85 detik)'),
+    ...freesound('Areti18', 394947, 'Rolling shutter (potongan 0,4 sampai 1,14 detik, frekuensi tinggi disaring)'),
   },
   {
     id: 'doorBell',
@@ -91,22 +92,10 @@ export const SFX_FILES = [
     ...kenney('RPG Audio', 'rpg-audio', 'handleCoins2.ogg'),
   },
   {
-    id: 'correct',
-    file: 'benar.mp3',
-    label: 'Jawaban benar',
-    ...kenney('Interface Sounds', 'interface-sounds', 'confirmation_001.ogg'),
-  },
-  {
     id: 'wrong',
     file: 'salah.mp3',
     label: 'Jawaban salah (lembut)',
     ...kenney('Interface Sounds', 'interface-sounds', 'bong_001.ogg'),
-  },
-  {
-    id: 'fanfare',
-    file: 'fanfare.mp3',
-    label: 'Fanfare di layar hasil',
-    ...kenney('Music Jingles', 'music-jingles', 'jingles_PIZZI01.ogg'),
   },
   {
     id: 'click',
@@ -114,4 +103,11 @@ export const SFX_FILES = [
     label: 'Tombol ditekan',
     ...kenney('Interface Sounds', 'interface-sounds', 'click_002.ogg'),
   },
+]
+
+// Bunyi buatan sendiri lewat Web Audio (tanpa berkas): melodinya di
+// sfxTunes.js. Menggantikan rekaman jawaban benar dan fanfare sebelumnya.
+export const SELF_MADE_SOUNDS = [
+  { id: 'correct', label: 'Jawaban benar (do-mi-sol-do naik)' },
+  { id: 'fanfare', label: 'Fanfare di layar hasil (3, 2, dan 1 bintang)' },
 ]
