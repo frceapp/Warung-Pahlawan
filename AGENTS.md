@@ -115,7 +115,7 @@ Satu prompt mengerjakan satu tugas. Jangan melompat ke tugas berikutnya tanpa di
 | 8 | Animasi, hover, dan responsivitas | Sudah dicek di 360, 768, dan 1280 px; `prefers-reduced-motion` dihormati | sudah (PR #4; tata letak HP diperbaiki di PR #5 dan PR #7) |
 | 9 | Fitur tambahan (lihat bagian 5) | Disepakati per fitur | sebagian: efek suara (PR #14; diganti rekaman CC0 di prompt P25) |
 | 10 | Audit: aksesibilitas, performa, SEO | Skor Lighthouse dicatat sebelum dan sesudah | sudah (PR #10; diulang di prompt P20 dengan angka sebelum dan sesudah di `docs/audit.md`) |
-| 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sebagian: README final, uji ketiga level, dan cek gerbang sudah (prompt P21); butir 3 bagian 9 belum terpenuhi sampai catatan pemilik di kelima bagian jurnal diisi |
+| 11 | Finishing: README, uji di hosting, cek gerbang kelayakan lomba | Semua butir bagian 9 terpenuhi | sudah: README final, uji ketiga level, dan cek gerbang (prompt P21); catatan pemilik di kelima bagian jurnal sudah terisi (commit `735b08b`) |
 
 ## 5. Fitur tambahan yang direncanakan
 
