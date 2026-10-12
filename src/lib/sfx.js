@@ -1,27 +1,27 @@
 // Efek suara: rekaman pendek berlisensi CC0 (public/sfx/, lihat sfxFiles.js)
-// yang diputar lewat Web Audio API (AudioBufferSourceNode), supaya tidak ada
-// jeda. Bunyi hanya pelengkap: setiap bunyi selalu punya umpan balik yang
-// terlihat di layar.
+// dan bunyi menang buatan sendiri (sfxTunes.js), semuanya diputar lewat Web
+// Audio API supaya tidak ada jeda. Bunyi hanya pelengkap: setiap bunyi selalu
+// punya umpan balik yang terlihat di layar. Volume tiap bunyi diatur di
+// sfxGain.js; semua bunyi sudah disamakan kekerasannya (sekitar -20 LUFS).
 //
 // Aturan autoplay (iOS, Chrome): AudioContext baru dibuat setelah sentuhan
 // atau tombol keyboard pertama (lihat installAudioUnlock), lalu resume()
 // kalau masih tertunda. Berkas suara juga baru dimuat saat itu, bukan saat
 // halaman dibuka. Selama berkas belum siap, atau kalau gagal dimuat, bunyi
-// sintetis lama (OscillatorNode) dipakai sebagai cadangan. Saat tab
-// tersembunyi, bunyi berhenti dan tidak ada bunyi baru yang diputar.
+// sintetis (OscillatorNode) dipakai sebagai cadangan. Saat tab tersembunyi,
+// bunyi berhenti dan tidak ada bunyi baru yang diputar.
 
+import { gainFor, LEVEL, MASTER_GAIN, sampleTrim } from './sfxGain.js'
 import { SFX_FILES } from './sfxFiles.js'
+import { CORRECT_TUNE, fanfareTune, frequencyOf } from './sfxTunes.js'
 
 export const SOUND_STORAGE_KEY = 'warungPahlawanSuara'
-// Volume bunyi sintetis cadangan dan batas panjangnya (detik), lalu volume
-// rekaman (semua berkas sudah disamakan kekerasannya).
-export const MASTER_VOLUME = 0.2
-export const MAX_SOUND_S = 0.4
-export const SAMPLE_VOLUME = 0.7
+// Bunyi cadangan Web Audio paling panjang (detik).
+export const MAX_FALLBACK_S = 0.4
 
 let context = null
-let master = null
-let sampleBus = null
+let output = null
+let bus = null
 let soundOn = null
 // id bunyi -> AudioBuffer; status pemuatan tiap berkas: 'loading', 'ready',
 // atau 'failed'.
@@ -76,19 +76,20 @@ export function subscribeSound(listener) {
 // --- AudioContext -------------------------------------------------------------
 
 // Dipanggil dari sentuhan atau tombol keyboard anak (gesture), supaya browser
-// mengizinkan bunyi.
+// mengizinkan bunyi. Rantai bunyi: tiap bunyi -> gain bunyi itu (sfxGain.js)
+// -> LEVEL -> MASTER_GAIN -> speaker.
 export function unlockAudio() {
   if (!isSoundOn() || isHidden()) return null
   if (!context) {
     const AudioContextClass = globalThis.AudioContext ?? globalThis.webkitAudioContext
     if (!AudioContextClass) return null
     context = new AudioContextClass()
-    master = context.createGain()
-    master.gain.value = MASTER_VOLUME
-    master.connect(context.destination)
-    sampleBus = context.createGain()
-    sampleBus.gain.value = SAMPLE_VOLUME
-    sampleBus.connect(context.destination)
+    output = context.createGain()
+    output.gain.value = MASTER_GAIN
+    output.connect(context.destination)
+    bus = context.createGain()
+    bus.gain.value = LEVEL
+    bus.connect(output)
   }
   if (context.state === 'suspended') context.resume?.()
   loadSamples()
@@ -137,19 +138,28 @@ export function sampleStatus(id) {
   return loadStatus.get(id) ?? 'idle'
 }
 
+// Rekaman yang sudah di-decode (untuk mengukur kekerasannya di /?sfx).
+export function sampleBuffer(id) {
+  return buffers.get(id) ?? null
+}
+
+function gainNode(audio, value) {
+  const gain = audio.createGain()
+  gain.gain.value = value
+  gain.connect(bus)
+  return gain
+}
+
 // Putar rekaman. Mengembalikan false kalau rekaman belum siap atau gagal
 // dimuat (pemanggil lalu memakai bunyi cadangan).
-function playSample(id, { when = 0, volume = 1, rate = 1 } = {}) {
+function playSample(id, { when = 0, rate = 1 } = {}) {
   const audio = ready()
   const buffer = buffers.get(id)
-  if (!audio || !buffer || !sampleBus) return false
+  if (!audio || !buffer || !bus) return false
   const source = audio.createBufferSource()
   source.buffer = buffer
   source.playbackRate.value = rate
-  const gain = audio.createGain()
-  gain.gain.value = volume
-  source.connect(gain)
-  gain.connect(sampleBus)
+  source.connect(gainNode(audio, gainFor(id) * sampleTrim(id)))
   source.start(audio.currentTime + when)
   return true
 }
@@ -172,15 +182,15 @@ export function installAudioUnlock() {
 }
 
 function ready() {
-  if (!isSoundOn() || isHidden() || !context || !master) return null
+  if (!isSoundOn() || isHidden() || !context || !bus) return null
   if (context.state === 'suspended') context.resume?.()
   return context
 }
 
 // Satu nada: frekuensi bisa meluncur dari `from` ke `to`, dengan selubung
 // volume (naik cepat, turun eksponensial) supaya tidak berbunyi "klik".
-function tone(audio, { from, to = from, start = 0, duration, type = 'sine', volume = 0.5 }) {
-  const startAt = audio.currentTime + start
+function scheduleTone(audio, destination, { from, to = from, start = 0, duration, type = 'sine', volume = 0.5, attack = 0.012, hold = 0 }, when = 0) {
+  const startAt = audio.currentTime + when + start
   const end = startAt + duration
   const oscillator = audio.createOscillator()
   const gain = audio.createGain()
@@ -188,30 +198,22 @@ function tone(audio, { from, to = from, start = 0, duration, type = 'sine', volu
   oscillator.frequency.setValueAtTime(from, startAt)
   if (to !== from) oscillator.frequency.exponentialRampToValueAtTime(to, end)
   gain.gain.setValueAtTime(0.0001, startAt)
-  gain.gain.exponentialRampToValueAtTime(volume, startAt + Math.min(0.012, duration / 4))
+  const peakAt = startAt + Math.min(attack, duration / 4)
+  gain.gain.exponentialRampToValueAtTime(volume, peakAt)
+  // hold: nada ditahan sebentar (akor penutup) sebelum meluruh.
+  if (hold > 0) gain.gain.setValueAtTime(volume, Math.min(peakAt + hold, end - 0.05))
   gain.gain.exponentialRampToValueAtTime(0.0001, end)
   oscillator.connect(gain)
-  gain.connect(master)
+  gain.connect(destination)
   oscillator.start(startAt)
   oscillator.stop(end + 0.01)
 }
 
-function play(notes, when = 0) {
-  const audio = ready()
-  if (!audio) return false
-  notes.forEach((note) => tone(audio, { ...note, start: (note.start ?? 0) + when }))
-  return true
-}
-
-// Rekaman kalau sudah siap, kalau belum bunyi sintetis cadangan.
-function sound(id, fallback, options = {}) {
-  if (!ready()) return false
-  return playSample(id, options) || play(fallback, options.when ?? 0)
-}
-
 // --- Bunyi --------------------------------------------------------------------
-// Tiap bunyi: rekaman (id di sfxFiles.js) dan nada sintetis cadangannya.
 
+// Bunyi cadangan untuk tiap rekaman (dipakai selama berkas belum siap atau
+// kalau gagal dimuat). Bentuknya sama dengan sebelumnya; kekerasannya
+// disamakan lewat SYNTH_NORMALIZE.
 export const FALLBACK = {
   doorRoll: [
     { from: 90, to: 140, duration: 0.36, type: 'triangle', volume: 0.35 },
@@ -238,123 +240,185 @@ export const FALLBACK = {
     { from: 1568, start: 0, duration: 0.12, type: 'triangle', volume: 0.3 },
     { from: 2093, start: 0.09, duration: 0.16, type: 'triangle', volume: 0.3 },
   ],
-  correct: [
-    { from: 523.3, start: 0, duration: 0.11, type: 'triangle', volume: 0.4 },
-    { from: 659.3, start: 0.09, duration: 0.11, type: 'triangle', volume: 0.4 },
-    { from: 784, start: 0.18, duration: 0.18, type: 'triangle', volume: 0.45 },
-  ],
   wrong: [{ from: 392, to: 294, duration: 0.3, type: 'sine', volume: 0.35 }],
   click: [{ from: 1600, to: 1200, duration: 0.03, type: 'triangle', volume: 0.18 }],
 }
 
-const FANFARE = {
-  3: [
-    { from: 523.3, start: 0, duration: 0.09, type: 'square', volume: 0.18 },
-    { from: 659.3, start: 0.08, duration: 0.09, type: 'square', volume: 0.18 },
-    { from: 784, start: 0.16, duration: 0.09, type: 'square', volume: 0.18 },
-    { from: 1046.5, start: 0.24, duration: 0.13, type: 'square', volume: 0.2 },
-    { from: 784, start: 0.24, duration: 0.13, type: 'triangle', volume: 0.3 },
-  ],
-  2: [
-    { from: 523.3, start: 0, duration: 0.1, type: 'triangle', volume: 0.35 },
-    { from: 659.3, start: 0.09, duration: 0.1, type: 'triangle', volume: 0.35 },
-    { from: 784, start: 0.18, duration: 0.18, type: 'triangle', volume: 0.35 },
-  ],
-  1: [
-    { from: 523.3, start: 0, duration: 0.12, type: 'triangle', volume: 0.35 },
-    { from: 784, start: 0.11, duration: 0.2, type: 'triangle', volume: 0.35 },
-  ],
+// Warna suara bunyi menang (sfxTunes.js): tiap nada dimainkan beberapa
+// osilator (kelipatan frekuensi dan campurannya).
+const VOICES = {
+  bright: { attack: 0.006, partials: [{ type: 'triangle', ratio: 1, mix: 1 }, { type: 'sine', ratio: 2, mix: 0.35 }] },
+  warm: { attack: 0.02, partials: [{ type: 'sine', ratio: 1, mix: 1 }, { type: 'triangle', ratio: 1, mix: 0.3 }] },
+  chime: { attack: 0.003, partials: [{ type: 'sine', ratio: 1, mix: 1 }, { type: 'sine', ratio: 2, mix: 0.25 }] },
+}
+
+function tuneTones(tune) {
+  return tune.flatMap(({ note, start, duration, voice, volume, hold = 0 }) => {
+    const { attack, partials } = VOICES[voice]
+    return partials.map(({ type, ratio, mix }) => ({
+      from: frequencyOf(note) * ratio,
+      start,
+      duration,
+      type,
+      volume: volume * mix,
+      attack,
+      hold,
+    }))
+  })
+}
+
+// Bunyi Web Audio per kunci: cadangan rekaman, jawaban benar, dan fanfare
+// untuk 1, 2, dan 3 bintang.
+export function synthTones(key) {
+  if (key === 'correct') return tuneTones(CORRECT_TUNE)
+  const fanfare = /^fanfare([123])$/.exec(key)
+  if (fanfare) return tuneTones(fanfareTune(Number(fanfare[1])))
+  return FALLBACK[key] ?? []
+}
+
+// Penyama kekerasan bunyi Web Audio: tiap bunyi dikali faktor ini supaya
+// terdengar sekitar -20 LUFS dengan puncak paling tinggi -3 dB, sama dengan
+// rekaman. Diukur dengan OfflineAudioContext (angkanya tampil di /?sfx).
+export const SYNTH_NORMALIZE = {
+  doorRoll: 2.07,
+  doorBell: 1.46,
+  step: 2.85,
+  fruitIn: 1.41,
+  fruitOut: 1.68,
+  wrap: 4.68,
+  registerKeys: 8.41,
+  drawer: 1.55,
+  note: 4.07,
+  coin: 1.78,
+  wrong: 1.82,
+  click: 4.12,
+  correct: 1.84,
+  fanfare1: 0.63,
+  fanfare2: 1.12,
+  fanfare3: 0.99,
+}
+
+// Putar bunyi Web Audio untuk bunyi `id` (gain dari sfxGain.js).
+function playSynth(id, key, { when = 0 } = {}) {
+  const audio = ready()
+  if (!audio) return false
+  const tones = synthTones(key)
+  if (tones.length === 0) return false
+  const gain = gainNode(audio, gainFor(id) * (SYNTH_NORMALIZE[key] ?? 1))
+  tones.forEach((tone) => scheduleTone(audio, gain, tone, when))
+  return true
+}
+
+// Kunci bunyi cadangan Web Audio untuk rekaman `id`.
+export const fallbackKey = (id) => (id === 'step1' || id === 'step2' ? 'step' : id)
+
+// Rekaman kalau sudah siap, kalau belum bunyi cadangannya.
+function sound(id, options = {}) {
+  if (!ready()) return false
+  return playSample(id, options) || playSynth(id, fallbackKey(id), options)
+}
+
+// Render bunyi Web Audio tanpa memutarnya (untuk mengukur kekerasannya di
+// /?sfx), pada level normal (sebelum gain per bunyi).
+export function renderSynth(key, sampleRate = 44100) {
+  const OfflineContext = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext
+  const tones = synthTones(key)
+  if (!OfflineContext || tones.length === 0) return Promise.resolve(null)
+  const seconds = Math.max(...tones.map((tone) => (tone.start ?? 0) + tone.duration)) + 0.02
+  const offline = new OfflineContext(1, Math.ceil(sampleRate * seconds), sampleRate)
+  const gain = offline.createGain()
+  gain.gain.value = SYNTH_NORMALIZE[key] ?? 1
+  gain.connect(offline.destination)
+  tones.forEach((tone) => scheduleTone(offline, gain, tone))
+  return offline.startRendering()
 }
 
 // Pintu gulung naik saat warung (atau layar hasil) dibuka.
 export function playDoorRoll() {
-  return sound('doorRoll', FALLBACK.doorRoll)
+  return sound('doorRoll')
 }
 
 // Lonceng pintu saat pembeli masuk.
 export function playCustomerBell() {
-  return sound('doorBell', FALLBACK.doorBell)
+  return sound('doorBell')
 }
 
 // Langkah kaki pada waktu-waktu (detik dari sekarang) saat kaki menapak,
-// bergantian dua rekaman, lebih pelan dari bunyi lain.
+// bergantian dua rekaman.
 export function playFootsteps(times) {
   if (!ready()) return false
   times.forEach((when, index) => {
-    sound(index % 2 === 0 ? 'step1' : 'step2', FALLBACK.step, { when, volume: 0.45 })
+    sound(index % 2 === 0 ? 'step1' : 'step2', { when })
   })
   return times.length > 0
 }
 
 // Buah masuk kantong, dan buah dikeluarkan lagi.
 export function playFruitIn() {
-  return sound('fruitIn', FALLBACK.fruitIn)
+  return sound('fruitIn')
 }
 
 export function playFruitOut() {
-  return sound('fruitOut', FALLBACK.fruitOut, { volume: 0.8 })
+  return sound('fruitOut')
 }
 
 // Pesanan dibungkus.
 export function playWrap() {
-  return sound('wrap', FALLBACK.wrap)
+  return sound('wrap')
 }
 
 // Tombol mesin kasir ditekan bergantian (selaras dengan kedip tombolnya).
 export function playRegisterKeys(when = 0) {
-  return sound('registerKeys', FALLBACK.registerKeys, { when, volume: 0.6 })
+  return sound('registerKeys', { when })
 }
 
 // Laci mesin kasir terbuka ("ka-ching").
 export function playDrawer(when = 0) {
-  return sound('drawer', FALLBACK.drawer, { when })
+  return sound('drawer', { when })
 }
 
 // Uang ke nampan kembalian: uang kertas atau koin (di bawah Rp1.000).
 export function playMoney(value) {
-  return value < 1000 ? sound('coin', FALLBACK.coin) : sound('note', FALLBACK.note)
+  return value < 1000 ? sound('coin') : sound('note')
 }
 
 // Tombol ditekan: klik halus.
 export function playClick() {
-  return sound('click', FALLBACK.click, { volume: 0.5 })
+  return sound('click')
 }
 
-// Jawaban benar.
+// Jawaban benar: do-mi-sol-do naik, buatan sendiri (sfxTunes.js).
 export function playCorrect() {
-  return sound('correct', FALLBACK.correct)
+  return playSynth('correct', 'correct')
 }
 
 // Jawaban salah: lembut, bukan buzzer.
 export function playWrong() {
-  return sound('wrong', FALLBACK.wrong)
+  return sound('wrong')
 }
 
-// Hasil akhir: fanfare. Cadangan sintetisnya lebih meriah untuk 3 bintang.
+// Hasil akhir: fanfare buatan sendiri. 3 bintang dengan lapisan dentingan;
+// 1 bintang tetap hangat dan menyemangati.
 export function playFanfare(stars) {
-  return sound('fanfare', FANFARE[Math.min(3, Math.max(1, stars ?? 1))])
+  const count = Math.min(3, Math.max(1, Math.round(stars ?? 1)))
+  return playSynth('fanfare', `fanfare${count}`)
 }
 
 // --- Halaman uji /?sfx -------------------------------------------------------
 
-// Putar satu bunyi menurut id di sfxFiles.js; dengan fallback: true, putar
-// bunyi sintetis cadangannya. Langkah kaki diputar sebagai satu kali berjalan
-// masuk (enam tapak).
+// Putar satu bunyi menurut id di sfxFiles.js (atau 'correct', 'fanfare');
+// dengan fallback: true, putar bunyi cadangannya. Langkah kaki diputar
+// sebagai satu kali berjalan masuk (enam tapak).
 const PREVIEW_STEPS = [0, 0.18, 0.37, 0.55, 0.76, 1]
 
-export function previewSound(id, { fallback = false } = {}) {
+export function previewSound(id, { fallback = false, stars = 3 } = {}) {
   if (!ready()) return false
-  if (fallback) {
-    if (id === 'fanfare') return play(FANFARE[3])
-    if (id === 'step1' || id === 'step2') {
-      PREVIEW_STEPS.forEach((when) => play(FALLBACK.step, when))
-      return true
-    }
-    return play(FALLBACK[id] ?? [])
-  }
+  if (id === 'correct') return playCorrect()
+  if (id === 'fanfare') return playFanfare(stars)
+  const once = (when) => (fallback ? playSynth(id, fallbackKey(id), { when }) : sound(id, { when }))
   if (id === 'step1' || id === 'step2') {
-    PREVIEW_STEPS.forEach((when) => playSample(id, { when, volume: 0.45 }) || play(FALLBACK.step, when))
+    PREVIEW_STEPS.forEach(once)
     return true
   }
-  return playSample(id) || play(id === 'fanfare' ? FANFARE[3] : (FALLBACK[id] ?? []))
+  return once(0)
 }
