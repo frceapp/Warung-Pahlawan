@@ -4,7 +4,7 @@ Log ini mencatat semua prompt dari awal sampai akhir pengerjaan, apa adanya, ter
 
 - Zona waktu: WIB (UTC+7)
 - Garis start lomba: 5 Oktober 2026, 09.30 WIB
-- AI Agent: Claude Code
+- AI Agent: Claude Code (Anthropic)
 
 ## Format entri
 
@@ -1923,4 +1923,35 @@ Commit terkait:
 - `16ef75b` feat: describe the drawn features of each character
 - `1459f3e` feat: add hidden character comparison sheet at /?tokoh
 - `0a92452` docs: add screenshots of the character sheet and Pattimura's new hair
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P34, 12 Oktober 2026, 11.16 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: perbaikan dokumen: kepala log prompt, pembagian peran AI, dan status Tugas 11 (Tugas 11)
+Prompt:
+
+````text
+Tiga perbaikan dokumen, tanpa mengubah kode.
+
+1. docs/prompt-log.md: ganti baris "AI Agent: (isi nama AI Agent yang dipakai)" di bagian atas menjadi "AI Agent: Claude Code (Anthropic)". Hanya baris itu. Entri P1 dan seterusnya jangan disentuh.
+
+2. AGENTS.md bagian 10 (Pembagian peran AI): angkanya sudah tertinggal. Cocokkan dengan keadaan sekarang di log dan riwayat PR: rentang prompt (sampai P berapa), rentang PR (sampai nomor berapa), dan prompt mana saja yang berasal dari temuan uji situs oleh Claude (claude.ai). Jangan mengarang, ambil dari log dan riwayat git.
+
+3. AGENTS.md Tugas 11: periksa ulang butir 3 Gerbang kelayakan (jurnal 5 prompt dan log mentah ada) terhadap isi docs/jurnal-prompt.md sekarang. Kalau kelima catatan pemilik sudah terisi, ubah status Tugas 11 menjadi sudah dan hapus kalimat "belum terpenuhi". Kalau masih ada yang kosong, sebutkan bagian mana dan biarkan status apa adanya. Jangan mengisi catatan pemilik.
+
+Selesai jika: ketiga perubahan hanya menyentuh berkas di atas, npm test dan npm run build tetap lulus, dan PR dibuat tanpa digabung.
+````
+
+Hasil AI:
+- Sebelum mengerjakan, AI bertanya lewat pilihan jawaban karena dua hal bertentangan dengan `AGENTS.md` bagian 8 (log prompt hanya boleh ditambah di bagian bawah). Jawaban pemilik: "Ganti baris itu (Recommended)", "Tetap tambah entri (Recommended)", dan untuk rentang di bagian 10 "Termasuk prompt dan PR ini (Recommended)".
+- Butir 1: baris kepala `docs/prompt-log.md` di `main` sudah diubah pemilik menjadi "AI Agent: Claude Code" (commit `2618ca1`), bukan lagi "(isi nama AI Agent yang dipakai)". Baris itu diganti menjadi "AI Agent: Claude Code (Anthropic)". Entri P1 sampai P33 tidak disentuh; entri ini ditambahkan di bagian paling bawah.
+- Butir 2: `AGENTS.md` bagian 10 dicocokkan dengan log dan riwayat PR. Prompt di log sekarang P1 sampai P34 (sebelumnya tertulis P28). PR #1 sampai #32 semuanya dari branch `claude/confident-babbage-bpzr6d` dan sudah digabung; PR untuk prompt ini menjadi #33, jadi tertulis PR #1 sampai #33 (sebelumnya #26). Prompt yang teksnya menyebut hasil uji situs tetap P8 ("Hasil pengujian situs live") dan P23 ("dari hasil uji situs"); tidak ada prompt sesudah P23 yang menyebut uji situs, jadi bagian itu tidak diubah.
+- Butir 3: `docs/jurnal-prompt.md` diperiksa per bagian. Kelima bagian (P1, P6, P20, P21, P5) punya "Keputusan saya", "Dugaan saya", dan "Yang saya pelajari" yang terisi, diisi pemilik di commit `735b08b` (sebelum commit itu ketiganya kosong). Status Tugas 11 diubah menjadi "sudah" dan kalimat "belum terpenuhi" dihapus. Catatan pemilik tidak diubah.
+- Hanya `docs/prompt-log.md` dan `AGENTS.md` yang diubah; tidak ada kode yang diubah. `npm test` (27 berkas, 241 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `d94ef3f` docs: name Claude Code (Anthropic) in the prompt log header
+- `d52c2e4` docs: update prompt and PR ranges in the AI roles section
+- `4fd5814` docs: mark task 11 done now that the journal owner notes are filled
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
