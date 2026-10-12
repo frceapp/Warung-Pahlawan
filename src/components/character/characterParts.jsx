@@ -43,11 +43,11 @@ export function hairBack(look) {
           <ellipse cx="50" cy="42" rx="28" ry="25" fill={fill} />
         </>
       )
-    case 'panjang':
+    case 'bergelombang':
       return (
         <path
           fill={fill}
-          d="M23 42 C21 24 35 16 50 16 C65 16 79 24 77 42 L80 80 C70 84 30 84 20 80 Z"
+          d="M25 56 Q19 51 23 45 Q17 38 23 32 Q20 23 30 20 Q34 13 42 15 Q50 10 58 15 Q66 13 70 20 Q80 23 77 32 Q83 38 77 45 Q81 51 75 56 Z"
         />
       )
     case 'tertutup':
@@ -76,11 +76,11 @@ export function hairFront(look) {
           d="M23 45 C21 26 36 18 53 19 C67 19 79 27 77 45 C73 35 60 29 41 34 C33 36 27 39 23 45 Z"
         />
       )
-    case 'panjang':
+    case 'bergelombang':
       return (
         <path
           fill={fill}
-          d="M23 46 C21 27 35 18 50 18 C65 18 79 27 77 46 C73 37 66 32 58 31 L54 36 L50 31 L46 36 L42 31 C34 32 27 37 23 46 Z"
+          d="M23 48 C21 27 35 18 50 18 C65 18 79 27 77 48 Q75 42 71 41 Q70 36 64 35 Q60 33 56 35 Q53 37 50 36 Q47 37 44 35 Q40 33 36 35 Q30 36 29 41 Q25 42 23 48 Z"
         />
       )
     case 'tertutup':
@@ -500,7 +500,6 @@ export const SIDE_JOINTS = {
   shoulder: [51, 76],
   // Titik tempel bagian yang menjuntai (bergoyang tertinggal saat berjalan).
   bun: [39, 25],
-  longHair: [52, 30],
   tails: [27, 36],
   veil: [40, 24],
 }
@@ -510,20 +509,13 @@ export function sideFacePath(look) {
   return `M26 45 C26 29 37 21 51 21 C65 21 75 29 76 42 C76 46 77 48 ${tip} 51 C77 52.5 76 53 76 55 C75 63 67 70 54 70 C38 70 26 61 26 45 Z`
 }
 
-// Rambut yang menjuntai di belakang kepala (konde, rambut panjang). Bagian
+// Rambut yang menjuntai di belakang kepala (konde). Bagian
 // rambut yang menempel di kepala ada di sideHairFront dan tidak bergoyang.
 export function sideHairBack(look) {
   const fill = paint('tinta')
   switch (look.side.hair) {
     case 'sanggul':
       return <circle cx="33" cy="20" r="9" fill={fill} />
-    case 'panjang':
-      return (
-        <path
-          fill={fill}
-          d="M27 40 C25 25 38 18 52 18 C60 18 66 21 70 25 L50 56 L46 84 C36 86 26 84 21 80 Z"
-        />
-      )
     default:
       return null
   }
@@ -542,11 +534,11 @@ export function sideHairFront(look) {
           d="M26 47 C24 28 37 19 53 19 C67 19 77 27 78 40 C72 36 66 34 60 35 C57 40 55 46 54 53 L45 58 C36 60 28 55 26 47 Z"
         />
       )
-    case 'panjang':
+    case 'bergelombang':
       return (
         <path
           fill={fill}
-          d="M26 47 C24 28 37 18 52 18 C66 18 76 26 77 37 L72 35 L69 39 L66 34 C61 34 58 35 56 38 C54 44 52 50 51 57 L44 60 C35 61 28 55 26 47 Z"
+          d="M76 36 C70 33 63 31 57 32 C55 38 53 45 53 52 L45 57 Q40 60 35 57 Q29 58 28 52 Q22 49 25 44 Q20 38 25 33 Q22 26 30 23 Q33 16 42 17 Q48 13 55 17 Q63 15 67 20 Q75 22 76 30 Z"
         />
       )
     case 'sanggul':
