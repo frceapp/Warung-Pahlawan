@@ -206,9 +206,9 @@ const VARIANTS = {
     idle: { rotate: [0, 1.5, 0], transition: { duration: 3.6, ease: 'easeInOut', repeat: Infinity } },
     rest: { rotate: 0, transition: { duration: 0.2 } },
   },
-  // Bagian yang menjuntai di tampak samping (konde, rambut panjang, ujung
-  // ikat kepala, kerudung): tertinggal sedikit ke belakang dari titik
-  // tempelnya dan memantul kecil tiap langkah, sedikit terlambat dari badan.
+  // Bagian yang menjuntai di tampak samping (konde, ujung ikat kepala,
+  // kerudung): tertinggal sedikit ke belakang dari titik tempelnya dan
+  // memantul kecil tiap langkah, sedikit terlambat dari badan.
   trail: {
     walk: { rotate: TRAIL, transition: { duration: WALK_S, times: WALK_TIMES, ease: 'easeInOut', delay: 0.06 } },
     leave: {
@@ -727,10 +727,7 @@ function AnimeCharacter({
                     <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.veil)}>
                       {sideHeadwearBack(look)}
                     </m.g>
-                    <m.g
-                      variants={VARIANTS.trail}
-                      style={pivot(look.side.hair === 'sanggul' ? SIDE_JOINTS.bun : SIDE_JOINTS.longHair)}
-                    >
+                    <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.bun)}>
                       {sideHairBack(look)}
                     </m.g>
                     <m.g variants={VARIANTS.trail} style={pivot(SIDE_JOINTS.tails)}>

@@ -6,16 +6,17 @@
 // yang tidak ada di token dan ditulis sebagai kode hex.
 //
 // - skin: warna kulit
-// - hair: model rambut ('sanggul', 'pendek', 'belah-samping', 'panjang',
-//   'tertutup' untuk rambut yang tertutup kain)
+// - hair: model rambut ('sanggul', 'pendek', 'belah-samping',
+//   'bergelombang' untuk rambut pendek bergelombang, 'tertutup' untuk rambut
+//   yang tertutup kain)
 // - outfit: model baju ('kebaya', 'jas', 'beskap', 'kurung', 'jubah',
 //   'mantel', 'kemeja') dengan warna atasan, aksen, dan bawahan
 // - accessories: aksesori khas ('bros', 'peci', 'kacamata', 'kumis',
 //   'selendang', 'sorban', 'blangkon', 'ikat-kepala')
 // - side: tampak samping (menghadap kanan) untuk berjalan masuk dan keluar:
 //   - hair: rambut dari samping ('sanggul' dengan konde di belakang atas,
-//     'pendek', 'belah-samping' dengan poni ke depan, 'panjang' terurai ke
-//     punggung, 'tertutup')
+//     'pendek', 'belah-samping' dengan poni ke depan, 'bergelombang',
+//     'tertutup')
 //   - headwear: penutup kepala dari samping ('peci', 'sorban', 'blangkon'
 //     dengan mondolan di belakang, 'ikat-kepala' dengan simpul dan ujung kain
 //     di belakang, 'kerudung' untuk selendang yang menutup kepala), atau null
@@ -72,9 +73,9 @@ export const CHARACTER_LOOKS = {
   },
   pattimura: {
     skin: '#B07443',
-    hair: 'panjang',
+    hair: 'bergelombang',
     outfit: { style: 'kemeja', top: 'kapur', accent: 'cabai', bottom: 'terpal-tua' },
-    accessories: ['ikat-kepala'],
-    side: { hair: 'panjang', headwear: 'ikat-kepala', nose: 'mancung' },
+    accessories: ['ikat-kepala', 'kumis'],
+    side: { hair: 'bergelombang', headwear: 'ikat-kepala', nose: 'mancung' },
   },
 }

@@ -1872,3 +1872,55 @@ Commit terkait:
 - `11d2c70` feat: show loudness and compare win and wrong sounds on /?sfx
 - `433ee99` docs: describe the self-made win sounds in README
 - Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
+
+### P33, 12 Oktober 2026, 07.54 WIB (dari riwayat commit: waktu commit pertama untuk prompt ini)
+Tugas: kemiripan tokoh dan lembar perbandingan `/?tokoh` (Tugas 4, ilustrasi tokoh)
+Prompt:
+
+````text
+Beberapa tokoh tidak mirip dengan potret yang umum dikenal, dan Pattimura berambut panjang. Kerjakan di satu PR.
+
+Langkah 1: perbaikan pasti
+- Kapitan Pattimura: ganti rambut panjang menjadi rambut pendek bergelombang, tetap dengan ikat kepala dan kumis. Terapkan di tampak depan dan tampak samping.
+
+Langkah 2: lembar perbandingan
+- Buat halaman tersembunyi `/?tokoh` yang menampilkan kedelapan tokoh berdampingan dalam satu layar: tampak depan dan tampak samping, dengan nama di bawahnya, diperbesar dan dalam latar polos. Muat secara lazy dan jangan masuk ke bundle awal.
+- Tulis di bawah tiap tokoh ciri khas yang sekarang digambar: rambut atau penutup kepala, kacamata, kumis, pakaian, dan warna utama.
+- Lampirkan screenshot halaman itu di 1280x800 di deskripsi PR.
+
+Langkah 3: ciri khas yang perlu dipastikan (cocokkan dengan kode sekarang, jangan menebak)
+- Soekarno: peci hitam, kemeja atau jas putih bergaya kepresidenan.
+- Hatta: kacamata bulat, jas, rambut disisir rapi.
+- Ki Hajar Dewantara: kacamata bulat, kumis, pakaian adat Jawa yang sederhana.
+- Cut Nyak Dhien: kerudung atau selendang di kepala, pakaian adat Aceh.
+- Kartini: sanggul dan kebaya, bros.
+- Diponegoro: sorban putih dan jubah.
+- Sudirman: blangkon dan mantel gerilya.
+- Pattimura: ikat kepala, kumis, kemeja sederhana.
+Bila ada tokoh yang sekarang tidak punya ciri di atas, perbaiki. Jangan menambah detail yang tidak pasti kebenarannya.
+
+Aturan
+- Hanya ubah data tampilan karakter dan gambar rangkanya. Jangan ubah ukuran karakter, animasi, atau komposisi meja kasir.
+- Perubahan di rangka bersama harus dicek ulang untuk ketujuh tokoh lain.
+- Jangan ubah isi src/game dan src/data.
+- Pastikan lint, tes, dan build lolos.
+````
+
+Hasil AI:
+- Langkah 1: rambut Kapitan Pattimura diganti dari `panjang` menjadi model baru `bergelombang` (rambut pendek bergelombang) di tampak depan dan tampak samping, dan `kumis` ditambahkan ke aksesorinya (bentuk kumis yang sama dengan Ki Hajar Dewantara). Ikat kepala merah tetap. Model `panjang` dihapus dari rangka karena hanya dipakai Pattimura, begitu juga titik putar `SIDE_JOINTS.longHair`; rambut menjuntai di tampak samping sekarang hanya konde Kartini. Ukuran karakter, animasi, dan komposisi meja kasir tidak diubah. Gambar sebelum dan sesudah ada di deskripsi PR.
+- Warna rambut dan aksesori yang sebelumnya ditulis langsung di beberapa tempat di `characterParts.jsx` dikumpulkan menjadi `HAIR_COLOR` dan `ACCESSORY_COLORS`, supaya ciri yang ditulis di lembar perbandingan berasal dari data yang sama dengan gambarnya. Screenshot galeri pengembangan sebelum dan sesudah perubahan ini identik piksel demi piksel.
+- Cek ulang ketujuh tokoh lain: galeri `/?galeri` dari `main` dan dari branch ini dibandingkan per gambar (tampak depan, melambai, memegang bungkusan, membawa bungkusan, di balik meja, dan tampak samping menghadap kanan dan kiri, masing-masing 40 dan 160 px, 14 gambar per tokoh). Ketujuh tokoh lain identik piksel demi piksel; hanya 14 gambar Pattimura yang berubah.
+- Langkah 2: halaman tersembunyi `/?tokoh` (`src/screens/CharacterSheetScreen.jsx`) dimuat lewat `React.lazy` seperti `/?sfx`. Isinya kedelapan tokoh dalam grid 4 x 2 di latar polos, masing-masing tampak depan dan samping setinggi 160 px, nama, dan ciri yang sekarang digambar: kepala (rambut atau penutup kepala), kacamata, kumis, pakaian, dan warna utama. Ciri ditulis oleh fungsi murni `describeLook` (`src/components/character/describeLook.js`, 11 tes) dari `characterLooks.js` dan warna rangka. Di 1280x800 semuanya muat dalam satu layar tanpa gulir; di 360 px kartunya bersusun tanpa gulir ke samping. Bundel awal bertambah 0,28 kB (0,06 kB gzip) untuk baris rute; halamannya ada di potongan sendiri (3,44 kB). Screenshot 1280x800 ada di deskripsi PR.
+- Langkah 3, dicocokkan dengan kode (bukan tebakan), juga lewat tes `describeLook`: Soekarno peci hitam dan jas putih; Hatta kacamata bulat, jas biru, rambut disisir ke samping; Ki Hajar Dewantara peci, kacamata bulat, kumis, beskap biru tua; Cut Nyak Dhien selendang hijau di kepala dan baju kurung biru tua; Kartini sanggul, kebaya putih, bros kuning; Diponegoro sorban putih dan jubah putih dengan selempang hijau; Sudirman blangkon hitam dan mantel hijau; Pattimura ikat kepala merah, kemeja putih, dan (sesudah langkah 1) kumis. Hanya Pattimura yang kurang satu ciri (kumis); tokoh lain tidak diubah, dan tidak ada detail baru selain yang diminta.
+- Avatar bulat di layar hasil (`CharacterAvatar.jsx`) tidak diubah karena prompt membatasi perubahan pada data tampilan karakter dan gambar rangkanya; avatar Pattimura di sana sudah berambut pendek, tetapi belum berkumis.
+- `npm test` (27 berkas, 241 tes), `npm run build`, dan `npm run lint` (0 peringatan) lulus dengan Node 24.21.0. Tidak ada dependency baru. `src/game` dan `src/data` tidak diubah.
+
+Yang saya ubah atau tolak:
+
+Commit terkait:
+- `e7fe69b` fix: give Pattimura short wavy hair and a mustache
+- `b88a5fc` refactor: name hair and accessory colors in the character rig
+- `16ef75b` feat: describe the drawn features of each character
+- `1459f3e` feat: add hidden character comparison sheet at /?tokoh
+- `0a92452` docs: add screenshots of the character sheet and Pattimura's new hair
+- Commit log prompt ini dan PR untuk prompt ini; hash ada di riwayat PR.
